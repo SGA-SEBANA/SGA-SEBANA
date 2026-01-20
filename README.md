@@ -451,12 +451,6 @@ SGA-SEBANA busca servir como base sólida para un sistema administrativo, permit
 
 ---
 
-## Nota final
-
-**SGA-SEBANA** no es una plantilla, es un sistema de administración en desarrollo, diseñado para crecer y adaptarse a necesidades reales.
-
----
-
 ## Recursos adicionales
 
 ### Documentación oficial
