@@ -60,7 +60,8 @@ Usuario → Apache → public/index.php (Front Controller)
 | **Database** | `app/core/Database.php` | Conexión PDO |
 | **ControllerBase** | `app/core/ControllerBase.php` | Clase base para controllers |
 | **ModelBase** | `app/core/ModelBase.php` | Clase base para models |
-| **Template Base** | `public/templates/base.html.php` | Plantilla HTML compartida |
+| **Template Base** | `public/templates/base.html.php` | Plantilla principal |
+| **Template Auth** | `public/templates/auth.html.php` | Plantilla para Login/Registro |
 
 ### 2.3 Justificación
 
@@ -82,14 +83,17 @@ SGA-SEBANA/
 │   ├── index.php                    # Front Controller
 │   ├── .htaccess                    # Reglas Apache
 │   ├── templates/
-│   │   ├── base.html.php           # Plantilla base compartida
+│   │   ├── base.html.php           # Plantilla base principal (Dashboard, etc.)
+│   │   ├── auth.html.php           # Plantilla para Login/Registro
 │   │   └── partials/               # Componentes (navbar, footer)
 │   └── assets/
 │       ├── css/
-│       │   └── main.css            # Estilos globales
+│       │   ├── main.css            # Estilos globales
+│       │   ├── theme.css           # Tema principal (CoolAdmin)
+│       │   └── custom-fixes.css    # Sobreescrituras y correcciones UI
 │       ├── js/
-│       │   └── main.js             # JavaScript global
-│       └── img/                    # Imágenes
+│       ├── img/
+│       └── vendor/                 # Librerías (Bootstrap, JQuery, etc.)
 │
 ├── app/                             # Código de aplicación
 │   ├── core/                        # Núcleo del sistema
@@ -100,25 +104,16 @@ SGA-SEBANA/
 │   │
 │   ├── shared/                      # Código compartido
 │   │   ├── helpers.php
-│   │   ├── validators.php
-│   │   ├── Auth.php
-│   │   └── Bitacora.php
+│   │   └── ...
 │   │
 │   ├── modules/                     # Módulos de negocio
-│   │   ├── afiliados/
-│   │   │   ├── Controllers/
-│   │   │   ├── Models/
-│   │   │   ├── Views/
-│   │   │   └── routes.php
-│   │   ├── usuarios/
-│   │   ├── bitacora/
-│   │   └── reportes/
+│   │   ├── auth/                    # Autenticación (Login, Register)
+│   │   ├── home/                    # Dashboard principal
+│   │   ├── ui/                      # Elementos UI migrados (Tablas, Mapas, etc.)
+│   │   ├── afiliados/               # Gestión de afiliados (Futuro)
+│   │   └── ...
 │   │
 │   ├── migrations/                  # Scripts SQL
-│   │   ├── 001_create_users.sql
-│   │   ├── 002_create_roles.sql
-│   │   └── 003_create_afiliados.sql
-│   │
 │   ├── seeds/                       # Datos iniciales
 │   └── config/                      # Configuración
 │       ├── config.php
