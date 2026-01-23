@@ -272,15 +272,15 @@ git config --global user.email "julian.clot@ejemplo.com"
 
 1. Asegúrate de que Apache esté corriendo (luz verde en XAMPP Control Panel)
 2. Abre tu navegador web (Chrome, Firefox, Edge, etc.)
-3. En la barra de direcciones, escribe: `http://localhost/SGA-SEBANA/index.html`
+3. En la barra de direcciones, escribe: `http://localhost/SGA-SEBANA/public/`
 4. Presiona **Enter**
 5. Deberías ver la página principal del sistema administrativo
 
 **Rutas alternativas que puedes usar**:
-- `http://localhost/SGA-SEBANA/` (abre index.html automáticamente)
-- `http://localhost/SGA-SEBANA/login.html` (para ver la página de login)
-- `http://localhost/SGA-SEBANA/table.html` (para ver las tablas)
-- `http://localhost/SGA-SEBANA/form.html` (para ver los formularios)
+- `http://localhost/SGA-SEBANA/public/` (abre index.html automáticamente)
+- `http://localhost/SGA-SEBANA/public/login.html` (para ver la página de login)
+- `http://localhost/SGA-SEBANA/public/table.html` (para ver las tablas)
+- `http://localhost/SGA-SEBANA/public/form.html` (para ver los formularios)
 
 ---
 
@@ -322,7 +322,7 @@ Para trabajar eficientemente, mantén estas ventanas abiertas simultáneamente:
 
 1. **XAMPP Control Panel** (minimizado en la barra de tareas con Apache corriendo)
 2. **Tu editor de código** (Visual Studio Code, por ejemplo) ocupando la mitad izquierda de la pantalla
-3. **Tu navegador** con `http://localhost/SGA-SEBANA/` ocupando la mitad derecha de la pantalla
+3. **Tu navegador** con `http://localhost/SGA-SEBANA/public/` ocupando la mitad derecha de la pantalla
 
 **Flujo de trabajo**:
 1. Editas código en Visual Studio Code (lado izquierdo)
@@ -452,11 +452,11 @@ main (rama principal - código oficial)
 8. Guarda el archivo (Ctrl + S)
 9. Cierra el archivo
 10. Reinicia Apache en XAMPP
-11. Ahora accede al proyecto con: `http://localhost:8080/SGA-SEBANA/`
+11. Ahora accede al proyecto con: `http://localhost:8080/SGA-SEBANA/public/`
 
 ### La página no carga (error 404)
 
-**Problema**: Al escribir `http://localhost/SGA-SEBANA/` aparece "Not Found" o "No se pudo encontrar la página".
+**Problema**: Al escribir `http://localhost/SGA-SEBANA/public/` aparece "Not Found" o "No se pudo encontrar la página".
 
 **Soluciones**:
 
@@ -471,7 +471,7 @@ main (rama principal - código oficial)
    - Dentro de esa carpeta debe estar `index.html`
 
 3. **Verifica la URL**:
-   - Asegúrate de escribir correctamente: `http://localhost/SGA-SEBANA/`
+   - Asegúrate de escribir correctamente: `http://localhost/SGA-SEBANA/public`
    - Revisa mayúsculas y minúsculas
    - No olvides las barras `/`
 
