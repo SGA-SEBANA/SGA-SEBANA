@@ -1,59 +1,48 @@
-name: Check developer branches against main (notify only)
+name: PR branch must be up to date with main
 
 on:
-  push:
-    branches:
-      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
-  check-branches:
+  check-pr-branch:
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - branch: julian-clot
-            user: JulianClotCordoba
-          - branch: jorge-castillo
-            user: JorgeLuisCastrilloMolina
-          - branch: joel-peralta
-            user: joeljperalta
-          - branch: derlis-hernandez
-            user: derlisbach-lang
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 🔍 Verificar si el branch está detrás de main
-      - name: Check if ${{ matrix.branch }} is behind main
+      - name: Check if PR branch is behind main
         id: check
         run: |
           git fetch origin
 
-          BEHIND=$(git rev-list --count origin/${{ matrix.branch }}..origin/main)
+          BASE=origin/main
+          HEAD=origin/${{ github.head_ref }}
+
+          BEHIND=$(git rev-list --count ${HEAD}..${BASE})
 
           echo "behind=$BEHIND" >> $GITHUB_OUTPUT
 
           if [ "$BEHIND" -gt 0 ]; then
-            echo "Branch is behind main"
+            echo "❌ Branch is behind main"
             exit 1
           else
-            echo "Branch is up to date"
+            echo "✅ Branch is up to date with main"
           fi
-        continue-on-error: true
 
-      # ❌ Crear issue si el branch está desfasado
-      - name: Create issue if branch is behind
-        if: steps.check.outcome == 'failure'
+      # ❌ Crear issue si el PR está detrás de main
+      - name: Create issue if PR is behind main
+        if: failure()
         uses: actions/github-script@v7
         with:
           script: |
-            const branch = "${{ matrix.branch }}";
-            const user = "${{ matrix.user }}";
-            const title = `❌ ${branch} está desfasado respecto a main`;
+            const branch = context.payload.pull_request.head.ref;
+            const user = context.payload.pull_request.user.login;
+            const pr = context.payload.pull_request.number;
+
+            const title = `❌ PR #${pr} (${branch}) está desfasado respecto a main`;
 
             const issues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
@@ -73,9 +62,9 @@ jobs:
                 body: `
 @${user}
 
-Tu branch **\`${branch}\` no está sincronizado con \`main\`**.
+Tu Pull Request **#${pr}** está basado en un \`main\` desactualizado.
 
-🔧 **Cómo arreglarlo (FORMA CORRECTA):**
+🔧 **Cómo solucionarlo (FORMA CORRECTA):**
 \`\`\`bash
 git checkout ${branch}
 git fetch origin
@@ -86,20 +75,21 @@ git push --force-with-lease
 ❗ No uses \`git pull origin main\`  
 ❗ No hagas merge de \`main\` dentro del branch
 
-Commit que disparó el check:
-${context.sha}
+Cuando actualices el PR, este issue se cerrará automáticamente.
 `
               });
             }
 
-      # ✅ Cerrar issue cuando el branch ya esté al día
-      - name: Close issue when branch is up to date
-        if: steps.check.outcome == 'success'
+      # ✅ Cerrar issue cuando el PR ya esté actualizado
+      - name: Close issue when PR is up to date
+        if: success()
         uses: actions/github-script@v7
         with:
           script: |
-            const branch = "${{ matrix.branch }}";
-            const title = `❌ ${branch} está desfasado respecto a main`;
+            const branch = context.payload.pull_request.head.ref;
+            const pr = context.payload.pull_request.number;
+
+            const title = `❌ PR #${pr} (${branch}) está desfasado respecto a main`;
 
             const issues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
