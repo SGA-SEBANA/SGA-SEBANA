@@ -34,36 +34,19 @@ jobs:
               repo: context.repo.repo,
               state: 'open'
             });
-            
             const prBranches = prs.data.map(pr => pr.head.ref);
             core.setOutput('pr_branches', prBranches.join(','));
             console.log('Branches with open PRs:', prBranches);
 
-      - name: Get all developer branches (active, without open PRs)
+      - name: Get developer branches
         id: get-branches
         run: |
           echo "Fetching all branches..."
           git fetch --all
-          
           PR_BRANCHES="${{ steps.get-active-prs.outputs.pr_branches }}"
-          
-          # Obtener branches activos en los últimos 90 días
-          cutoff_date=$(date -d '90 days ago' +%s)
-          
-          all_branches=$(git for-each-ref --format='%(refname:short) %(committerdate:unix)' refs/remotes/origin | \
-            grep -v 'origin/HEAD' | \
-            grep -v 'origin/main' | \
-            grep -v 'origin/master' | \
-            grep -v 'origin/develop' | \
-            awk -v cutoff=$cutoff_date '$2 > cutoff {print $1}' | \
-            sed 's/origin\///')
-          
-          # Excluir branches con PR abierto
+          all_branches="julian-clot derlis-hernandez joel-peralta jorge-castrillo"
           filtered_branches=""
-          
-          while IFS= read -r branch; do
-            [ -z "$branch" ] && continue
-            
+          for branch in $all_branches; do
             skip=false
             IFS=',' read -ra PR_BRANCH_ARRAY <<< "$PR_BRANCHES"
             for pr_branch in "${PR_BRANCH_ARRAY[@]}"; do
@@ -73,12 +56,10 @@ jobs:
                 break
               fi
             done
-            
             if [ "$skip" = false ]; then
               filtered_branches="$filtered_branches $branch"
             fi
-          done <<< "$all_branches"
-          
+          done
           echo "branches=$filtered_branches" >> $GITHUB_OUTPUT
           echo "Branches to update:$filtered_branches"
 
@@ -86,49 +67,34 @@ jobs:
         continue-on-error: true
         run: |
           branches="${{ steps.get-branches.outputs.branches }}"
-          
           if [ -z "$branches" ]; then
             echo "No branches to update"
             exit 0
           fi
-          
           for branch in $branches; do
             echo "========================================="
             echo "Processing branch: $branch"
             echo "========================================="
-            
-            # Fetch la rama
             if ! git fetch origin $branch; then
               echo "❌ Could not fetch $branch"
               echo "$branch|fetch-failed|Could not fetch branch" >> /tmp/branch-status.txt
               continue
             fi
-            
-            # Variables de estado
             STATUS="success"
             ERROR_MSG=""
-            
-            # Intentar hacer checkout y rebase
             if git checkout $branch 2>/dev/null; then
               echo "✓ Checked out $branch"
-              
-              # Verificar cuántos commits está detrás
               BEHIND=$(git rev-list --count HEAD..origin/main)
               echo "Branch is $BEHIND commits behind main"
-              
               if [ "$BEHIND" -eq 0 ]; then
                 echo "⏭️  Branch is already up to date"
                 STATUS="up-to-date"
               else
-                # Intentar rebase
                 if git rebase origin/main; then
                   echo "✓ Rebase successful for $branch"
-                  
-                  # Push con force-with-lease (con retry)
                   max_retries=3
                   retry_count=0
                   push_success=false
-                  
                   while [ $retry_count -lt $max_retries ]; do
                     if git push origin $branch --force-with-lease; then
                       echo "✅ Successfully updated $branch"
@@ -140,7 +106,6 @@ jobs:
                       sleep 2
                     fi
                   done
-                  
                   if [ "$push_success" = false ]; then
                     STATUS="push-failed"
                     ERROR_MSG="Failed to push after $max_retries attempts"
@@ -150,8 +115,6 @@ jobs:
                   STATUS="conflict"
                   ERROR_MSG="Rebase conflict detected"
                   echo "❌ Rebase conflict on $branch"
-                  
-                  # Abortar el rebase
                   git rebase --abort
                 fi
               fi
@@ -160,121 +123,118 @@ jobs:
               ERROR_MSG="Failed to checkout branch"
               echo "❌ Could not checkout $branch"
             fi
-            
-            # Volver a main para el siguiente branch
             git checkout main 2>/dev/null || true
-            
-            # Guardar el estado
             echo "$branch|$STATUS|$ERROR_MSG" >> /tmp/branch-status.txt
             echo ""
           done
 
-      - name: Create/update issues for conflicts
+      - name: Create or update issues for conflicts
         if: always()
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            
+            const branchToUser = {
+              'julian-clot': 'JulianClotCordoba',
+              'derlis-hernandez': 'derlisbach-lang',
+              'joel-peralta': 'joeljperalta',
+              'jorge-castrillo': 'JorgeLuisCastrilloMolina'
+            };
             if (!fs.existsSync('/tmp/branch-status.txt')) {
               console.log('No status file found');
               return;
             }
-            
             const statusFile = fs.readFileSync('/tmp/branch-status.txt', 'utf8');
             const lines = statusFile.trim().split('\n').filter(l => l);
-            
             for (const line of lines) {
               const [branch, status, errorMsg] = line.split('|');
-              
               if (status === 'conflict') {
                 const title = `🔥 Conflicto en branch: ${branch} al actualizar desde main`;
-                
-                // Buscar issue existente
                 const issues = await github.rest.issues.listForRepo({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   state: "open",
                   labels: "auto-update-conflict"
                 });
-                
                 const existing = issues.data.find(i => 
                   i.title.includes(branch) && i.labels.some(l => l.name === "auto-update-conflict")
                 );
-                
                 if (!existing) {
-                  const username = branch.split('/').pop();
-                  
+                  const username = branchToUser[branch] || branch;
                   const issueBody = `
-### ⚠️ Conflicto detectado al actualizar desde \`main\`
+            ### ⚠️ Conflicto detectado al actualizar desde \`main\`
 
-El branch \`${branch}\` tiene conflictos con la versión actual de \`main\` y no pudo ser actualizado automáticamente.
+            El branch \`${branch}\` tiene conflictos con la versión actual de \`main\` y no pudo ser actualizado automáticamente.
 
-**Commit que causó el conflicto:** [\`${context.sha.substring(0, 7)}\`](${context.payload.repository.html_url}/commit/${context.sha})
-**Mensaje:** ${context.payload.head_commit.message}
-**Fecha:** ${new Date().toISOString()}
+            **Commit que causó el conflicto:** [\`${context.sha.substring(0, 7)}\`](${context.payload.repository.html_url}/commit/${context.sha})
+            **Mensaje:** ${context.payload.head_commit.message}
+            **Fecha:** ${new Date().toISOString()}
 
----
+            ---
 
-### 🔧 Cómo resolver:
+            ### 🔧 Cómo resolver:
 
-\`\`\`bash
-# 1. Actualiza tu branch local
-git checkout ${branch}
-git fetch origin
+            \`\`\`bash
+            # 1. Actualiza tu branch local
+            git checkout ${branch}
+            git fetch origin
 
-# 2. Intenta hacer rebase con main
-git rebase origin/main
+            # 2. Intenta hacer rebase con main
+            git rebase origin/main
 
-# 3. Resuelve los conflictos en los archivos marcados
-# Los archivos con conflictos aparecerán con <<<<<<< y >>>>>>>
+            # 3. Resuelve los conflictos en los archivos marcados
+            # Los archivos con conflictos aparecerán con <<<<<<< y >>>>>>>
 
-# 4. Después de resolver cada archivo:
-git add <archivo-resuelto>
+            # 4. Después de resolver cada archivo:
+            git add <archivo-resuelto>
 
-# 5. Continúa el rebase
-git rebase --continue
+            # 5. Continúa el rebase
+            git rebase --continue
 
-# 6. Push de tus cambios (forzado, pero seguro)
-git push origin ${branch} --force-with-lease
-\`\`\`
+            # 6. Push de tus cambios (forzado, pero seguro)
+            git push origin ${branch} --force-with-lease
+            \`\`\`
 
----
+            ---
 
-### ❌ **NO hagas esto:**
-- ❌ \`git pull origin main\` (crea merge commits innecesarios)
-- ❌ \`git merge main\` (queremos mantener un historial limpio)
-- ❌ \`git push --force\` (usa \`--force-with-lease\` en su lugar)
+            ### ❌ **NO hagas esto:**
+            - ❌ \`git pull origin main\` (crea merge commits innecesarios)
+            - ❌ \`git merge main\` (queremos mantener un historial limpio)
+            - ❌ \`git push --force\` (usa \`--force-with-lease\` en su lugar)
 
----
+            ---
 
-**Este issue se cerrará automáticamente cuando el branch sea actualizado exitosamente.**
-`;
-                  
-                  await github.rest.issues.create({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    title: title,
-                    body: issueBody,
-                    assignees: [username].filter(u => u && u.length > 0),
-                    labels: ["auto-update-conflict", "urgent", "needs-resolution"]
-                  });
-                  
-                  console.log(`✓ Created issue for ${branch}`);
+            **Este issue se cerrará automáticamente cuando el branch sea actualizado exitosamente.**
+            `;
+                  try {
+                    await github.rest.issues.create({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      title: title,
+                      body: issueBody,
+                      assignees: [username],
+                      labels: ["auto-update-conflict", "urgent", "needs-resolution"]
+                    });
+                    console.log(`✓ Created issue for ${branch}, assigned to ${username}`);
+                  } catch (error) {
+                    console.log(`⚠️  Could not assign to ${username}, creating issue without assignee`);
+                    await github.rest.issues.create({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      title: title,
+                      body: issueBody,
+                      labels: ["auto-update-conflict", "urgent", "needs-resolution"]
+                    });
+                  }
                 }
               } else if (status === 'success') {
-                // Cerrar issue si existía
                 const issues = await github.rest.issues.listForRepo({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   state: "open",
                   labels: "auto-update-conflict"
                 });
-                
-                const existing = issues.data.find(i => 
-                  i.title.includes(branch)
-                );
-                
+                const existing = issues.data.find(i => i.title.includes(branch));
                 if (existing) {
                   await github.rest.issues.update({
                     owner: context.repo.owner,
@@ -283,14 +243,12 @@ git push origin ${branch} --force-with-lease
                     state: "closed",
                     state_reason: "completed"
                   });
-                  
                   await github.rest.issues.createComment({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
                     issue_number: existing.number,
                     body: `✅ Branch actualizado exitosamente con [\`${context.sha.substring(0, 7)}\`](${context.payload.repository.html_url}/commit/${context.sha}). Issue cerrado automáticamente.`
                   });
-                  
                   console.log(`✓ Closed issue for ${branch}`);
                 }
               }
@@ -305,18 +263,15 @@ git push origin ${branch} --force-with-lease
           echo "**Commit:** [\`${GITHUB_SHA:0:7}\`](${{ github.event.repository.html_url }}/commit/${GITHUB_SHA})" >> $GITHUB_STEP_SUMMARY
           echo "**Author:** ${{ github.event.head_commit.author.name }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
           if [ -f /tmp/branch-status.txt ]; then
             echo "## 📊 Results" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "| Branch | Status | Details |" >> $GITHUB_STEP_SUMMARY
             echo "|--------|--------|---------|" >> $GITHUB_STEP_SUMMARY
-            
             success_count=0
             conflict_count=0
             skip_count=0
             error_count=0
-            
             while IFS='|' read -r branch status error; do
               case $status in
                 success)
@@ -337,7 +292,6 @@ git push origin ${branch} --force-with-lease
                   ;;
               esac
             done < /tmp/branch-status.txt
-            
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### Summary" >> $GITHUB_STEP_SUMMARY
             echo "- ✅ Successfully updated: **$success_count**" >> $GITHUB_STEP_SUMMARY
@@ -348,13 +302,12 @@ git push origin ${branch} --force-with-lease
             echo "No branches were processed." >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Summary (console)
+      - name: Summary console output
         if: always()
         run: |
           echo "========================================="
           echo "RESUMEN DE ACTUALIZACIONES"
           echo "========================================="
-          
           if [ -f /tmp/branch-status.txt ]; then
             while IFS='|' read -r branch status error; do
               case $status in
@@ -381,5 +334,4 @@ git push origin ${branch} --force-with-lease
           else
             echo "No se encontraron branches para actualizar"
           fi
-          
           echo "========================================="
