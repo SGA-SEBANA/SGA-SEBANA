@@ -3,7 +3,7 @@
 // Front Controller
 // public/index.php
 
-// Define base path
+// Define base 
 define('BASE_PATH', dirname(__DIR__));
 
 // DEBUGGING: Enable error reporting
