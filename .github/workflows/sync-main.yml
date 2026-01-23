@@ -1,0 +1,111 @@
+name: Sync main into developer branches (matrix + notify)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync-branches:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - branch: julian-clot
+            user: JulianClotCordoba
+          - branch: jorge-castillo
+            user: JorgeLuisCastrilloMolina
+          - branch: joel-peralta
+            user: joeljperalta
+          - branch: derlis-hernandez
+            user: derlisbach-lang
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Merge main into ${{ matrix.branch }}
+        id: merge
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          git checkout ${{ matrix.branch }}
+          git pull origin ${{ matrix.branch }}
+          git fetch origin
+          git merge origin/main
+          git push origin ${{ matrix.branch }}
+
+      # ❌ Crear issue si falló el merge
+      - name: Create issue on conflict
+        if: steps.merge.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = "${{ matrix.branch }}";
+            const user = "${{ matrix.user }}";
+            const title = `❌ Conflicto main → ${branch}`;
+
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open"
+            });
+
+            const existing = issues.data.find(i => i.title === title);
+
+            if (!existing) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                assignees: [user],
+                labels: ["conflict", "ci"],
+                body: `
+                @${user}
+
+                Hubo un **conflicto al sincronizar \`main\` con tu branch \`${branch}\`**.
+
+                🔧 **Cómo solucionarlo:**
+                \`\`\`bash
+                git checkout ${branch}
+                git pull origin main
+                # resolver conflictos
+                git push origin ${branch}
+                \`\`\`
+
+                Commit que disparó el workflow:
+                ${context.sha}
+                `
+              });
+            }
+
+      # ✅ Cerrar issue si el merge volvió a funcionar
+      - name: Close issue when fixed
+        if: steps.merge.outcome == 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = "${{ matrix.branch }}";
+            const title = `❌ Conflicto main → ${branch}`;
+
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open"
+            });
+
+            const existing = issues.data.find(i => i.title === title);
+
+            if (existing) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                state: "closed"
+              });
+            }
+
