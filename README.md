@@ -1,6 +1,6 @@
 # SGA-SEBANA - Sistema de Gestión Administrativa
 
-**SGA-SEBANA** es un sistema de administración web diseñado para gestionar información desde un panel administrativo moderno, claro y responsive. Está construido con HTML, CSS, JavaScript (Vanilla) y Bootstrap 5, pensado para ejecutarse fácilmente en entornos locales como XAMPP y escalarse con backend (PHP + MySQL).
+**SGA-SEBANA** es un sistema de administración web diseñado para organizar información desde un panel administrativo moderno, claro y responsive. Está construido con HTML, CSS, JavaScript (Vanilla) y Bootstrap 5, pensado para ejecutarse fácilmente en entornos locales como XAMPP y escalarse con backend (PHP + MySQL).
 
 ---
 
