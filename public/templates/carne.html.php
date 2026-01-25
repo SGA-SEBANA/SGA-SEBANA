@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-
+ <!-- Plantilla del carnet-->
 <head>
     <!-- Required meta tags -->
     <meta charset="UTF-8">
@@ -78,7 +78,9 @@
                     </div>
                     <div class="carnet-body">
                         <!-- Foto de perfil -->
-                        <img src="<?= $afiliado->foto ?? '/SGA-SEBANA/public/assets/images/default.png' ?>" alt="Foto de perfil">
+                        <img src="<?= $afiliado->foto ?? '/SGA-SEBANA/public/assets/images/default.png' ?>" alt="Foto de perfil" class="carnet-img">
+
+                        
                         <!-- Datos del afiliado -->
                         <div class="carnet-details">
                             <p><strong>Nombre:</strong> <?= $afiliado->nombre ?></p>
@@ -95,8 +97,43 @@
         </div>
     </div>
 
+
+
+
+ <!-- Ajustamiento  de como se ve en cada dispositivo -->
     <!-- Bootstrap JS -->
     <script src="/SGA-SEBANA/public/assets/vendor/bootstrap-5.3.8.bundle.min.js"></script>
+
+    <style>
+.carnet-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.carnet-img {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Teléfonos pequeños */
+@media (max-width: 480px) {
+  .carnet-img { width: 90%; }
+}
+
+/* Tablets */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .carnet-img { width: 70%; }
+}
+
+/* Pantallas grandes (PC) */
+@media (min-width: 1200px) {
+  .carnet-img { width: 50%; }
+}
+</style>
+
 </body>
 
 </html>

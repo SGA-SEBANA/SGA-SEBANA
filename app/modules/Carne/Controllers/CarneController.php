@@ -55,7 +55,7 @@ class CarneController extends ControllerBase {
 
 
 
-      // HU-CR-02: Criterio 1 - Generar y descargar PDF
+      // HU-CR-02: Criterio 1 - Generar y descargar PDF - ademas la plantilla , con la plantilla ya cumple en 2 y 3 criterio 
     public function descargarPdf($afiliadoId) {
         $afiliado = Afiliado::find($afiliadoId);
 
