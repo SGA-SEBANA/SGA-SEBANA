@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../vendor/autoload.php';
+use Dompdf\Dompdf;
 
 class CarneController extends ControllerBase {
 
@@ -56,37 +58,33 @@ class CarneController extends ControllerBase {
 
 
       // HU-CR-02: Criterio 1 - Generar y descargar PDF - ademas la plantilla , con la plantilla ya cumple en 2 y 3 criterio 
-    public function descargarPdf($afiliadoId) {
-        $afiliado = Afiliado::find($afiliadoId);
+public function descargarPdf($afiliadoId) {
+    $afiliado = Afiliado::find($afiliadoId);
 
-        if ($afiliado && $afiliado->estado === 'activo') {
-            $dompdf = new Dompdf();
+    if ($afiliado && $afiliado->estado === 'activo') {
+        $dompdf = new Dompdf();
 
-            // Cargar plantilla base
-            $html = file_get_contents('templates/carne.html.php');
+        // Renderizar plantilla con datos dinámicos
+        ob_start();
+        
+        
+        include __DIR__ . '/../templates/carne.html.php';
+        $html = ob_get_clean();
 
-            // Reemplazar variables dinámicas
-            $html = str_replace('{{nombre}}', $afiliado->nombre, $html);
-            $html = str_replace('{{cedula}}', $afiliado->cedula, $html);
-            $html = str_replace('{{estado}}', $afiliado->estado, $html);
-            $html = str_replace('{{fecha}}', date('d/m/Y'), $html);
-            $html = str_replace('{{foto}}', $afiliado->foto, $html);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A6', 'portrait'); // tamaño tipo carné
+        $dompdf->render();
 
-            $dompdf->loadHtml($html);
-            $dompdf->setPaper('A6', 'portrait'); // tamaño tipo carné
-            $dompdf->render();
-
-            // Descargar PDF
-            $dompdf->stream("carne_".$afiliado->cedula.".pdf", ["Attachment" => true]);
-        } else {
-            return $this->render('carne/error', [
-                'mensaje' => 'El afiliado está inactivo. No se puede descargar el carné.'
-            ]);
-        }
-
-          
-     
+        // Descargar PDF
+        $dompdf->stream("carne_".$afiliado->cedula.".pdf", ["Attachment" => true]);
+    } else {
+        return $this->render('carne/error', [
+            'mensaje' => 'El afiliado está inactivo. No se puede descargar el carné.'
+        ]);
+    }
 }
+
+
     }
      // Historia de usuario 3 , criterio 2 y3 
     public function validarQr($afiliadoId) {
