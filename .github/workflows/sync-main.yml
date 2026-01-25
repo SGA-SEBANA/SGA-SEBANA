@@ -259,9 +259,18 @@ jobs:
         run: |
           echo "# 🔄 Auto-update Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Triggered by:** ${{ github.event.head_commit.message }}" >> $GITHUB_STEP_SUMMARY
+          COMMIT_MSG=$(cat <<'EOF'
+          ${{ github.event.head_commit.message }}
+          EOF
+          )
+          COMMIT_MSG_FIRST_LINE=$(echo "$COMMIT_MSG" | head -n 1)
+          AUTHOR_NAME=$(cat <<'EOF'
+          ${{ github.event.head_commit.author.name }}
+          EOF
+          )
+          echo "**Triggered by:** $COMMIT_MSG_FIRST_LINE" >> $GITHUB_STEP_SUMMARY
           echo "**Commit:** [\`${GITHUB_SHA:0:7}\`](${{ github.event.repository.html_url }}/commit/${GITHUB_SHA})" >> $GITHUB_STEP_SUMMARY
-          echo "**Author:** ${{ github.event.head_commit.author.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Author:** $AUTHOR_NAME" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           if [ -f /tmp/branch-status.txt ]; then
             echo "## 📊 Results" >> $GITHUB_STEP_SUMMARY
