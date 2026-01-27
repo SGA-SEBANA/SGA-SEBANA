@@ -205,7 +205,7 @@ SGA-SEBANA/
 1. Abre tu navegador
 2. Ve a: `http://localhost/phpmyadmin`
 3. Haz clic en **Nueva** (o **New**) en el menú lateral izquierdo
-4. En el campo "Nombre de la base de datos", escribe: `sga_sebana` (o el nombre que prefieras)
+4. En el campo "Nombre de la base de datos", escribe: `nfvxeqzb_sga_sbna` 
 5. En "Cotejamiento", selecciona: `utf8mb4_general_ci`
 6. Haz clic en **Crear**
 
@@ -245,15 +245,6 @@ La base de datos remota **ya está creada** en BananaHosting. Solo necesitas con
 ### Paso 2: Solicitar acceso remoto
 
 **IMPORTANTE:** Solo el administrador del hosting puede hacer esto.
-
-Si eres el administrador:
-
-1. Inicia sesión en cPanel de BananaHosting
-2. Busca **"Remote MySQL®"** o **"MySQL® remoto"**
-3. En el campo **"Host"**, pega tu IP pública
-4. Haz clic en **"Add Host"** o **"Agregar"**
-
-Si NO eres el administrador:
 
 1. Envía tu IP pública al administrador del proyecto
 2. Solicita que te agreguen a la lista de IPs permitidas
@@ -369,7 +360,7 @@ Port: 3306
 Username: root
 Password: [dejar vacío o clic en "Store in Vault" y dejar vacío]
 
-Default Schema: sga_sebana
+Default Schema: nfvxeqzb_sga_sbna
 ```
 
 4. Haz clic en **Test Connection**
@@ -431,7 +422,7 @@ SGA-SEBANA/
 
 #### 1. Test de Conexión de Base de Datos
 
-**Archivo:** `tools/test_db_simple.php`
+**Archivo:** `tools/test_db.php`
 
 **Qué hace:**
 - Verifica la conexión a la base de datos local
