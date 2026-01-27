@@ -162,7 +162,6 @@ Abre el archivo `.gitignore` en la raíz del proyecto y verifica que contenga:
 .env
 
 # Configuraciones con contraseñas
-app/config/database.remote.php
 phpMyAdmin/config.inc.php
 ```
 
@@ -182,7 +181,7 @@ SGA-SEBANA/
 │       └── database.remote.php       <-- Config base remota
 ├── tools/
 │   ├── index.php                     <-- Menú de herramientas
-│   └── test_db_simple.php           <-- Test de conexión
+│   └── test_db.php           <-- Test de conexión
 └── public/
     └── index.php
 ```
@@ -293,6 +292,7 @@ $cfg['Servers'][$i]['password'] = '';
 ```
 
 3. **DESPUÉS de esa configuración, AGREGA** (no reemplaces):
+Cambia los valores que dicen solicitar al administrador por los datos de .env (sebanacr)
 
 ```php
 /*
@@ -407,7 +407,7 @@ El proyecto incluye una carpeta `tools/` con scripts útiles para desarrollo.
 SGA-SEBANA/
 └── tools/
     ├── index.php              <-- Menú principal de herramientas
-    ├── test_db_simple.php     <-- Test de conexión de BD
+    ├── test_db.php     <-- Test de conexión de BD
     └── migrate_html.php       <-- (deshabilitado)
 ```
 
