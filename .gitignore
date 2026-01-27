@@ -3,5 +3,3 @@ screenshots/.DS_Store
 .DS_Store
 RELEASE.md
 .env
-
-phpMyAdmin/config.inc.php
