@@ -160,9 +160,6 @@ Abre el archivo `.gitignore` en la raíz del proyecto y verifica que contenga:
 ```gitignore
 # Variables de entorno
 .env
-
-# Configuraciones con contraseñas
-phpMyAdmin/config.inc.php
 ```
 
 Si no existe `.gitignore`, créalo con el contenido anterior.
