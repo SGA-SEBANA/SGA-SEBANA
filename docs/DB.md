@@ -162,7 +162,6 @@ Abre el archivo `.gitignore` en la raíz del proyecto y verifica que contenga:
 .env
 
 # Configuraciones con contraseñas
-app/config/database.remote.php
 phpMyAdmin/config.inc.php
 ```
 
