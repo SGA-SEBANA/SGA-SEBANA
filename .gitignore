@@ -3,3 +3,4 @@ screenshots/.DS_Store
 .DS_Store
 RELEASE.md
 .env
+db.sql
