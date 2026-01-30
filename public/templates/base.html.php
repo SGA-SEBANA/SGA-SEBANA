@@ -135,21 +135,6 @@ $authUser = SecurityHelper::getAuthUser();
                         </li>
                         <li class="has-sub">
                             <a class="js-arrow" href="#">
-                                <i class="fas fa-copy"></i>Pages</a>
-                            <ul class="list-unstyled navbar__sub-list js-sub-list">
-                                <li>
-                                    <a href="/SGA-SEBANA/public/ui/login">Login</a>
-                                </li>
-                                <li>
-                                    <a href="/SGA-SEBANA/public/ui/register">Register</a>
-                                </li>
-                                <li>
-                                    <a href="/SGA-SEBANA/public/ui/forget-pass">Forget Password</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="has-sub">
-                            <a class="js-arrow" href="#">
                                 <i class="fas fa-desktop"></i>UI Elements</a>
                             <ul class="list-unstyled navbar__sub-list js-sub-list">
                                 <li>
@@ -203,22 +188,27 @@ $authUser = SecurityHelper::getAuthUser();
                             <div class="header-button">
                                 <div class="account-wrap">
                                     <div class="account-item clearfix js-item-menu">
-                                        <div class="image" style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #3b5998; border-radius: 50%;">
+                                        <div class="image"
+                                            style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #3b5998; border-radius: 50%;">
                                             <i class="fas fa-user" style="color: white; font-size: 18px;"></i>
                                         </div>
                                         <div class="content">
-                                            <a class="js-acc-btn" href="#"><?= htmlspecialchars($authUser['username'] ?? 'Usuario') ?></a>
+                                            <a class="js-acc-btn"
+                                                href="#"><?= htmlspecialchars($authUser['username'] ?? 'Usuario') ?></a>
                                         </div>
                                         <div class="account-dropdown js-dropdown">
                                             <div class="info clearfix">
-                                                <div class="image" style="display: flex; align-items: center; justify-content: center; width: 50px; height: 50px; background: #3b5998; border-radius: 50%;">
+                                                <div class="image"
+                                                    style="display: flex; align-items: center; justify-content: center; width: 50px; height: 50px; background: #3b5998; border-radius: 50%;">
                                                     <i class="fas fa-user" style="color: white; font-size: 24px;"></i>
                                                 </div>
                                                 <div class="content">
                                                     <h5 class="name">
-                                                        <a href="#"><?= htmlspecialchars($authUser['nombre_completo'] ?? 'Usuario') ?></a>
+                                                        <a
+                                                            href="#"><?= htmlspecialchars($authUser['nombre_completo'] ?? 'Usuario') ?></a>
                                                     </h5>
-                                                    <span class="email"><?= htmlspecialchars($authUser['email'] ?? '') ?></span>
+                                                    <span
+                                                        class="email"><?= htmlspecialchars($authUser['email'] ?? '') ?></span>
                                                 </div>
                                             </div>
                                             <div class="account-dropdown__body">
@@ -228,7 +218,8 @@ $authUser = SecurityHelper::getAuthUser();
                                                 </div>
                                                 <div class="account-dropdown__item">
                                                     <span class="text-muted px-3">
-                                                        <i class="zmdi zmdi-shield-check"></i><?= htmlspecialchars($authUser['rol_nombre'] ?? 'Sin rol') ?></span>
+                                                        <i
+                                                            class="zmdi zmdi-shield-check"></i><?= htmlspecialchars($authUser['rol_nombre'] ?? 'Sin rol') ?></span>
                                                 </div>
                                             </div>
                                             <div class="account-dropdown__footer">
