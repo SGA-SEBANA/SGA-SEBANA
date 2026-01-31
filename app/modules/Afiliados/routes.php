@@ -1,5 +1,21 @@
 <?php
-$router->get('/Afiliados', function() {
-    echo "<h1>Módulo de Afiliados Configurado ✅</h1>";
-    echo "<p>Estructura: Controllers, Models, Views y routes.php creados.</p>";
-});
+
+use App\Modules\Afiliados\Controllers\AfiliadosController;
+
+// =====================================================
+// AFILIADOS ROUTES
+// =====================================================
+
+// Listado
+$router->get('/afiliados', [AfiliadosController::class, 'index']);
+
+// Crear
+$router->get('/afiliados/create', [AfiliadosController::class, 'create']);
+$router->post('/afiliados/store', [AfiliadosController::class, 'store']);
+
+// Editar
+$router->get('/afiliados/edit/{id}', [AfiliadosController::class, 'edit']);
+$router->post('/afiliados/update/{id}', [AfiliadosController::class, 'update']);
+
+// NUEVO (HU-AF-04): Cambiar Estado
+$router->post('/afiliados/toggle/{id}', [AfiliadosController::class, 'toggle']);
