@@ -177,8 +177,8 @@ $contactoEmergencia = json_decode($afiliado['datos_contacto_emergencia'] ?? '{}'
                         </div>
                     </div>
                 </div>
-                <div class="card-footer text-right">
-                    <button type="submit" class="btn btn-primary btn-lg">
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary btn-sm">
                         <i class="zmdi zmdi-save"></i> Guardar Cambios
                     </button>
                 </div>
