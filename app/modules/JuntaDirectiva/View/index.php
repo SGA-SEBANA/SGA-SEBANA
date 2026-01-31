@@ -7,7 +7,7 @@ ob_start();
 
 <div class="table-responsive table-responsive-data2">
     <div class="mb-3">
-    <a href="" class="btn btn-success">
+    <a href="/SGA-SEBANA/public/junta/create" class="btn btn-success">
         <i class="zmdi zmdi-plus"></i> Agregar miembro
     </a>
 </div>
@@ -45,10 +45,10 @@ ob_start();
 
                 <td>
                     <div class="table-data-feature">
-                        <a href="<?= $miembro['afiliado_id'] ?>" 
-                           class="item" data-bs-toggle="tooltip" title="Editar">
-                            <i class="zmdi zmdi-edit"></i>
-                        </a>
+                
+                       <a href="/SGA-SEBANA/public/junta/edit/<?= $miembro['id'] ?>" class="item">
+                       <i class="zmdi zmdi-edit"></i>
+                       </a>
 
                         <a href="<?= $miembro['afiliado_id'] ?>" 
                            class="item" data-bs-toggle="tooltip" title="Eliminar"
