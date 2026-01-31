@@ -1,39 +1,69 @@
 <?php
 $title = "Junta Directiva";
-
 ob_start();
 ?>
 
-<h1>Junta Directiva</h1>
+<h1 class="mb-4">Junta Directiva</h1>
 
-<table class="table table-bordered">
+<div class="table-responsive table-responsive-data2">
+    <div class="mb-3">
+    <a href="" class="btn btn-success">
+        <i class="zmdi zmdi-plus"></i> Agregar miembro
+    </a>
+</div>
 
-    <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Cargo</th>
-            <th>Estado</th>
-            <th>Fecha de Inicio</th>
-            <th>Fecha de Finalizacion</th>
-
-        </tr>
-
-    </thead>
-
-    <tbody>
-        <?php foreach ($junta as $miembro): ?>
+    <table class="table table-data2">
+        <thead>
             <tr>
-                <td><?= $miembro['nombre'] ?></td>
-                <td><?= $miembro['cargo'] ?></td>
-                <td><?= $miembro['estado'] ?></td>
-                <td><?= $miembro['fecha_inicio'] ?></td>
-                <td><?= $miembro['fecha_fin'] ?></td>
+                <th>Nombre</th>
+                <th>Cargo</th>
+                <th>Estado</th>
+                <th>Inicio</th>
+                <th>Fin</th>
+                <th></th>
             </tr>
+        </thead>
+
+        <tbody>
+        <?php foreach ($junta as $miembro): ?>
+            <tr class="tr-shadow">
+
+                <td><?= $miembro['nombre'] ?></td>
+
+                <td><?= $miembro['cargo'] ?></td>
+
+                <td>
+                    <?php if ($miembro['estado'] === 'vigente'): ?>
+                        <span class="status--process">Vigente</span>
+                    <?php else: ?>
+                        <span class="status--denied"><?= ucfirst($miembro['estado']) ?></span>
+                    <?php endif; ?>
+                </td>
+
+                <td><?= $miembro['fecha_inicio'] ?></td>
+                <td><?= $miembro['fecha_fin'] ?? '—' ?></td>
+
+                <td>
+                    <div class="table-data-feature">
+                        <a href="<?= $miembro['afiliado_id'] ?>" 
+                           class="item" data-bs-toggle="tooltip" title="Editar">
+                            <i class="zmdi zmdi-edit"></i>
+                        </a>
+
+                        <a href="<?= $miembro['afiliado_id'] ?>" 
+                           class="item" data-bs-toggle="tooltip" title="Eliminar"
+                           onclick="return confirm('¿Eliminar miembro?')">
+                            <i class="zmdi zmdi-delete"></i>
+                        </a>
+                    </div>
+                </td>
+
+            </tr>
+            <tr class="spacer"></tr>
         <?php endforeach; ?>
-    </tbody>
-
-
-</table>
+        </tbody>
+    </table>
+</div>
 
 <?php
 $content = ob_get_clean();
