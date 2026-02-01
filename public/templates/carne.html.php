@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
- <!-- Plantilla del carnet-->
+<!-- Plantilla del carnet-->
+
 <head>
     <!-- Required meta tags -->
     <meta charset="UTF-8">
@@ -32,18 +33,22 @@
             font-family: Arial, sans-serif;
             position: relative;
         }
+
         .carnet-header {
             text-align: center;
             border-bottom: 1px solid #000;
             padding-bottom: 10px;
         }
+
         .carnet-header img {
             max-height: 60px;
         }
+
         .carnet-body {
             display: flex;
             margin-top: 20px;
         }
+
         .carnet-body img {
             width: 100px;
             height: 120px;
@@ -51,10 +56,12 @@
             border: 1px solid #000;
             margin-right: 15px;
         }
+
         .carnet-details p {
             margin: 5px 0;
             font-size: 14px;
         }
+
         .carnet-footer {
             position: absolute;
             bottom: 20px;
@@ -73,14 +80,15 @@
             <div class="container">
                 <div class="carnet">
                     <div class="carnet-header">
-                        <img src="/SGA-SEBANA/public/assets/images/logo.png" alt="Logo Institucional">
+                        <img src="/SGA-SEBANA/public/assets/img/icon/sebana_logo.jpg" alt="Logo Institucional">
                         <h4>Institución Ejemplo</h4>
                     </div>
                     <div class="carnet-body">
                         <!-- Foto de perfil -->
-                        <img src="<?= $afiliado->foto ?? '/SGA-SEBANA/public/assets/images/default.png' ?>" alt="Foto de perfil" class="carnet-img">
+                        <img src="<?= $afiliado->foto ?? '/SGA-SEBANA/public/assets/images/default.png' ?>"
+                            alt="Foto de perfil" class="carnet-img">
 
-                        
+
                         <!-- Datos del afiliado -->
                         <div class="carnet-details">
                             <p><strong>Nombre:</strong> <?= $afiliado->nombre ?></p>
@@ -89,10 +97,10 @@
                         </div>
                     </div>
                     <div class="carnet-footer">
-    <p>Emitido el: <?= date('d/m/Y') ?></p>
-    <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://sga-sebana.org/validar.php?id=<?= $afiliado->id ?>" 
-         alt="QR de validación">
-</div>
+                        <p>Emitido el: <?= date('d/m/Y') ?></p>
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://sga-sebana.org/validar.php?id=<?= $afiliado->id ?>"
+                            alt="QR de validación">
+                    </div>
 
                 </div>
             </div>
@@ -102,38 +110,44 @@
 
 
 
- <!-- Ajustamiento  de como se ve en cada dispositivo -->
- 
+    <!-- Ajustamiento  de como se ve en cada dispositivo -->
+
 
     <style>
-.carnet-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
-}
+        .carnet-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
 
-.carnet-img {
-  max-width: 100%;
-  height: auto;
-  object-fit: contain;
-}
+        .carnet-img {
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
 
-/* Teléfonos pequeños */
-@media (max-width: 480px) {
-  .carnet-img { width: 90%; }
-}
+        /* Teléfonos pequeños */
+        @media (max-width: 480px) {
+            .carnet-img {
+                width: 90%;
+            }
+        }
 
-/* Tablets */
-@media (min-width: 768px) and (max-width: 1199px) {
-  .carnet-img { width: 70%; }
-}
+        /* Tablets */
+        @media (min-width: 768px) and (max-width: 1199px) {
+            .carnet-img {
+                width: 70%;
+            }
+        }
 
-/* Pantallas grandes (PC) */
-@media (min-width: 1200px) {
-  .carnet-img { width: 50%; }
-}
-</style>
+        /* Pantallas grandes (PC) */
+        @media (min-width: 1200px) {
+            .carnet-img {
+                width: 50%;
+            }
+        }
+    </style>
 
 
 

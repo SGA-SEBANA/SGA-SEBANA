@@ -3,15 +3,279 @@ ob_start();
 ?>
 
 
-    <div class="page-wrapper">
-        <!-- MENU SIDEBAR-->
-        <aside class="menu-sidebar2">
+<div class="page-wrapper">
+    <!-- MENU SIDEBAR-->
+    <aside class="menu-sidebar2">
+        <div class="logo">
+            <a href="#">
+                <img src="/SGA-SEBANA/public/assets/img/icon/sebana_logo.jpg" alt="SGA-SEBANA">
+            </a>
+        </div>
+        <div class="menu-sidebar2__content js-scrollbar1">
+            <div class="account2">
+                <div class="image img-cir img-120">
+                    <img src="/SGA-SEBANA/public/assets/img/icon/avatar-big-01.jpg" alt="John Doe">
+                </div>
+                <h4 class="name">john doe</h4>
+                <a href="#">Sign out</a>
+            </div>
+            <nav class="navbar-sidebar2">
+                <ul class="list-unstyled navbar__list">
+                    <li class="active has-sub">
+                        <a class="js-arrow" href="#">
+                            <i class="fas fa-tachometer-alt"></i>Dashboard
+                            <span class="arrow">
+                                <i class="fas fa-angle-down"></i>
+                            </span>
+                        </a>
+                        <ul class="list-unstyled navbar__sub-list js-sub-list">
+                            <li>
+                                <a href="/SGA-SEBANA/public/home">
+                                    <i class="fas fa-tachometer-alt"></i>Dashboard 1</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/index2">
+                                    <i class="fas fa-tachometer-alt"></i>Dashboard 2</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/index3">
+                                    <i class="fas fa-tachometer-alt"></i>Dashboard 3</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/index4">
+                                    <i class="fas fa-tachometer-alt"></i>Dashboard 4</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="/SGA-SEBANA/public/ui/inbox">
+                            <i class="fas fa-chart-bar"></i>Inbox</a>
+                        <span class="inbox-num">3</span>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-shopping-basket"></i>eCommerce</a>
+                    </li>
+                    <li class="has-sub">
+                        <a class="js-arrow" href="#">
+                            <i class="fas fa-trophy"></i>Features
+                            <span class="arrow">
+                                <i class="fas fa-angle-down"></i>
+                            </span>
+                        </a>
+                        <ul class="list-unstyled navbar__sub-list js-sub-list">
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/table">
+                                    <i class="fas fa-table"></i>Tables</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/form">
+                                    <i class="far fa-check-square"></i>Forms</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/calendar">
+                                    <i class="fas fa-calendar-alt"></i>Calendar</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/map">
+                                    <i class="fas fa-map-marker-alt"></i>Maps</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="has-sub">
+                        <a class="js-arrow" href="#">
+                            <i class="fas fa-copy"></i>Pages
+                            <span class="arrow">
+                                <i class="fas fa-angle-down"></i>
+                            </span>
+                        </a>
+                        <ul class="list-unstyled navbar__sub-list js-sub-list">
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/login">
+                                    <i class="fas fa-sign-in-alt"></i>Login</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/register">
+                                    <i class="fas fa-user"></i>Register</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/forget-pass">
+                                    <i class="fas fa-unlock-alt"></i>Forget Password</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="has-sub">
+                        <a class="js-arrow" href="#">
+                            <i class="fas fa-desktop"></i>UI Elements
+                            <span class="arrow">
+                                <i class="fas fa-angle-down"></i>
+                            </span>
+                        </a>
+                        <ul class="list-unstyled navbar__sub-list js-sub-list">
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/button">
+                                    <i class="fab fa-flickr"></i>Button</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/badge">
+                                    <i class="fas fa-comment-alt"></i>Badges</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/tab">
+                                    <i class="far fa-window-maximize"></i>Tabs</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/card">
+                                    <i class="far fa-id-card"></i>Cards</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/alert">
+                                    <i class="far fa-bell"></i>Alerts</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/progress-bar">
+                                    <i class="fas fa-tasks"></i>Progress Bars</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/modal">
+                                    <i class="far fa-window-restore"></i>Modals</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/switch">
+                                    <i class="fas fa-toggle-on"></i>Switchs</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/grid">
+                                    <i class="fas fa-th-large"></i>Grids</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/fontawesome">
+                                    <i class="fab fa-font-awesome"></i>FontAwesome</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ui/typo">
+                                    <i class="fas fa-font"></i>Typography</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+    <!-- END MENU SIDEBAR-->
+
+    <!-- PAGE CONTAINER-->
+    <div class="page-container2">
+        <!-- HEADER DESKTOP-->
+        <header class="header-desktop2">
+            <div class="section__content section__content--p30">
+                <div class="container-fluid">
+                    <div class="header-wrap2">
+                        <div class="logo d-block d-lg-none">
+                            <a href="#">
+                                <img src="/SGA-SEBANA/public/assets/img/icon/logo-white.png" alt="CoolAdmin">
+                            </a>
+                        </div>
+                        <div class="header-button2">
+                            <div class="header-button-item js-item-menu">
+                                <i class="zmdi zmdi-search"></i>
+                                <div class="search-dropdown js-dropdown">
+                                    <form action="">
+                                        <input class="au-input au-input--full au-input--h65" type="text"
+                                            placeholder="Search for datas &amp; reports...">
+                                        <span class="search-dropdown__icon">
+                                            <i class="zmdi zmdi-search"></i>
+                                        </span>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="header-button-item has-noti js-item-menu">
+                                <i class="zmdi zmdi-notifications"></i>
+                                <div class="notifi-dropdown js-dropdown">
+                                    <div class="notifi__title">
+                                        <p>You have 3 Notifications</p>
+                                    </div>
+                                    <div class="notifi__item">
+                                        <div class="bg-c1 img-cir img-40">
+                                            <i class="zmdi zmdi-email-open"></i>
+                                        </div>
+                                        <div class="content">
+                                            <p>You got a email notification</p>
+                                            <span class="date">January 15, 2025 14:30</span>
+                                        </div>
+                                    </div>
+                                    <div class="notifi__item">
+                                        <div class="bg-c2 img-cir img-40">
+                                            <i class="zmdi zmdi-account-box"></i>
+                                        </div>
+                                        <div class="content">
+                                            <p>Your account has been blocked</p>
+                                            <span class="date">January 15, 2025 14:30</span>
+                                        </div>
+                                    </div>
+                                    <div class="notifi__item">
+                                        <div class="bg-c3 img-cir img-40">
+                                            <i class="zmdi zmdi-file-text"></i>
+                                        </div>
+                                        <div class="content">
+                                            <p>You got a new file</p>
+                                            <span class="date">January 15, 2025 14:30</span>
+                                        </div>
+                                    </div>
+                                    <div class="notifi__footer">
+                                        <a href="#">All notifications</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="header-button-item me-0 js-sidebar-btn">
+                                <i class="zmdi zmdi-menu"></i>
+                            </div>
+                            <div class="setting-menu js-right-sidebar d-none d-lg-block">
+                                <div class="account-dropdown__body">
+                                    <div class="account-dropdown__item">
+                                        <a href="#">
+                                            <i class="zmdi zmdi-account"></i>Account</a>
+                                    </div>
+                                    <div class="account-dropdown__item">
+                                        <a href="#">
+                                            <i class="zmdi zmdi-settings"></i>Setting</a>
+                                    </div>
+                                    <div class="account-dropdown__item">
+                                        <a href="#">
+                                            <i class="zmdi zmdi-money-box"></i>Billing</a>
+                                    </div>
+                                </div>
+                                <div class="account-dropdown__body">
+                                    <div class="account-dropdown__item">
+                                        <a href="#">
+                                            <i class="zmdi zmdi-globe"></i>Language</a>
+                                    </div>
+                                    <div class="account-dropdown__item">
+                                        <a href="#">
+                                            <i class="zmdi zmdi-pin"></i>Location</a>
+                                    </div>
+                                    <div class="account-dropdown__item">
+                                        <a href="#">
+                                            <i class="zmdi zmdi-email"></i>Email</a>
+                                    </div>
+                                    <div class="account-dropdown__item">
+                                        <a href="#">
+                                            <i class="zmdi zmdi-notifications"></i>Notifications</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <aside class="menu-sidebar2 js-right-sidebar d-block d-lg-none">
             <div class="logo">
                 <a href="#">
                     <img src="/SGA-SEBANA/public/assets/img/icon/logo-white.png" alt="Cool Admin">
                 </a>
             </div>
-            <div class="menu-sidebar2__content js-scrollbar1">
+            <div class="menu-sidebar2__content js-scrollbar2">
                 <div class="account2">
                     <div class="image img-cir img-120">
                         <img src="/SGA-SEBANA/public/assets/img/icon/avatar-big-01.jpg" alt="John Doe">
@@ -162,454 +426,111 @@ ob_start();
                 </nav>
             </div>
         </aside>
-        <!-- END MENU SIDEBAR-->
+        <!-- END HEADER DESKTOP-->
 
-        <!-- PAGE CONTAINER-->
-        <div class="page-container2">
-            <!-- HEADER DESKTOP-->
-            <header class="header-desktop2">
-                <div class="section__content section__content--p30">
-                    <div class="container-fluid">
-                        <div class="header-wrap2">
-                            <div class="logo d-block d-lg-none">
-                                <a href="#">
-                                    <img src="/SGA-SEBANA/public/assets/img/icon/logo-white.png" alt="CoolAdmin">
-                                </a>
+        <!-- BREADCRUMB-->
+        <section class="au-breadcrumb m-t-75">
+            <div class="section__content section__content--p30">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="au-breadcrumb-content">
+                                <div class="au-breadcrumb-left">
+                                    <span class="au-breadcrumb-span">You are here:</span>
+                                    <ul class="list-unstyled list-inline au-breadcrumb__list">
+                                        <li class="list-inline-item active">
+                                            <a href="#">Home</a>
+                                        </li>
+                                        <li class="list-inline-item seprate">
+                                            <span>/</span>
+                                        </li>
+                                        <li class="list-inline-item">Dashboard</li>
+                                    </ul>
+                                </div>
+                                <button class="au-btn au-btn-icon au-btn--green">
+                                    <i class="zmdi zmdi-plus"></i>add item</button>
                             </div>
-                            <div class="header-button2">
-                                <div class="header-button-item js-item-menu">
-                                    <i class="zmdi zmdi-search"></i>
-                                    <div class="search-dropdown js-dropdown">
-                                        <form action="">
-                                            <input class="au-input au-input--full au-input--h65" type="text" placeholder="Search for datas &amp; reports...">
-                                            <span class="search-dropdown__icon">
-                                                <i class="zmdi zmdi-search"></i>
-                                            </span>
-                                        </form>
-                                    </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- END BREADCRUMB-->
+
+        <!-- STATISTIC-->
+        <section class="statistic">
+            <div class="section__content section__content--p30">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-6 col-lg-3">
+                            <div class="statistic__item">
+                                <h2 class="number">10,368</h2>
+                                <span class="desc">members online</span>
+                                <div class="icon">
+                                    <i class="zmdi zmdi-account-o"></i>
                                 </div>
-                                <div class="header-button-item has-noti js-item-menu">
-                                    <i class="zmdi zmdi-notifications"></i>
-                                    <div class="notifi-dropdown js-dropdown">
-                                        <div class="notifi__title">
-                                            <p>You have 3 Notifications</p>
-                                        </div>
-                                        <div class="notifi__item">
-                                            <div class="bg-c1 img-cir img-40">
-                                                <i class="zmdi zmdi-email-open"></i>
-                                            </div>
-                                            <div class="content">
-                                                <p>You got a email notification</p>
-                                                <span class="date">January 15, 2025 14:30</span>
-                                            </div>
-                                        </div>
-                                        <div class="notifi__item">
-                                            <div class="bg-c2 img-cir img-40">
-                                                <i class="zmdi zmdi-account-box"></i>
-                                            </div>
-                                            <div class="content">
-                                                <p>Your account has been blocked</p>
-                                                <span class="date">January 15, 2025 14:30</span>
-                                            </div>
-                                        </div>
-                                        <div class="notifi__item">
-                                            <div class="bg-c3 img-cir img-40">
-                                                <i class="zmdi zmdi-file-text"></i>
-                                            </div>
-                                            <div class="content">
-                                                <p>You got a new file</p>
-                                                <span class="date">January 15, 2025 14:30</span>
-                                            </div>
-                                        </div>
-                                        <div class="notifi__footer">
-                                            <a href="#">All notifications</a>
-                                        </div>
-                                    </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="statistic__item">
+                                <h2 class="number">388,688</h2>
+                                <span class="desc">items sold</span>
+                                <div class="icon">
+                                    <i class="zmdi zmdi-shopping-cart"></i>
                                 </div>
-                                <div class="header-button-item me-0 js-sidebar-btn">
-                                    <i class="zmdi zmdi-menu"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="statistic__item">
+                                <h2 class="number">1,086</h2>
+                                <span class="desc">this week</span>
+                                <div class="icon">
+                                    <i class="zmdi zmdi-calendar-note"></i>
                                 </div>
-                                <div class="setting-menu js-right-sidebar d-none d-lg-block">
-                                    <div class="account-dropdown__body">
-                                        <div class="account-dropdown__item">
-                                            <a href="#">
-                                                <i class="zmdi zmdi-account"></i>Account</a>
-                                        </div>
-                                        <div class="account-dropdown__item">
-                                            <a href="#">
-                                                <i class="zmdi zmdi-settings"></i>Setting</a>
-                                        </div>
-                                        <div class="account-dropdown__item">
-                                            <a href="#">
-                                                <i class="zmdi zmdi-money-box"></i>Billing</a>
-                                        </div>
-                                    </div>
-                                    <div class="account-dropdown__body">
-                                        <div class="account-dropdown__item">
-                                            <a href="#">
-                                                <i class="zmdi zmdi-globe"></i>Language</a>
-                                        </div>
-                                        <div class="account-dropdown__item">
-                                            <a href="#">
-                                                <i class="zmdi zmdi-pin"></i>Location</a>
-                                        </div>
-                                        <div class="account-dropdown__item">
-                                            <a href="#">
-                                                <i class="zmdi zmdi-email"></i>Email</a>
-                                        </div>
-                                        <div class="account-dropdown__item">
-                                            <a href="#">
-                                                <i class="zmdi zmdi-notifications"></i>Notifications</a>
-                                        </div>
-                                    </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <div class="statistic__item">
+                                <h2 class="number">$1,060,386</h2>
+                                <span class="desc">total earnings</span>
+                                <div class="icon">
+                                    <i class="zmdi zmdi-money"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </header>
-            <aside class="menu-sidebar2 js-right-sidebar d-block d-lg-none">
-                <div class="logo">
-                    <a href="#">
-                        <img src="/SGA-SEBANA/public/assets/img/icon/logo-white.png" alt="Cool Admin">
-                    </a>
-                </div>
-                <div class="menu-sidebar2__content js-scrollbar2">
-                    <div class="account2">
-                        <div class="image img-cir img-120">
-                            <img src="/SGA-SEBANA/public/assets/img/icon/avatar-big-01.jpg" alt="John Doe">
-                        </div>
-                        <h4 class="name">john doe</h4>
-                        <a href="#">Sign out</a>
-                    </div>
-                    <nav class="navbar-sidebar2">
-                        <ul class="list-unstyled navbar__list">
-                            <li class="active has-sub">
-                                <a class="js-arrow" href="#">
-                                    <i class="fas fa-tachometer-alt"></i>Dashboard
-                                    <span class="arrow">
-                                        <i class="fas fa-angle-down"></i>
-                                    </span>
-                                </a>
-                                <ul class="list-unstyled navbar__sub-list js-sub-list">
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/home">
-                                            <i class="fas fa-tachometer-alt"></i>Dashboard 1</a>
-                                    </li>
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/index2">
-                                            <i class="fas fa-tachometer-alt"></i>Dashboard 2</a>
-                                    </li>
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/index3">
-                                            <i class="fas fa-tachometer-alt"></i>Dashboard 3</a>
-                                    </li>
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/index4">
-                                            <i class="fas fa-tachometer-alt"></i>Dashboard 4</a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li>
-                                <a href="/SGA-SEBANA/public/ui/inbox">
-                                    <i class="fas fa-chart-bar"></i>Inbox</a>
-                                <span class="inbox-num">3</span>
-                            </li>
-                            <li>
-                                <a href="#">
-                                    <i class="fas fa-shopping-basket"></i>eCommerce</a>
-                            </li>
-                            <li class="has-sub">
-                                <a class="js-arrow" href="#">
-                                    <i class="fas fa-trophy"></i>Features
-                                    <span class="arrow">
-                                        <i class="fas fa-angle-down"></i>
-                                    </span>
-                                </a>
-                                <ul class="list-unstyled navbar__sub-list js-sub-list">
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/table">
-                                            <i class="fas fa-table"></i>Tables</a>
-                                    </li>
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/form">
-                                            <i class="far fa-check-square"></i>Forms</a>
-                                    </li>
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/calendar">
-                                            <i class="fas fa-calendar-alt"></i>Calendar</a>
-                                    </li>
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/map">
-                                            <i class="fas fa-map-marker-alt"></i>Maps</a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="has-sub">
-                                <a class="js-arrow" href="#">
-                                    <i class="fas fa-copy"></i>Pages
-                                    <span class="arrow">
-                                        <i class="fas fa-angle-down"></i>
-                                    </span>
-                                </a>
-                                <ul class="list-unstyled navbar__sub-list js-sub-list">
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/login">
-                                            <i class="fas fa-sign-in-alt"></i>Login</a>
-                                    </li>
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/register">
-                                            <i class="fas fa-user"></i>Register</a>
-                                    </li>
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/forget-pass">
-                                            <i class="fas fa-unlock-alt"></i>Forget Password</a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="has-sub">
-                                <a class="js-arrow" href="#">
-                                    <i class="fas fa-desktop"></i>UI Elements
-                                    <span class="arrow">
-                                        <i class="fas fa-angle-down"></i>
-                                    </span>
-                                </a>
-                                <ul class="list-unstyled navbar__sub-list js-sub-list">
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/button">
-                                            <i class="fab fa-flickr"></i>Button</a>
-                                    </li>
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/badge">
-                                            <i class="fas fa-comment-alt"></i>Badges</a>
-                                    </li>
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/tab">
-                                            <i class="far fa-window-maximize"></i>Tabs</a>
-                                    </li>
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/card">
-                                            <i class="far fa-id-card"></i>Cards</a>
-                                    </li>
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/alert">
-                                            <i class="far fa-bell"></i>Alerts</a>
-                                    </li>
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/progress-bar">
-                                            <i class="fas fa-tasks"></i>Progress Bars</a>
-                                    </li>
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/modal">
-                                            <i class="far fa-window-restore"></i>Modals</a>
-                                    </li>
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/switch">
-                                            <i class="fas fa-toggle-on"></i>Switchs</a>
-                                    </li>
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/grid">
-                                            <i class="fas fa-th-large"></i>Grids</a>
-                                    </li>
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/fontawesome">
-                                            <i class="fab fa-font-awesome"></i>FontAwesome</a>
-                                    </li>
-                                    <li>
-                                        <a href="/SGA-SEBANA/public/ui/typo">
-                                            <i class="fas fa-font"></i>Typography</a>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
-            </aside>
-            <!-- END HEADER DESKTOP-->
+            </div>
+        </section>
+        <!-- END STATISTIC-->
 
-            <!-- BREADCRUMB-->
-            <section class="au-breadcrumb m-t-75">
-                <div class="section__content section__content--p30">
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="au-breadcrumb-content">
-                                    <div class="au-breadcrumb-left">
-                                        <span class="au-breadcrumb-span">You are here:</span>
-                                        <ul class="list-unstyled list-inline au-breadcrumb__list">
-                                            <li class="list-inline-item active">
-                                                <a href="#">Home</a>
-                                            </li>
-                                            <li class="list-inline-item seprate">
-                                                <span>/</span>
-                                            </li>
-                                            <li class="list-inline-item">Dashboard</li>
-                                        </ul>
-                                    </div>
-                                    <button class="au-btn au-btn-icon au-btn--green">
-                                        <i class="zmdi zmdi-plus"></i>add item</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <!-- END BREADCRUMB-->
-
-            <!-- STATISTIC-->
-            <section class="statistic">
-                <div class="section__content section__content--p30">
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-md-6 col-lg-3">
-                                <div class="statistic__item">
-                                    <h2 class="number">10,368</h2>
-                                    <span class="desc">members online</span>
-                                    <div class="icon">
-                                        <i class="zmdi zmdi-account-o"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3">
-                                <div class="statistic__item">
-                                    <h2 class="number">388,688</h2>
-                                    <span class="desc">items sold</span>
-                                    <div class="icon">
-                                        <i class="zmdi zmdi-shopping-cart"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3">
-                                <div class="statistic__item">
-                                    <h2 class="number">1,086</h2>
-                                    <span class="desc">this week</span>
-                                    <div class="icon">
-                                        <i class="zmdi zmdi-calendar-note"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3">
-                                <div class="statistic__item">
-                                    <h2 class="number">$1,060,386</h2>
-                                    <span class="desc">total earnings</span>
-                                    <div class="icon">
-                                        <i class="zmdi zmdi-money"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <!-- END STATISTIC-->
-
-            <section>
-                <div class="section__content section__content--p30">
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-xl-8">
-                                <!-- RECENT REPORT 2-->
-                                <div class="recent-report2">
-                                    <h3 class="title-3">recent reports</h3>
-                                    <div class="chart-info">
-                                        <div class="chart-info__left">
-                                            <div class="chart-note">
-                                                <span class="dot dot--blue"></span>
-                                                <span>products</span>
-                                            </div>
-                                            <div class="chart-note">
-                                                <span class="dot dot--green"></span>
-                                                <span>Services</span>
-                                            </div>
+        <section>
+            <div class="section__content section__content--p30">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-xl-8">
+                            <!-- RECENT REPORT 2-->
+                            <div class="recent-report2">
+                                <h3 class="title-3">recent reports</h3>
+                                <div class="chart-info">
+                                    <div class="chart-info__left">
+                                        <div class="chart-note">
+                                            <span class="dot dot--blue"></span>
+                                            <span>products</span>
                                         </div>
-                                        <div class="chart-info-right">
-                                            <div class="select-wrapper">
-                                                <select class="form-select form-select-lg" name="property">
-                                                    <option selected>All Properties</option>
-                                                    <option value="">Products</option>
-                                                    <option value="">Services</option>
-                                                </select>
-                                                
-                                            </div>
-                                            <div class="select-wrapper">
-                                                <select class="form-select form-select-lg" name="time">
-                                                    <option selected value="all">All Time</option>
-                                                    <option value="month">By Month</option>
-                                                    <option value="day">By Day</option>
-                                                </select>
-                                                
-                                            </div>
+                                        <div class="chart-note">
+                                            <span class="dot dot--green"></span>
+                                            <span>Services</span>
                                         </div>
                                     </div>
-                                    <div class="recent-report__chart">
-                                        <canvas id="recent-rep2-chart"></canvas>
-                                    </div>
-                                </div>
-                                <!-- END RECENT REPORT 2             -->
-                            </div>
-                            <div class="col-xl-4">
-                                <!-- TASK PROGRESS-->
-                                <div class="task-progress">
-                                    <h3 class="title-3">task progress</h3>
-                                    <div class="au-skill-container">
-                                        <div class="au-progress">
-                                            <span class="au-progress__title">Web Design</span>
-                                            <div class="au-progress__bar">
-                                                <div class="au-progress__inner js-progressbar-simple" role="progressbar" data-transitiongoal="90">
-                                                    <span class="au-progress__value js-value"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="au-progress">
-                                            <span class="au-progress__title">HTML5/CSS3</span>
-                                            <div class="au-progress__bar">
-                                                <div class="au-progress__inner js-progressbar-simple" role="progressbar" data-transitiongoal="85">
-                                                    <span class="au-progress__value js-value"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="au-progress">
-                                            <span class="au-progress__title">WordPress</span>
-                                            <div class="au-progress__bar">
-                                                <div class="au-progress__inner js-progressbar-simple" role="progressbar" data-transitiongoal="95">
-                                                    <span class="au-progress__value js-value"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="au-progress">
-                                            <span class="au-progress__title">Support</span>
-                                            <div class="au-progress__bar">
-                                                <div class="au-progress__inner js-progressbar-simple" role="progressbar" data-transitiongoal="95">
-                                                    <span class="au-progress__value js-value"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- END TASK PROGRESS-->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section>
-                <div class="section__content section__content--p30">
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-xl-6">
-                                <!-- USER DATA-->
-                                <div class="user-data m-b-40">
-                                    <h3 class="title-3 m-b-30">
-                                        <i class="zmdi zmdi-account-calendar"></i>user data</h3>
-                                    <div class="filters m-b-45">
+                                    <div class="chart-info-right">
                                         <div class="select-wrapper">
                                             <select class="form-select form-select-lg" name="property">
                                                 <option selected>All Properties</option>
                                                 <option value="">Products</option>
                                                 <option value="">Services</option>
                                             </select>
-                                            
+
                                         </div>
                                         <div class="select-wrapper">
                                             <select class="form-select form-select-lg" name="time">
@@ -617,283 +538,371 @@ ob_start();
                                                 <option value="month">By Month</option>
                                                 <option value="day">By Day</option>
                                             </select>
-                                            
+
                                         </div>
                                     </div>
-                                    <div class="table-responsive table-data">
+                                </div>
+                                <div class="recent-report__chart">
+                                    <canvas id="recent-rep2-chart"></canvas>
+                                </div>
+                            </div>
+                            <!-- END RECENT REPORT 2             -->
+                        </div>
+                        <div class="col-xl-4">
+                            <!-- TASK PROGRESS-->
+                            <div class="task-progress">
+                                <h3 class="title-3">task progress</h3>
+                                <div class="au-skill-container">
+                                    <div class="au-progress">
+                                        <span class="au-progress__title">Web Design</span>
+                                        <div class="au-progress__bar">
+                                            <div class="au-progress__inner js-progressbar-simple" role="progressbar"
+                                                data-transitiongoal="90">
+                                                <span class="au-progress__value js-value"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="au-progress">
+                                        <span class="au-progress__title">HTML5/CSS3</span>
+                                        <div class="au-progress__bar">
+                                            <div class="au-progress__inner js-progressbar-simple" role="progressbar"
+                                                data-transitiongoal="85">
+                                                <span class="au-progress__value js-value"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="au-progress">
+                                        <span class="au-progress__title">WordPress</span>
+                                        <div class="au-progress__bar">
+                                            <div class="au-progress__inner js-progressbar-simple" role="progressbar"
+                                                data-transitiongoal="95">
+                                                <span class="au-progress__value js-value"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="au-progress">
+                                        <span class="au-progress__title">Support</span>
+                                        <div class="au-progress__bar">
+                                            <div class="au-progress__inner js-progressbar-simple" role="progressbar"
+                                                data-transitiongoal="95">
+                                                <span class="au-progress__value js-value"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- END TASK PROGRESS-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="section__content section__content--p30">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-xl-6">
+                            <!-- USER DATA-->
+                            <div class="user-data m-b-40">
+                                <h3 class="title-3 m-b-30">
+                                    <i class="zmdi zmdi-account-calendar"></i>user data
+                                </h3>
+                                <div class="filters m-b-45">
+                                    <div class="select-wrapper">
+                                        <select class="form-select form-select-lg" name="property">
+                                            <option selected>All Properties</option>
+                                            <option value="">Products</option>
+                                            <option value="">Services</option>
+                                        </select>
+
+                                    </div>
+                                    <div class="select-wrapper">
+                                        <select class="form-select form-select-lg" name="time">
+                                            <option selected value="all">All Time</option>
+                                            <option value="month">By Month</option>
+                                            <option value="day">By Day</option>
+                                        </select>
+
+                                    </div>
+                                </div>
+                                <div class="table-responsive table-data">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <td>
+                                                    <label class="au-checkbox">
+                                                        <input type="checkbox">
+                                                        <span class="au-checkmark"></span>
+                                                    </label>
+                                                </td>
+                                                <td>name</td>
+                                                <td>role</td>
+                                                <td>type</td>
+                                                <td></td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <label class="au-checkbox">
+                                                        <input type="checkbox">
+                                                        <span class="au-checkmark"></span>
+                                                    </label>
+                                                </td>
+                                                <td>
+                                                    <div class="table-data__info">
+                                                        <h6>lori lynch</h6>
+                                                        <span>
+                                                            <a href="#">johndoe@gmail.com</a>
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="role admin">admin</span>
+                                                </td>
+                                                <td>
+                                                    <div class="select-wrapper">
+                                                        <select class="form-select form-select-lg" name="property">
+                                                            <option selected>Full Control</option>
+                                                            <option value="">Post</option>
+                                                            <option value="">Watch</option>
+                                                        </select>
+
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="more">
+                                                        <i class="zmdi zmdi-more"></i>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <label class="au-checkbox">
+                                                        <input type="checkbox" checked>
+                                                        <span class="au-checkmark"></span>
+                                                    </label>
+                                                </td>
+                                                <td>
+                                                    <div class="table-data__info">
+                                                        <h6>lori lynch</h6>
+                                                        <span>
+                                                            <a href="#">johndoe@gmail.com</a>
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="role user">user</span>
+                                                </td>
+                                                <td>
+                                                    <div class="select-wrapper">
+                                                        <select class="form-select form-select-lg" name="property">
+                                                            <option value="">Full Control</option>
+                                                            <option value="" selected>Post</option>
+                                                            <option value="">Watch</option>
+                                                        </select>
+
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="more">
+                                                        <i class="zmdi zmdi-more"></i>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <label class="au-checkbox">
+                                                        <input type="checkbox">
+                                                        <span class="au-checkmark"></span>
+                                                    </label>
+                                                </td>
+                                                <td>
+                                                    <div class="table-data__info">
+                                                        <h6>lori lynch</h6>
+                                                        <span>
+                                                            <a href="#">johndoe@gmail.com</a>
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="role user">user</span>
+                                                </td>
+                                                <td>
+                                                    <div class="select-wrapper">
+                                                        <select class="form-select form-select-lg" name="property">
+                                                            <option value="">Full Control</option>
+                                                            <option value="" selected>Post</option>
+                                                            <option value="">Watch</option>
+                                                        </select>
+
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="more">
+                                                        <i class="zmdi zmdi-more"></i>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <label class="au-checkbox">
+                                                        <input type="checkbox">
+                                                        <span class="au-checkmark"></span>
+                                                    </label>
+                                                </td>
+                                                <td>
+                                                    <div class="table-data__info">
+                                                        <h6>lori lynch</h6>
+                                                        <span>
+                                                            <a href="#">johndoe@gmail.com</a>
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="role member">member</span>
+                                                </td>
+                                                <td>
+                                                    <div class="select-wrapper">
+                                                        <select class="form-select form-select-lg" name="property">
+                                                            <option selected>Full Control</option>
+                                                            <option value="">Post</option>
+                                                            <option value="">Watch</option>
+                                                        </select>
+
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="more">
+                                                        <i class="zmdi zmdi-more"></i>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="user-data__footer">
+                                    <button class="au-btn au-btn-load">load more</button>
+                                </div>
+                            </div>
+                            <!-- END USER DATA-->
+                        </div>
+                        <div class="col-xl-6">
+                            <!-- MAP DATA-->
+                            <div class="map-data m-b-40">
+                                <h3 class="title-3 m-b-30">
+                                    <i class="zmdi zmdi-map"></i>map data
+                                </h3>
+                                <div class="filters">
+                                    <div class="select-wrapper">
+                                        <select class="form-select form-select-lg" name="property">
+                                            <option selected>All Worldwide</option>
+                                            <option value="">Products</option>
+                                            <option value="">Services</option>
+                                        </select>
+
+                                    </div>
+                                    <div class="select-wrapper">
+                                        <select class="form-select form-select-lg" name="time">
+                                            <option selected value="all">All Time</option>
+                                            <option value="month">By Month</option>
+                                            <option value="day">By Day</option>
+                                        </select>
+
+                                    </div>
+                                </div>
+                                <div class="map-wrap m-t-45 m-b-80">
+                                    <div id="vmap" style="height: 284px; border-radius: 8px; overflow: hidden;"></div>
+                                </div>
+                                <div class="table-wrap">
+                                    <div class="table-responsive table-style1">
                                         <table class="table">
-                                            <thead>
-                                                <tr>
-                                                    <td>
-                                                        <label class="au-checkbox">
-                                                            <input type="checkbox">
-                                                            <span class="au-checkmark"></span>
-                                                        </label>
-                                                    </td>
-                                                    <td>name</td>
-                                                    <td>role</td>
-                                                    <td>type</td>
-                                                    <td></td>
-                                                </tr>
-                                            </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td>
-                                                        <label class="au-checkbox">
-                                                            <input type="checkbox">
-                                                            <span class="au-checkmark"></span>
-                                                        </label>
-                                                    </td>
-                                                    <td>
-                                                        <div class="table-data__info">
-                                                            <h6>lori lynch</h6>
-                                                            <span>
-                                                                <a href="#">johndoe@gmail.com</a>
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <span class="role admin">admin</span>
-                                                    </td>
-                                                    <td>
-                                                        <div class="select-wrapper">
-                                                            <select class="form-select form-select-lg" name="property">
-                                                                <option selected>Full Control</option>
-                                                                <option value="">Post</option>
-                                                                <option value="">Watch</option>
-                                                            </select>
-                                                            
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <span class="more">
-                                                            <i class="zmdi zmdi-more"></i>
-                                                        </span>
-                                                    </td>
+                                                    <td>United States</td>
+                                                    <td>$119,366.96</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>
-                                                        <label class="au-checkbox">
-                                                            <input type="checkbox" checked>
-                                                            <span class="au-checkmark"></span>
-                                                        </label>
-                                                    </td>
-                                                    <td>
-                                                        <div class="table-data__info">
-                                                            <h6>lori lynch</h6>
-                                                            <span>
-                                                                <a href="#">johndoe@gmail.com</a>
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <span class="role user">user</span>
-                                                    </td>
-                                                    <td>
-                                                        <div class="select-wrapper">
-                                                            <select class="form-select form-select-lg" name="property">
-                                                                <option value="">Full Control</option>
-                                                                <option value="" selected>Post</option>
-                                                                <option value="">Watch</option>
-                                                            </select>
-                                                            
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <span class="more">
-                                                            <i class="zmdi zmdi-more"></i>
-                                                        </span>
-                                                    </td>
+                                                    <td>Australia</td>
+                                                    <td>$70,261.65</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>
-                                                        <label class="au-checkbox">
-                                                            <input type="checkbox">
-                                                            <span class="au-checkmark"></span>
-                                                        </label>
-                                                    </td>
-                                                    <td>
-                                                        <div class="table-data__info">
-                                                            <h6>lori lynch</h6>
-                                                            <span>
-                                                                <a href="#">johndoe@gmail.com</a>
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <span class="role user">user</span>
-                                                    </td>
-                                                    <td>
-                                                        <div class="select-wrapper">
-                                                            <select class="form-select form-select-lg" name="property">
-                                                                <option value="">Full Control</option>
-                                                                <option value="" selected>Post</option>
-                                                                <option value="">Watch</option>
-                                                            </select>
-                                                            
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <span class="more">
-                                                            <i class="zmdi zmdi-more"></i>
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <label class="au-checkbox">
-                                                            <input type="checkbox">
-                                                            <span class="au-checkmark"></span>
-                                                        </label>
-                                                    </td>
-                                                    <td>
-                                                        <div class="table-data__info">
-                                                            <h6>lori lynch</h6>
-                                                            <span>
-                                                                <a href="#">johndoe@gmail.com</a>
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <span class="role member">member</span>
-                                                    </td>
-                                                    <td>
-                                                        <div class="select-wrapper">
-                                                            <select class="form-select form-select-lg" name="property">
-                                                                <option selected>Full Control</option>
-                                                                <option value="">Post</option>
-                                                                <option value="">Watch</option>
-                                                            </select>
-                                                            
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <span class="more">
-                                                            <i class="zmdi zmdi-more"></i>
-                                                        </span>
-                                                    </td>
+                                                    <td>United Kingdom</td>
+                                                    <td>$46,399.22</td>
                                                 </tr>
                                             </tbody>
                                         </table>
                                     </div>
-                                    <div class="user-data__footer">
-                                        <button class="au-btn au-btn-load">load more</button>
+                                    <div class="table-responsive table-style1">
+                                        <table class="table">
+                                            <tbody>
+                                                <tr>
+                                                    <td>Germany</td>
+                                                    <td>$20,366.96</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>France</td>
+                                                    <td>$10,366.96</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Russian</td>
+                                                    <td>$5,366.96</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
-                                <!-- END USER DATA-->
                             </div>
-                            <div class="col-xl-6">
-                                <!-- MAP DATA-->
-                                <div class="map-data m-b-40">
-                                    <h3 class="title-3 m-b-30">
-                                        <i class="zmdi zmdi-map"></i>map data</h3>
-                                    <div class="filters">
-                                        <div class="select-wrapper">
-                                            <select class="form-select form-select-lg" name="property">
-                                                <option selected>All Worldwide</option>
-                                                <option value="">Products</option>
-                                                <option value="">Services</option>
-                                            </select>
-                                            
-                                        </div>
-                                        <div class="select-wrapper">
-                                            <select class="form-select form-select-lg" name="time">
-                                                <option selected value="all">All Time</option>
-                                                <option value="month">By Month</option>
-                                                <option value="day">By Day</option>
-                                            </select>
-                                            
-                                        </div>
-                                    </div>
-                                    <div class="map-wrap m-t-45 m-b-80">
-                                        <div id="vmap" style="height: 284px; border-radius: 8px; overflow: hidden;"></div>
-                                    </div>
-                                    <div class="table-wrap">
-                                        <div class="table-responsive table-style1">
-                                            <table class="table">
-                                                <tbody>
-                                                    <tr>
-                                                        <td>United States</td>
-                                                        <td>$119,366.96</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Australia</td>
-                                                        <td>$70,261.65</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>United Kingdom</td>
-                                                        <td>$46,399.22</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <div class="table-responsive table-style1">
-                                            <table class="table">
-                                                <tbody>
-                                                    <tr>
-                                                        <td>Germany</td>
-                                                        <td>$20,366.96</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>France</td>
-                                                        <td>$10,366.96</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Russian</td>
-                                                        <td>$5,366.96</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- END MAP DATA-->
-                            </div>
+                            <!-- END MAP DATA-->
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
+        </section>
 
-            <section>
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="copyright">
-                                <p>Copyright © 2025 Colorlib. All rights reserved. Template by <a href="https://colorlib.com" rel="nofollow" target="_blank">Colorlib</a>.</p>
-                            </div>
+        <section>
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="copyright">
+                            <p>Copyright © 2025 Colorlib. All rights reserved. Template by <a
+                                    href="https://colorlib.com" rel="nofollow" target="_blank">Colorlib</a>.</p>
                         </div>
                     </div>
                 </div>
-            </section>
-            <!-- END PAGE CONTAINER-->
-        </div>
-
+            </div>
+        </section>
+        <!-- END PAGE CONTAINER-->
     </div>
 
-    <!-- Jquery JS-->
-    <script src="js/vanilla-utils.js"></script>
-    <!-- Bootstrap JS-->
-    <script src="vendor/bootstrap-5.3.8.bundle.min.js"></script>
-    <!-- Vendor JS       -->
-    <script src="vendor/perfect-scrollbar/perfect-scrollbar-1.5.6.min.js"></script>
-    <script src="vendor/chartjs/chart.umd.js-4.5.1.min.js"></script>
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</div>
 
-    <!-- Main JS-->
-    <script src="js/bootstrap5-init.js"></script>
-    <script src="js/main-vanilla.js"></script>
-    <script src="js/swiper-bundle-12.0.3.min.js"></script>
-    <script src="js/aos.js"></script>
-    <script src="js/modern-plugins.js"></script>
+<!-- Jquery JS-->
+<script src="js/vanilla-utils.js"></script>
+<!-- Bootstrap JS-->
+<script src="vendor/bootstrap-5.3.8.bundle.min.js"></script>
+<!-- Vendor JS       -->
+<script src="vendor/perfect-scrollbar/perfect-scrollbar-1.5.6.min.js"></script>
+<script src="vendor/chartjs/chart.umd.js-4.5.1.min.js"></script>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <!-- Initialize Leaflet Map for index2.html only -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
+<!-- Main JS-->
+<script src="js/bootstrap5-init.js"></script>
+<script src="js/main-vanilla.js"></script>
+<script src="js/swiper-bundle-12.0.3.min.js"></script>
+<script src="js/aos.js"></script>
+<script src="js/modern-plugins.js"></script>
+
+<!-- Initialize Leaflet Map for index2.html only -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
         // Only initialize if this is index2.html and the vmap container exists
         const mapContainer = document.getElementById('vmap');
         const isIndex2 = window.location.pathname.includes('index2.html') || document.title.includes('Dashboard 2');
-        
+
         if (mapContainer && typeof L !== 'undefined' && isIndex2 && !mapContainer._leaflet_id) {
             try {
                 // Initialize the map
@@ -945,14 +954,14 @@ ob_start();
                     `);
 
                     // Hover effects
-                    marker.on('mouseover', function() {
+                    marker.on('mouseover', function () {
                         this.setStyle({
                             fillOpacity: 0.9,
                             weight: 3
                         });
                     });
 
-                    marker.on('mouseout', function() {
+                    marker.on('mouseout', function () {
                         this.setStyle({
                             fillOpacity: 0.7,
                             weight: 2
@@ -961,8 +970,8 @@ ob_start();
                 });
 
                 // Add custom controls
-                const info = L.control({position: 'topright'});
-                info.onAdd = function() {
+                const info = L.control({ position: 'topright' });
+                info.onAdd = function () {
                     const div = L.DomUtil.create('div', 'info');
                     div.innerHTML = '<div style="background: rgba(255,255,255,0.9); padding: 8px; border-radius: 4px; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Global Revenue Distribution';
                     return div;
@@ -984,7 +993,7 @@ ob_start();
             }
         }
     });
-    </script>
+</script>
 
 
 
