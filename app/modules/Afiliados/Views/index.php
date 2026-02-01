@@ -148,6 +148,14 @@ ob_start();
 
                                             </button>
                                         </form>
+                                         <!-- 🔗 Nuevo botón para generar carné -->
+    <?php if ($afiliado['estado'] === 'activo'): ?>
+        <a href="/SGA-SEBANA/public/carnets/emitir/<?= $afiliado['id'] ?>" class="item"
+           data-toggle="tooltip" data-placement="top" title="Generar Carné">
+            <i class="zmdi zmdi-card"></i>
+        </a>
+    <?php endif; ?>
+
 
                                     </div>
                                 </td>

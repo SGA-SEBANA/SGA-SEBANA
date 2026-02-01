@@ -1,28 +1,104 @@
 <!DOCTYPE html>
 <html lang="es">
+<<<<<<< HEAD
+=======
 <!-- Plantilla del carnet-->
 
+>>>>>>> 48a2b02583d7a5e139ed278bad28a6c068032d90
 <head>
-    <!-- Required meta tags -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="SGA-SEBANA Carné">
-    <meta name="author" content="SGA-SEBANA Team">
-    <meta name="keywords" content="sga sebana carnet">
+<meta charset="UTF-8">
 
-    <!-- Title Page -->
-    <title><?= $title ?? 'Carné Institucional' ?></title>
+<style>
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 0;
+}
 
-    <!-- Bootstrap CSS -->
-    <link href="/SGA-SEBANA/public/assets/vendor/bootstrap-5.3.8.min.css" rel="stylesheet" media="all">
+.card {
+    width: 100%;
+    height: 100%;
+    border: 2px solid #0b4f6c;
+    border-radius: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+    position: relative;
+}
 
-    <!-- Fontfaces CSS -->
-    <link href="/SGA-SEBANA/public/assets/css/font-face.css" rel="stylesheet" media="all">
-    <link href="/SGA-SEBANA/public/assets/vendor/fontawesome-7.1.0/css/all.min.css" rel="stylesheet" media="all">
+/* HEADER */
+.header {
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid #0b4f6c;
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+}
 
-    <!-- Main CSS -->
-    <link href="/SGA-SEBANA/public/assets/css/theme.css" rel="stylesheet" media="all">
+.logo {
+    width: 45px;
+    height: 45px;
+    margin-right: 10px;
+}
 
+<<<<<<< HEAD
+.header-text {
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.header-text strong {
+    font-size: 14px;
+    color: #0b4f6c;
+}
+
+/* BODY */
+.content {
+    text-align: center;
+}
+
+.qr {
+    margin: 8px 0;
+}
+
+.qr img {
+    width: 120px;
+    height: 120px;
+}
+
+.info {
+    font-size: 11px;
+    text-align: left;
+    margin-top: 6px;
+}
+
+.info p {
+    margin: 3px 0;
+}
+
+.label {
+    font-weight: bold;
+    color: #0b4f6c;
+}
+
+/* FOOTER */
+.footer {
+    position: absolute;
+    bottom: 8px;
+    left: 10px;
+    right: 10px;
+    font-size: 9px;
+    text-align: center;
+    border-top: 1px solid #ccc;
+    padding-top: 4px;
+    color: #555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+=======
     <style>
         .carnet {
             width: 350px;
@@ -101,15 +177,39 @@
                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://sga-sebana.org/validar.php?id=<?= $afiliado->id ?>"
                             alt="QR de validación">
                     </div>
+>>>>>>> 48a2b02583d7a5e139ed278bad28a6c068032d90
 
-                </div>
-            </div>
+    <!-- HEADER -->
+    <div class="header">
+        <img src="<?= $logo_image ?>" class="logo">
+        <div class="header-text">
+            <strong>Sindicato SGA-SEBANA</strong><br>
+            Carné Institucional
         </div>
     </div>
 
+    <!-- BODY -->
+    <div class="content">
+        <div class="qr">
+            <img src="<?= $qr_image ?>">
+        </div>
 
+        <div class="info">
+            <p><span class="label">Nombre:</span> <?= htmlspecialchars($afiliado['nombre']) ?></p>
+            <p><span class="label">Cédula:</span> <?= htmlspecialchars($afiliado['cedula']) ?></p>
+            <p><span class="label">Estado:</span> <?= strtoupper($afiliado['estado']) ?></p>
+        </div>
+    </div>
 
+    <!-- FOOTER -->
+    <div class="footer">
+        Documento oficial • Uso institucional<br>
+        Emitido el <?= date('d/m/Y') ?>
+    </div>
 
+<<<<<<< HEAD
+</div>
+=======
     <!-- Ajustamiento  de como se ve en cada dispositivo -->
 
 
@@ -150,9 +250,7 @@
     </style>
 
 
+>>>>>>> 48a2b02583d7a5e139ed278bad28a6c068032d90
 
 </body>
-
-
-
 </html>
