@@ -50,14 +50,14 @@ class Frame
     /**
      * This frame's calculated style
      *
-     * @var Style|null
+     * @var Style
      */
     protected $_style;
 
     /**
      * This frame's parent in the document tree.
      *
-     * @var Frame|null
+     * @var Frame
      */
     protected $_parent;
 
@@ -65,28 +65,28 @@ class Frame
      * This frame's first child.  All children are handled as a
      * doubly-linked list.
      *
-     * @var Frame|null
+     * @var Frame
      */
     protected $_first_child;
 
     /**
      * This frame's last child.
      *
-     * @var Frame|null
+     * @var Frame
      */
     protected $_last_child;
 
     /**
      * This frame's previous sibling in the document tree.
      *
-     * @var Frame|null
+     * @var Frame
      */
     protected $_prev_sibling;
 
     /**
      * This frame's next sibling in the document tree.
      *
-     * @var Frame|null
+     * @var Frame
      */
     protected $_next_sibling;
 
@@ -931,11 +931,6 @@ class Frame
         }
 
         $child->_parent = $this;
-        $decorator = $child->get_decorator();
-        // force an update to the cached parent
-        if ($decorator !== null) {
-            $decorator->get_parent(false);
-        }
         $child->_prev_sibling = null;
 
         // Handle the first child
@@ -1025,11 +1020,6 @@ class Frame
         }
 
         $new_child->_parent = $this;
-        $decorator = $new_child->get_decorator();
-        // force an update to the cached parent
-        if ($decorator !== null) {
-            $decorator->get_parent(false);
-        }
         $new_child->_next_sibling = $ref;
         $new_child->_prev_sibling = $ref->_prev_sibling;
 
@@ -1083,11 +1073,6 @@ class Frame
         }
 
         $new_child->_parent = $this;
-        $decorator = $new_child->get_decorator();
-        // force an update to the cached parent
-        if ($decorator !== null) {
-            $decorator->get_parent(false);
-        }
         $new_child->_prev_sibling = $ref;
         $new_child->_next_sibling = $ref->_next_sibling;
 
@@ -1137,12 +1122,6 @@ class Frame
         $child->_prev_sibling = null;
         $child->_parent = null;
 
-        // Force an update to the cached decorator parent
-        $decorator = $child->get_decorator();
-        if ($decorator !== null) {
-            $decorator->get_parent(false);
-        }
-
         return $child;
     }
 
@@ -1167,8 +1146,8 @@ class Frame
 
         if ($this->is_text_node()) {
             $tmp = htmlspecialchars($this->_node->nodeValue);
-            $str .= "<pre>'" . mb_substr($tmp, 0, 70, "UTF-8") .
-                (mb_strlen($tmp, "UTF-8") > 70 ? "..." : "") . "'</pre>";
+            $str .= "<pre>'" . mb_substr($tmp, 0, 70) .
+                (mb_strlen($tmp) > 70 ? "..." : "") . "'</pre>";
         } elseif ($css_class = $this->_node->getAttribute("class")) {
             $str .= "CSS class: '$css_class'<br/>";
         }

@@ -6,13 +6,12 @@
  */
 namespace Dompdf\Renderer;
 
-use DOMElement;
 use Dompdf\Adapter\CPDF;
 use Dompdf\Css\Color;
 use Dompdf\Css\Style;
 use Dompdf\Dompdf;
-use Dompdf\Frame;
 use Dompdf\Helpers;
+use Dompdf\Frame;
 use Dompdf\Image\Cache;
 
 /**
@@ -279,7 +278,7 @@ abstract class AbstractRenderer
      *
      * @throws \Exception
      */
-    protected function _background_image(string $url, float $x, float $y, float $width, float $height, Style $style): void
+    protected function _background_image($url, $x, $y, $width, $height, $style)
     {
         if (!function_exists("imagecreatetruecolor")) {
             throw new \Exception("The PHP GD extension is required, but is not installed.");
@@ -514,13 +513,8 @@ abstract class AbstractRenderer
             }
 
             if ($img_w != $org_img_w || $img_h != $org_img_h) {
-                $newSrc = imagecreatetruecolor($img_w, $img_h);
-                imagealphablending($newSrc, false);
-                imagesavealpha($newSrc, true);
-                imagecopyresampled($newSrc, $src, 0, 0, 0, 0, $img_w, $img_h, imagesx($src), imagesy($src));
-                if (PHP_MAJOR_VERSION < 8) {
-                    imagedestroy($src);
-                }
+                $newSrc = imagescale($src, $img_w, $img_h);
+                imagedestroy($src);
                 $src = $newSrc;
             }
 
@@ -627,9 +621,7 @@ abstract class AbstractRenderer
                 print 'Unknown repeat!';
             }
 
-            if (PHP_MAJOR_VERSION < 8) {
-                imagedestroy($src);
-            }
+            imagedestroy($src);
 
             if ($cpdfFromGd && $this->_canvas instanceof CPDF) {
                 // Skip writing temp file as the GD object is added directly
@@ -640,9 +632,7 @@ abstract class AbstractRenderer
                 $tmpFile = "$tmpName.png";
 
                 imagepng($bg, $tmpFile);
-                if (PHP_MAJOR_VERSION < 8) {
-                    imagedestroy($bg);
-                }
+                imagedestroy($bg);
 
                 Cache::addTempImage($img, $tmpFile, $key);
             }
@@ -663,7 +653,7 @@ abstract class AbstractRenderer
             // Note: CPDF_Adapter image converts y position
             $this->_canvas->get_cpdf()->addImagePng($bg, $cpdfKey, $x, $this->_canvas->get_height() - $y - $height, $width, $height);
 
-            if (isset($bg) && PHP_MAJOR_VERSION < 8) {
+            if (isset($bg)) {
                 imagedestroy($bg);
             }
         } else {
@@ -671,83 +661,6 @@ abstract class AbstractRenderer
         }
 
         $this->_canvas->clipping_end();
-    }
-
-    /**
-     * @param float        $img_width
-     * @param float        $img_height
-     * @param float        $container_width
-     * @param float        $container_height
-     * @param array|string $bg_resize
-     * @param int          $dpi
-     *
-     * @return float[]
-     */
-    protected function _resize_background_image(
-        float $img_width,
-        float $img_height,
-        float $container_width,
-        float $container_height,
-        $bg_resize,
-        int $dpi
-    ): array {
-        // We got two some specific numbers and/or auto definitions
-        if (is_array($bg_resize)) {
-            $is_auto_width = $bg_resize[0] === 'auto';
-            if ($is_auto_width) {
-                $new_img_width = $img_width;
-            } else {
-                $new_img_width = $bg_resize[0];
-                if (Helpers::is_percent($new_img_width)) {
-                    $new_img_width = round(($container_width / 100) * (float)$new_img_width);
-                } else {
-                    $new_img_width = round($new_img_width * $dpi / 72);
-                }
-            }
-
-            $is_auto_height = $bg_resize[1] === 'auto';
-            if ($is_auto_height) {
-                $new_img_height = $img_height;
-            } else {
-                $new_img_height = $bg_resize[1];
-                if (Helpers::is_percent($new_img_height)) {
-                    $new_img_height = round(($container_height / 100) * (float)$new_img_height);
-                } else {
-                    $new_img_height = round($new_img_height * $dpi / 72);
-                }
-            }
-
-            // if one of both was set to auto the other one needs to scale proportionally
-            if ($is_auto_width !== $is_auto_height) {
-                if ($is_auto_height) {
-                    $new_img_height = round($new_img_width * ($img_height / $img_width));
-                } else {
-                    $new_img_width = round($new_img_height * ($img_width / $img_height));
-                }
-            }
-        } else {
-            $container_ratio = $container_height / $container_width;
-
-            if ($bg_resize === 'cover' || $bg_resize === 'contain') {
-                $img_ratio = $img_height / $img_width;
-
-                if (
-                    ($bg_resize === 'cover' && $container_ratio > $img_ratio) ||
-                    ($bg_resize === 'contain' && $container_ratio < $img_ratio)
-                ) {
-                    $new_img_height = $container_height;
-                    $new_img_width = round($container_height / $img_ratio);
-                } else {
-                    $new_img_width = $container_width;
-                    $new_img_height = round($container_width * $img_ratio);
-                }
-            } else {
-                $new_img_width = $img_width;
-                $new_img_height = $img_height;
-            }
-        }
-
-        return [$new_img_width, $new_img_height];
     }
 
     // Border rendering functions
@@ -1243,56 +1156,89 @@ abstract class AbstractRenderer
     }
 
     /**
-     * Add a named destination if the element has an ID or is an anchor element
-     * with `name` attribute.
-     *
-     * @param DOMElement $node
+     * @param float[] $box
+     * @param string  $color
+     * @param array   $style
      */
-    protected function addNamedDest(DOMElement $node): void
-    {
-        $id = $node->getAttribute("id");
-        if ($id !== "") {
-            $this->_canvas->add_named_dest($id);
-        }
-
-        if ($node->nodeName === "a") {
-            $name = $node->getAttribute("name");
-            if ($name !== "") {
-                $this->_canvas->add_named_dest($name);
-            }
-        }
-    }
-
-    /**
-     * Add a hyperlink if the element is an anchor element with `href`
-     * attribute.
-     *
-     * @param DOMElement $node
-     * @param float[]    $borderBox
-     */
-    protected function addHyperlink(DOMElement $node, array $borderBox): void
-    {
-        if ($node->nodeName === "a" && ($href = $node->getAttribute("href")) !== "") {
-            [$x, $y, $w, $h] = $borderBox;
-            $dompdf = $this->_dompdf;
-            $href = Helpers::build_url(
-                $dompdf->getProtocol(),
-                $dompdf->getBaseHost(),
-                $dompdf->getBasePath(),
-                $href,
-                $dompdf->getOptions()->getChroot()
-            ) ?? $href;
-            $this->_canvas->add_link($href, $x, $y, $w, $h);
-        }
-    }
-
-    /**
-     * @param float[]      $box
-     * @param array|string $color
-     * @param array        $style
-     */
-    protected function debugLayout(array $box, $color = "red", array $style = []): void
+    protected function _debug_layout($box, $color = "red", $style = [])
     {
         $this->_canvas->rectangle($box[0], $box[1], $box[2], $box[3], Color::parse($color), 0.1, $style);
+    }
+
+    /**
+     * @param float        $img_width
+     * @param float        $img_height
+     * @param float        $container_width
+     * @param float        $container_height
+     * @param array|string $bg_resize
+     * @param int          $dpi
+     *
+     * @return array
+     */
+    protected function _resize_background_image(
+        $img_width,
+        $img_height,
+        $container_width,
+        $container_height,
+        $bg_resize,
+        $dpi
+    ) {
+        // We got two some specific numbers and/or auto definitions
+        if (is_array($bg_resize)) {
+            $is_auto_width = $bg_resize[0] === 'auto';
+            if ($is_auto_width) {
+                $new_img_width = $img_width;
+            } else {
+                $new_img_width = $bg_resize[0];
+                if (Helpers::is_percent($new_img_width)) {
+                    $new_img_width = round(($container_width / 100) * (float)$new_img_width);
+                } else {
+                    $new_img_width = round($new_img_width * $dpi / 72);
+                }
+            }
+
+            $is_auto_height = $bg_resize[1] === 'auto';
+            if ($is_auto_height) {
+                $new_img_height = $img_height;
+            } else {
+                $new_img_height = $bg_resize[1];
+                if (Helpers::is_percent($new_img_height)) {
+                    $new_img_height = round(($container_height / 100) * (float)$new_img_height);
+                } else {
+                    $new_img_height = round($new_img_height * $dpi / 72);
+                }
+            }
+
+            // if one of both was set to auto the other one needs to scale proportionally
+            if ($is_auto_width !== $is_auto_height) {
+                if ($is_auto_height) {
+                    $new_img_height = round($new_img_width * ($img_height / $img_width));
+                } else {
+                    $new_img_width = round($new_img_height * ($img_width / $img_height));
+                }
+            }
+        } else {
+            $container_ratio = $container_height / $container_width;
+
+            if ($bg_resize === 'cover' || $bg_resize === 'contain') {
+                $img_ratio = $img_height / $img_width;
+
+                if (
+                    ($bg_resize === 'cover' && $container_ratio > $img_ratio) ||
+                    ($bg_resize === 'contain' && $container_ratio < $img_ratio)
+                ) {
+                    $new_img_height = $container_height;
+                    $new_img_width = round($container_height / $img_ratio);
+                } else {
+                    $new_img_width = $container_width;
+                    $new_img_height = round($container_width * $img_ratio);
+                }
+            } else {
+                $new_img_width = $img_width;
+                $new_img_height = $img_height;
+            }
+        }
+
+        return [$new_img_width, $new_img_height];
     }
 }
