@@ -53,7 +53,7 @@ $authUser = SecurityHelper::getAuthUser();
                 <div class="container-fluid">
                     <div class="header-mobile-inner">
                         <a class="logo" href="/SGA-SEBANA/public/">
-                            <img src="/SGA-SEBANA/public/assets/img/icon/logo.png" alt="SGA-SEBANA" />
+                            <img src="/SGA-SEBANA/public/assets/img/icon/sebana_logo-removebg.png" alt="SGA-SEBANA" />
                         </a>
                         <button class="hamburger hamburger--slider" type="button">
                             <span class="hamburger-box">
@@ -84,7 +84,7 @@ $authUser = SecurityHelper::getAuthUser();
         <aside class="menu-sidebar d-none d-lg-block">
             <div class="logo">
                 <a href="/SGA-SEBANA/public/">
-                    <img src="/SGA-SEBANA/public/assets/img/icon/logo.png" alt="SGA-SEBANA" />
+                    <img src="/SGA-SEBANA/public/assets/img/icon/sebana_logo-removebg.png" alt="SGA-SEBANA" />
                 </a>
             </div>
             <div class="menu-sidebar__content js-scrollbar1">
