@@ -77,6 +77,7 @@ $authUser = SecurityHelper::getAuthUser();
                     </ul>
                 </div>
             </nav>
+            
         </header>
         <!-- END HEADER MOBILE-->
 
@@ -112,6 +113,10 @@ $authUser = SecurityHelper::getAuthUser();
                                     <a href="/SGA-SEBANA/public/bitacora">Bitácora</a>
                                 </li>
                             </ul>
+                        </li>
+                         <li>
+                            <a href="/SGA-SEBANA/public/junta">
+                                <i class="fas fa-users"></i>Junta Directiva</a>
                         </li>
                         <li>
                             <a href="/SGA-SEBANA/public/ui/chart">

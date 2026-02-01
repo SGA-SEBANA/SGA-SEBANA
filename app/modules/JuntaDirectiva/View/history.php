@@ -3,17 +3,14 @@ $title = "Junta Directiva";
 ob_start();
 ?>
 
-<h1 class="mb-4">Junta Directiva</h1>
+<h1 class="mb-4">Historial Junta Directiva</h1>
+
 
 <div class="table-responsive table-responsive-data2">
     <div class="mb-3">
-    <a href="/SGA-SEBANA/public/junta/create" class="btn btn-success">
-        <i class="zmdi zmdi-plus"></i> Agregar miembro
-    </a>
-
-    <a href="/SGA-SEBANA/public/junta/history" class="btn btn-info">
-        <i class="zmdi zmdi"></i> Ver historial
-    </a>
+            <a href="/SGA-SEBANA/public/junta" class="au-btn au-btn-icon au-btn--blue">
+                <i class="zmdi zmdi-arrow-left"></i> Volver a la lista
+            </a>
 </div>
 
     <table class="table table-data2">
@@ -29,7 +26,7 @@ ob_start();
         </thead>
 
         <tbody>
-        <?php foreach ($junta as $miembro): ?>
+        <?php foreach ($historial as $miembro): ?>
             <tr class="tr-shadow">
 
                 <td><?= $miembro['nombre'] ?></td>
@@ -54,11 +51,7 @@ ob_start();
                        <i class="zmdi zmdi-edit"></i>
                        </a>
 
-                        <a href="<?= $miembro['afiliado_id'] ?>" 
-                           class="item" data-bs-toggle="tooltip" title="Eliminar"
-                           onclick="return confirm('¿Eliminar miembro?')">
-                            <i class="zmdi zmdi-delete"></i>
-                        </a>
+                      
                     </div>
                 </td>
 

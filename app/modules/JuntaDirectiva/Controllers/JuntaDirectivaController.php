@@ -14,6 +14,14 @@ class JuntaDirectivaController
       require BASE_PATH . '/app/modules/JuntaDirectiva/View/index.php';
    }
 
+   
+   public function history(){
+      $model = new JuntaDirectivaModel();
+      $historial = $model->gethistorial();
+      require BASE_PATH . '/app/modules/JuntaDirectiva/View/history.php';
+
+   }
+
 
    public function create()
    {
@@ -37,7 +45,7 @@ class JuntaDirectivaController
       exit;
       }
       $afiliados = $model->getAfiliados();
-      require BASE_PATH . '/app/modules/juntaDirectiva/view/createMiembroJunta.php';
+      require BASE_PATH . '/app/modules/juntaDirectiva/view/create.php';
       }
 
 
@@ -62,6 +70,6 @@ class JuntaDirectivaController
             exit;
          }
            $miembro = $model->getMiembroById($id);
-           require BASE_PATH . '/app/modules/juntaDirectiva/view/editar.php';      
+           require BASE_PATH . '/app/modules/juntaDirectiva/view/edit.php';      
       }
 }

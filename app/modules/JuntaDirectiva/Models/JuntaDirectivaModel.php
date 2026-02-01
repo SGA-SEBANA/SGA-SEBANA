@@ -20,7 +20,30 @@ class JuntaDirectivaModel extends ModelBase
         jd.estado, 
         jd.documentos 
         FROM {$this->table} jd
-        INNER JOIN afiliados a ON jd.afiliado_id = a.id";
+        INNER JOIN afiliados a ON jd.afiliado_id = a.id
+        WHERE jd.estado IN ('Vigente','Suspendido')";
+        
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function gethistorial()
+    {
+        $sql = "SELECT 
+        a.nombre_completo AS nombre, 
+        a.id AS afiliado_id,
+        jd.id,
+        jd.cargo, 
+        jd.fecha_inicio, 
+        jd.fecha_fin, 
+        jd.estado, 
+        jd.documentos 
+        FROM {$this->table} jd
+        INNER JOIN afiliados a ON jd.afiliado_id = a.id
+        WHERE jd.estado = 'Finalizado'";
+        
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
