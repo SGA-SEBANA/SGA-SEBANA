@@ -33,14 +33,14 @@ ob_start();
             <label>Contraseña</label>
             <input class="au-input au-input--full" type="password" name="password" placeholder="Contraseña" required>
         </div>
-        <div class="login-checkbox">
+        <!-- <div class="login-checkbox">
             <label>
                 <input type="checkbox" name="remember">Recordarme
             </label>
             <label>
                 <a href="#">¿Olvidó su contraseña?</a>
             </label>
-        </div>
+        </div> -->
         <button class="au-btn au-btn--block au-btn--green m-b-20" type="submit">Iniciar Sesión</button>
     </form>
 </div>
