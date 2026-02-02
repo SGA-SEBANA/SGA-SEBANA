@@ -49,7 +49,10 @@ class JuntaDirectivaController
       }
 
 
-      public function edit($id)
+
+
+
+   public function edit($id)
       {
          $model = new JuntaDirectivaModel();
 
@@ -72,4 +75,24 @@ class JuntaDirectivaController
            $miembro = $model->getMiembroById($id);
            require BASE_PATH . '/app/modules/juntaDirectiva/view/edit.php';      
       }
+
+
+
+   public function finalizar($id){
+      $modelo = new JuntaDirectivaModel();
+      $modelo->updateEstadoFinalizar($id, 'finalizado');
+
+      header("Location: /SGA-SEBANA/public/junta");
+      exit;
+      }
+
+
+   public function activar($id){
+      $modelo = new JuntaDirectivaModel();
+      $modelo->updateEstadoActivar($id, 'vigente');
+
+      header("Location: /SGA-SEBANA/public/junta/history");
+      exit;
+      }
+
 }

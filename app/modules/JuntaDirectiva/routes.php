@@ -13,3 +13,6 @@ $router->get('/junta/edit/{id}', [JuntaDirectivaController::class, 'edit']);
 $router->post('/junta/edit/{id}', [JuntaDirectivaController::class, 'edit']);
 
 
+$router->get('/junta/finalizar/{id}', [JuntaDirectivaController::class, 'finalizar']);
+
+$router->get('/junta/activar/{id}', [JuntaDirectivaController::class, 'activar']);
