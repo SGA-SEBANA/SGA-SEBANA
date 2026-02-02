@@ -117,6 +117,34 @@ class JuntaDirectivaModel extends ModelBase
     return $stmt->execute();
    } 
 
+   public function updateEstadoFinalizar($id, $estado)
+   {
+    $sql="UPDATE {$this->table}
+    set estado = :estado
+    WHERE id = :id AND estado = 'Vigente'";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->bindParam(':id',$id);
+    $stmt->bindParam(':estado',$estado);
+    return $stmt->execute();
+
+   }
+
+   
+   public function updateEstadoActivar($id, $estado)
+   {
+    $sql="UPDATE {$this->table}
+    set estado = :estado
+    WHERE id = :id AND estado = 'finalizado'";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->bindParam(':id',$id);
+    $stmt->bindParam(':estado',$estado);
+    return $stmt->execute();
+
+   }
+
+
    public function getMiembroById($id){
    $sql = "SELECT jd.*, a.nombre_completo AS nombre
            FROM {$this->table} jd
@@ -128,6 +156,8 @@ class JuntaDirectivaModel extends ModelBase
     $stmt->execute();
     return $stmt->fetch(\PDO::FETCH_ASSOC);
 }
+
+
  
 }
 

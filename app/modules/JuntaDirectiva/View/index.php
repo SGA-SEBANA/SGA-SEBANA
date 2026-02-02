@@ -54,11 +54,13 @@ ob_start();
                        <i class="zmdi zmdi-edit"></i>
                        </a>
 
-                        <a href="<?= $miembro['afiliado_id'] ?>" 
-                           class="item" data-bs-toggle="tooltip" title="Eliminar"
-                           onclick="return confirm('¿Eliminar miembro?')">
-                            <i class="zmdi zmdi-delete"></i>
-                        </a>
+                  <a href="/SGA-SEBANA/public/junta/finalizar/<?= $miembro['id'] ?>"
+                     class="item"
+                     title="Finalizar miembro"
+                      onclick="return confirm('¿Finalizar este miembro?')">
+                   <i class="zmdi zmdi-close-circle"></i>
+                  </a>
+
                     </div>
                 </td>
 

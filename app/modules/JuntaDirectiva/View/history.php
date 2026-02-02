@@ -51,6 +51,12 @@ ob_start();
                        <i class="zmdi zmdi-edit"></i>
                        </a>
 
+                    <a href="/SGA-SEBANA/public/junta/activar/<?= $miembro['id'] ?>"
+                     class="item"
+                     title="Re-activar miembro"
+                      onclick="return confirm('¿activar este miembro?')">
+                   <i class="zmdi zmdi-check-circle"></i>
+                  </a>
                       
                     </div>
                 </td>
