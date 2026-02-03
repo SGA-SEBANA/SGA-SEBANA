@@ -1,15 +1,10 @@
 <?php
 
-namespace App\Modules\Users\Models;
+namespace App\Modules\Usuarios\Models;
 
 use App\Core\ModelBase;
-use App\Modules\Users\Helpers\SecurityHelper;
+use App\Modules\Usuarios\Helpers\SecurityHelper;
 
-/**
- * Bitacora Model - Extends ModelBase for bitacora table
- * 
- * Handles audit logging for all system actions.
- */
 class Bitacora extends ModelBase
 {
     protected $table = 'bitacora';
@@ -35,7 +30,7 @@ class Bitacora extends ModelBase
         $record = [
             'usuario_id' => $userId,
             'accion' => $data['accion'] ?? 'UNKNOWN',
-            'modulo' => $data['modulo'] ?? 'system',
+            'modulo' => $data['modulo'] ?? 'usuarios',
             'entidad' => $data['entidad'] ?? 'unknown',
             'entidad_id' => $data['entidad_id'] ?? null,
             'descripcion' => $data['descripcion'] ?? null,
@@ -58,7 +53,6 @@ class Bitacora extends ModelBase
      */
     public function logLogin(int $userId, string $username): int
     {
-        // We need to temporarily set the user ID for logging
         $record = [
             'usuario_id' => $userId,
             'accion' => 'LOGIN',

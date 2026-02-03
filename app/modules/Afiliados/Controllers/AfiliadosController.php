@@ -3,7 +3,7 @@ namespace App\Modules\Afiliados\Controllers;
 
 use App\Core\ControllerBase;
 use App\Modules\Afiliados\Models\Afiliados;
-use App\Modules\Users\Models\Bitacora;
+use App\Modules\Usuarios\Models\Bitacora;
 
 class AfiliadosController extends ControllerBase
 {

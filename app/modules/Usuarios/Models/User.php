@@ -1,14 +1,9 @@
 <?php
 
-namespace App\Modules\Users\Models;
+namespace App\Modules\Usuarios\Models;
 
 use App\Core\ModelBase;
 
-/**
- * User Model - Extends ModelBase for usuarios table
- * 
- * Handles user authentication, validation, and CRUD operations.
- */
 class User extends ModelBase
 {
     protected $table = 'usuarios';
@@ -35,11 +30,7 @@ class User extends ModelBase
         return $result ?: null;
     }
 
-    /**
-     * Validate user credentials for login
-     * 
-     * @return array|false User data if valid, false otherwise
-     */
+
     public function validateCredentials(string $username, string $password)
     {
         $user = $this->findByUsername($username);
@@ -100,14 +91,12 @@ class User extends ModelBase
         );
         $stmt->execute(['id' => $id]);
 
-        // Get current attempts
         $stmt = $this->db->prepare("SELECT intentos_fallidos FROM {$this->table} WHERE id = :id");
         $stmt->execute(['id' => $id]);
         $result = $stmt->fetch();
 
         $attempts = $result['intentos_fallidos'] ?? 0;
 
-        // Block user after 5 failed attempts
         if ($attempts >= 5) {
             $this->blockUser($id);
         }
@@ -226,7 +215,6 @@ class User extends ModelBase
      */
     public function toggleStatus(int $id): bool
     {
-        // Get current status
         $user = $this->find($id);
         if (!$user) {
             return false;

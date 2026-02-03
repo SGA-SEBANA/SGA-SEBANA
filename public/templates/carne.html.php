@@ -1,132 +1,140 @@
 <!DOCTYPE html>
 <html lang="es">
-<<<<<<< HEAD
-=======
-<!-- Plantilla del carnet-->
-
->>>>>>> 48a2b02583d7a5e139ed278bad28a6c068032d90
 <head>
 <meta charset="UTF-8">
-
 <style>
-body {
-    font-family: Arial, Helvetica, sans-serif;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+@page { margin: 0; }
+html, body {
     margin: 0;
     padding: 0;
-}
-
-.card {
     width: 100%;
     height: 100%;
-    border: 2px solid #0b4f6c;
-    border-radius: 10px;
-    padding: 10px;
+    background-color: #ffffff;
+    overflow: hidden;
+    font-family: 'Poppins', 'Helvetica', 'Arial', sans-serif;
+}
+.card {
+    width: 105mm;
+    height: 147mm;
     box-sizing: border-box;
     position: relative;
+    overflow: hidden;
+    border: 1px solid #eeeeee;
 }
-
-/* HEADER */
 .header {
-    display: flex;
-    align-items: center;
-    border-bottom: 2px solid #0b4f6c;
-    padding-bottom: 6px;
+    background-color: #007bff;
+    color: #ffffff;
+    padding: 20px 10px;
+    text-align: center;
+}
+.header img {
+    width: 60px;
+    margin-bottom: 5px;
+}
+.header h2 {
+    margin: 0;
+    font-size: 18px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+}
+.header p {
+    margin: 0;
+    font-size: 10px;
+    opacity: 0.8;
+}
+.content {
+    padding: 15px;
+    text-align: center;
+}
+.qr-container {
+    margin: 10px 0;
+}
+.qr-container img {
+    width: 150px;
+    height: 150px;
+    border: 1px solid #ddd;
+    padding: 5px;
+    border-radius: 5px;
+}
+.details {
+    text-align: left;
+    margin-top: 15px;
+    font-size: 12px;
+}
+.details div {
     margin-bottom: 8px;
 }
-
-.logo {
-    width: 45px;
-    height: 45px;
-    margin-right: 10px;
-}
-
-.header-text {
-    font-size: 12px;
-    line-height: 1.2;
-}
-
-.header-text strong {
-    font-size: 14px;
-    color: #0b4f6c;
-}
-
-/* BODY */
-.content {
-    text-align: center;
-}
-
-.qr {
-    margin: 8px 0;
-}
-
-.qr img {
-    width: 120px;
-    height: 120px;
-}
-
-.info {
-    font-size: 11px;
-    text-align: left;
-    margin-top: 6px;
-}
-
-.info p {
-    margin: 3px 0;
-}
-
 .label {
-    font-weight: bold;
-    color: #0b4f6c;
+    color: #888;
+    font-size: 9px;
+    display: block;
+    text-transform: uppercase;
+    margin-bottom: 2px;
 }
-
-/* FOOTER */
+.value {
+    font-weight: bold;
+    color: #333;
+    font-size: 13px;
+}
+.status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: bold;
+    background-color: #d4edda;
+    color: #155724;
+}
 .footer {
     position: absolute;
-    bottom: 8px;
-    left: 10px;
-    right: 10px;
-    font-size: 9px;
+    bottom: 0;
+    width: 100%;
+    background-color: #f8f9fa;
+    padding: 10px 0;
     text-align: center;
-    border-top: 1px solid #ccc;
-    padding-top: 4px;
-    color: #555;
+    font-size: 8px;
+    color: #999;
+    border-top: 1px solid #eee;
 }
 </style>
 </head>
-
 <body>
-
 <div class="card">
-
-    <!-- HEADER -->
     <div class="header">
-        <img src="<?= $logo_image ?>" class="logo">
-        <div class="header-text">
-            <strong>Sindicato SGA-SEBANA</strong><br>
-            Carné Institucional
-        </div>
+        <img src="<?= $logo_image ?>" alt="Logo">
+        <h2>SGA-SEBANA</h2>
+        <p>CARNÉ INSTITUCIONAL DE AFILIACIÓN</p>
     </div>
-
-    <!-- BODY -->
     <div class="content">
-        <div class="qr">
-            <img src="<?= $qr_image ?>">
+        <div class="qr-container">
+            <img src="<?= $qr_image ?>" alt="QR Code">
         </div>
-
-        <div class="info">
-            <p><span class="label">Nombre:</span> <?= htmlspecialchars($afiliado['nombre']) ?></p>
-            <p><span class="label">Cédula:</span> <?= htmlspecialchars($afiliado['cedula']) ?></p>
-            <p><span class="label">Estado:</span> <?= strtoupper($afiliado['estado']) ?></p>
+        <div class="details">
+            <div>
+                <span class="label">Nombre del Afiliado</span>
+                <span class="value"><?= htmlspecialchars($afiliado['nombre_completo'] ?? ($afiliado['nombre'] . ' ' . $afiliado['apellido1'])) ?></span>
+            </div>
+            <table width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td width="60%">
+                        <span class="label">Identificación</span>
+                        <span class="value"><?= htmlspecialchars($afiliado['cedula']) ?></span>
+                    </td>
+                    <td width="40%">
+                        <span class="label">Estado</span>
+                        <span class="status-badge">VIGENTE</span>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
-
-    <!-- FOOTER -->
     <div class="footer">
-        Documento oficial • Uso institucional<br>
-        Emitido el <?= date('d/m/Y') ?>
+        Documento oficial emitido por SGA-SEBANA<br>
+        Fecha de Emisión: <?= date('d/m/Y') ?> • Versión Digital
     </div>
-
 </div>
-
 </body>
 </html>

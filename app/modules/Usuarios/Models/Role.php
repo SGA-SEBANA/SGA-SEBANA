@@ -1,14 +1,9 @@
 <?php
 
-namespace App\Modules\Users\Models;
+namespace App\Modules\Usuarios\Models;
 
 use App\Core\ModelBase;
 
-/**
- * Role Model - Extends ModelBase for roles table
- * 
- * Handles role management and retrieval for user assignment.
- */
 class Role extends ModelBase
 {
     protected $table = 'roles';

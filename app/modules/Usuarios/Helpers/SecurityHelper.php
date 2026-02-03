@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\Users\Helpers;
+namespace App\Modules\Usuarios\Helpers;
 
 /**
  * SecurityHelper - Static methods for security operations

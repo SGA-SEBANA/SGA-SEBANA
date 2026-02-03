@@ -27,11 +27,10 @@ class JuntaDirectivaModel extends ModelBase
         $stmt->execute();
         $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        // Process results to count documents
         foreach ($results as &$row) {
             $docs = json_decode($row['documentos'] ?? '[]', true);
             $row['total_documentos'] = is_array($docs) ? count($docs) : 0;
-            unset($row['documentos']); // Remove huge text blob if not needed for the list
+            unset($row['documentos']);
         }
 
         return $results;
@@ -85,7 +84,7 @@ class JuntaDirectivaModel extends ModelBase
             :observaciones, :fecha_actualizacion, :documentos)";
 
         $emptyDocs = json_encode([]);
-        $estado = strtolower($estado); // Normalize to lower case
+        $estado = strtolower($estado);
 
         $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':afiliado_id', $afiliado_id);
@@ -192,7 +191,6 @@ class JuntaDirectivaModel extends ModelBase
 
     public function insertDocumento($juntaId, $archivo, $original)
     {
-        // 1. Get current documents
         $sql = "SELECT documentos FROM {$this->table} WHERE id = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$juntaId]);
@@ -206,16 +204,14 @@ class JuntaDirectivaModel extends ModelBase
             }
         }
 
-        // 2. Add new document
         $newDoc = [
-            'id' => uniqid(), // Internal ID for the document
+            'id' => uniqid(),
             'nombre_archivo' => $archivo,
             'nombre_original' => $original,
             'fecha_subida' => date('Y-m-d H:i:s')
         ];
         $docs[] = $newDoc;
 
-        // 3. Update table
         $jsonDocs = json_encode($docs);
         $updateSql = "UPDATE {$this->table} SET documentos = ? WHERE id = ?";
         return $this->db->prepare($updateSql)->execute([$jsonDocs, $juntaId]);
@@ -234,8 +230,6 @@ class JuntaDirectivaModel extends ModelBase
             $docs = json_decode($result['documentos'], true);
             if (is_array($docs)) {
                 foreach ($docs as $doc) {
-                    // Return a structure compatible with what the view/controller might expect
-                    // Construct a composite ID so we can identify this doc later
                     $doc['id'] = $juntaId . '_' . $doc['id'];
                     $finalDocs[] = $doc;
                 }
@@ -246,17 +240,13 @@ class JuntaDirectivaModel extends ModelBase
 
     public function getDocumentoById($id)
     {
-        // ID is likely "juntaId_docUniqueId"
         $parts = explode('_', $id);
         if (count($parts) < 2) {
-            return null; // Invalid ID format
+            return null;
         }
 
         $juntaId = $parts[0];
-        $docId = $parts[1]; // The rest is the unique ID (uniqid is distinct enough) but might contain more chars if we used something else. uniqid is alphanumeric.
-
-        // If uniqid contains underscores (it shouldn't usually, but let's be safe), we better rely on the first part being the ID. 
-        // Actually, uniqid() doesn't contain underscores.
+        $docId = $parts[1];
 
         $sql = "SELECT documentos FROM {$this->table} WHERE id = ?";
         $stmt = $this->db->prepare($sql);
@@ -268,8 +258,7 @@ class JuntaDirectivaModel extends ModelBase
             if (is_array($docs)) {
                 foreach ($docs as $doc) {
                     if ($doc['id'] === $docId) {
-                        // Start of fix: Ensure we return the ID expected by the controller (the composite one) so delete links work
-                        $doc['id'] = $id; // Return the composite ID
+                        $doc['id'] = $id;
                         return $doc;
                     }
                 }
@@ -281,7 +270,7 @@ class JuntaDirectivaModel extends ModelBase
 
     public function deleteDocumento($id)
     {
-        // ID is "juntaId_docUniqueId"
+
         $parts = explode('_', $id);
         if (count($parts) < 2) {
             return false;
@@ -303,7 +292,6 @@ class JuntaDirectivaModel extends ModelBase
                 foreach ($docs as $doc) {
                     if ($doc['id'] === $docId) {
                         $found = true;
-                        // Do not add to $newDocs
                         continue;
                     }
                     $newDocs[] = $doc;

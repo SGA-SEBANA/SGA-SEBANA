@@ -1,202 +1,109 @@
-<div class="carnet-wrapper">
+<?php
+/**
+ * Vista de Emisión de Carné
+ */
+ob_start();
+?>
 
-    <div class="carnet-card">
-
-        <?php if (!empty($mensaje)): ?>
-            <div class="alert alert-success text-center mb-3">
-                <?= htmlspecialchars($mensaje) ?>
-            </div>
-        <?php endif; ?>
-
-        <!-- HEADER -->
-        <div class="carnet-header">
-            <img
-                src="/SGA-SEBANA/public/assets/img/logo.png"
-                alt="Logo"
-                class="carnet-logo"
-            >
-            <div class="carnet-title">
-                <strong>Sindicato SGA-SEBANA</strong><br>
-                <span>Carné Institucional</span>
-            </div>
-        </div>
-
-        <!-- QR -->
-        <div class="qr-container">
-            <img
-                src="<?= $qr_image ?>"
-                alt="QR de validación"
-                class="qr-image"
-            >
-        </div>
-
-        <!-- DATOS -->
-        <div class="carnet-details">
-            <p><span class="label">Nombre:</span> <?= htmlspecialchars($afiliado['nombre']) ?></p>
-            <p><span class="label">Cédula:</span> <?= htmlspecialchars($afiliado['cedula']) ?></p>
-            <p>
-                <span class="label">Estado:</span>
-                <span class="estado <?= strtolower($afiliado['estado']) ?>">
-                    <?= strtoupper($afiliado['estado']) ?>
-                </span>
-            </p>
-        </div>
-
-        <!-- BOTÓN -->
-        <div class="actions">
-            <a
-                href="/SGA-SEBANA/public/carnets/descargar/<?= $afiliado['id'] ?>"
-                class="btn btn-download"
-                target="_blank"
-            >
-                ⬇ Descargar carné (PDF)
+<div class="row">
+    <div class="col-lg-12">
+        <div class="overview-wrap mb-4">
+            <h2 class="title-1">Emisión de Carné</h2>
+            <a href="/SGA-SEBANA/public/afiliados" class="au-btn au-btn-icon au-btn--blue">
+                <i class="zmdi zmdi-arrow-left"></i> Volver a Afiliados
             </a>
         </div>
 
-        <!-- FOOTER -->
-        <div class="carnet-footer">
-            Documento oficial • Uso institucional
+        <?php if (!empty($mensaje)): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="zmdi zmdi-check-circle"></i> <?= htmlspecialchars($mensaje) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                    <div class="card-header bg-primary text-white p-4 text-center border-0 position-relative">
+                        <!-- Background Decorative Element -->
+                        <div
+                            style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:rgba(255,255,255,0.1); border-radius:50%;">
+                        </div>
+
+                        <img src="/SGA-SEBANA/public/assets/img/icon/sebana_logo-removebg.png" alt="Logo Sebana"
+                            style="width: 80px; filter: brightness(0) invert(1);" class="mb-2">
+                        <h4 class="text-white mb-0" style="letter-spacing: 1px; font-weight: 700;">SGA-SEBANA</h4>
+                        <p class="text-white-50 mb-0 small">CARNÉ DE AFILIACIÓN</p>
+                    </div>
+
+                    <div class="card-body p-0 text-center">
+                        <!-- QR Section -->
+                        <div class="py-4 bg-light">
+                            <div class="qr-wrapper d-inline-block p-3 bg-white shadow-sm rounded-3 border">
+                                <img src="<?= $qr_image ?>" alt="QR Code" style="width: 200px; height: 200px;">
+                            </div>
+                        </div>
+
+                        <!-- Data Section -->
+                        <div class="px-4 py-4 text-left">
+                            <div class="mb-3">
+                                <label class="text-muted small mb-0 d-block">NOMBRE COMPLETO</label>
+                                <span
+                                    class="h5 font-weight-bold text-dark"><?= htmlspecialchars($afiliado['nombre_completo'] ?? ($afiliado['nombre'] . ' ' . $afiliado['apellido1'])) ?></span>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-6">
+                                    <label class="text-muted small mb-0 d-block">CÉDULA</label>
+                                    <span class="font-weight-bold"><?= htmlspecialchars($afiliado['cedula']) ?></span>
+                                </div>
+                                <div class="col-6">
+                                    <label class="text-muted small mb-0 d-block">ESTADO</label>
+                                    <?php if (strtolower($afiliado['estado']) === 'activo'): ?>
+                                        <span class="badge badge-success px-3 py-1 rounded-pill" style="color:#fff !important; background-color: #28a745;">VIGENTE</span>
+                                    <?php else: ?>
+                                        <span class="badge badge-danger px-3 py-1 rounded-pill" style="color:#fff !important; background-color: #dc3545;"><?= strtoupper($afiliado['estado']) ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-white border-top p-4 text-center">
+                        <a href="/SGA-SEBANA/public/carnets/descargar/<?= $afiliado['id'] ?>"
+                            class="au-btn au-btn-icon au-btn--green w-100">
+                            <i class="zmdi zmdi-download"></i> Descargar Carné (PDF)
+                        </a>
+                        <p class="mt-3 text-muted small mb-0">
+                            <i class="zmdi zmdi-info-outline"></i> Presente este QR para validar su afiliación.
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
-
     </div>
-
 </div>
 
-<!-- Bootstrap JS -->
-<script src="/SGA-SEBANA/public/assets/vendor/bootstrap-5.3.8.bundle.min.js"></script>
-
-<!-- Zoom SOLO visual -->
-<script src="https://unpkg.com/@panzoom/panzoom/dist/panzoom.min.js"></script>
-<script>
-const elem = document.querySelector('.qr-image');
-if (elem) {
-    const panzoom = Panzoom(elem, { maxScale: 5, minScale: 1 });
-    elem.addEventListener('wheel', panzoom.zoomWithWheel);
-}
-</script>
-
 <style>
-body {
-    background: #f4f6f9;
-}
+    /* Custom animations or refinements */
+    .card {
+        transition: transform 0.3s ease;
+    }
 
-/* CONTENEDOR */
-.carnet-wrapper {
-    display: flex;
-    justify-content: center;
-    margin-top: 40px;
-}
+    .card:hover {
+        transform: translateY(-5px);
+    }
 
-/* TARJETA */
-.carnet-card {
-    width: 360px;
-    background: #fff;
-    border: 2px solid #0b4f6c;
-    border-radius: 16px;
-    padding: 18px;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-}
+    .qr-wrapper img {
+        transition: all 0.3s ease;
+    }
 
-/* HEADER */
-.carnet-header {
-    display: flex;
-    align-items: center;
-    border-bottom: 2px solid #0b4f6c;
-    padding-bottom: 10px;
-    margin-bottom: 14px;
-}
-
-.carnet-logo {
-    width: 48px;
-    margin-right: 10px;
-}
-
-.carnet-title strong {
-    font-size: 15px;
-    color: #0b4f6c;
-}
-
-.carnet-title span {
-    font-size: 12px;
-    color: #555;
-}
-
-/* QR */
-.qr-container {
-    text-align: center;
-    margin: 15px 0;
-}
-
-.qr-image {
-    width: 200px;
-    background: #fff;
-    padding: 10px;
-    border: 2px solid #000;
-    border-radius: 10px;
-    cursor: zoom-in;
-}
-
-/* DATOS */
-.carnet-details {
-    font-size: 14px;
-    margin-top: 10px;
-}
-
-.carnet-details p {
-    margin: 4px 0;
-}
-
-.label {
-    font-weight: bold;
-    color: #0b4f6c;
-}
-
-/* ESTADO */
-.estado {
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.estado.activo {
-    background: #d4edda;
-    color: #155724;
-}
-
-.estado.inactivo {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-/* BOTÓN */
-.actions {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-}
-
-.btn-download {
-    background-color: #0b4f6c;
-    color: #fff;
-    padding: 10px 25px;
-    border-radius: 25px;
-    text-decoration: none;
-    font-size: 14px;
-}
-
-.btn-download:hover {
-    background-color: #093d54;
-    color: #fff;
-}
-
-/* FOOTER */
-.carnet-footer {
-    margin-top: 15px;
-    text-align: center;
-    font-size: 11px;
-    color: #777;
-    border-top: 1px solid #ddd;
-    padding-top: 6px;
-}
+    .qr-wrapper:hover img {
+        transform: scale(1.05);
+    }
 </style>
+
+<?php
+$content = ob_get_clean();
+require $_SERVER['DOCUMENT_ROOT'] . '/SGA-SEBANA/public/templates/base.html.php';
+?>

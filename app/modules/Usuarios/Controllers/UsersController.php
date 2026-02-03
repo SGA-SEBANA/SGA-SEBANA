@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Modules\Users\Controllers;
+namespace App\Modules\Usuarios\Controllers;
 
 use App\Core\ControllerBase;
-use App\Modules\Users\Models\User;
-use App\Modules\Users\Models\Role;
-use App\Modules\Users\Models\Bitacora;
-use App\Modules\Users\Helpers\SecurityHelper;
+use App\Modules\Usuarios\Models\User;
+use App\Modules\Usuarios\Models\Role;
+use App\Modules\Usuarios\Models\Bitacora;
+use App\Modules\Usuarios\Helpers\SecurityHelper;
 
 /**
  * UsersController - CRUD for users management
@@ -76,7 +76,6 @@ class UsersController extends ControllerBase
     {
         SecurityHelper::requireAuth();
 
-        // Validate CSRF
         if (!SecurityHelper::validateCsrfToken($_POST['_csrf_token'] ?? '')) {
             $_SESSION['error_message'] = 'Token de seguridad inválido.';
             $this->redirect('/SGA-SEBANA/public/users/create');
@@ -93,7 +92,6 @@ class UsersController extends ControllerBase
             'rol_id' => (int) ($_POST['rol_id'] ?? 0),
         ];
 
-        // Validate
         $errors = $this->validateUserData($data, null);
 
         if (!empty($errors)) {
@@ -103,10 +101,8 @@ class UsersController extends ControllerBase
             return;
         }
 
-        // Hash password
         $hashedPassword = SecurityHelper::hashPassword($data['password']);
 
-        // Create user
         $userId = $this->userModel->create([
             'username' => $data['username'],
             'correo' => $data['correo'],
@@ -118,10 +114,9 @@ class UsersController extends ControllerBase
             'debe_cambiar_contrasena' => true,
         ]);
 
-        // Log to bitacora
         $this->bitacora->log([
             'accion' => 'CREATE',
-            'modulo' => 'users',
+            'modulo' => 'usuarios',
             'entidad' => 'usuario',
             'entidad_id' => $userId,
             'descripcion' => "Usuario '{$data['username']}' creado",
@@ -203,7 +198,6 @@ class UsersController extends ControllerBase
 
         $userId = (int) $id;
 
-        // Validate CSRF
         if (!SecurityHelper::validateCsrfToken($_POST['_csrf_token'] ?? '')) {
             $_SESSION['error_message'] = 'Token de seguridad inválido.';
             $this->redirect("/SGA-SEBANA/public/users/{$userId}/edit");
@@ -227,7 +221,6 @@ class UsersController extends ControllerBase
             'rol_id' => (int) ($_POST['rol_id'] ?? 0),
         ];
 
-        // Validate (password optional on update)
         $errors = $this->validateUserData($data, $userId);
 
         if (!empty($errors)) {
@@ -237,7 +230,6 @@ class UsersController extends ControllerBase
             return;
         }
 
-        // Prepare update data
         $updateData = [
             'username' => $data['username'],
             'correo' => $data['correo'],
@@ -246,13 +238,11 @@ class UsersController extends ControllerBase
             'rol_id' => $data['rol_id'],
         ];
 
-        // Update password if provided
         if (!empty($data['password'])) {
             $updateData['contrasena'] = SecurityHelper::hashPassword($data['password']);
             $updateData['debe_cambiar_contrasena'] = false;
         }
 
-        // Store old data for audit
         $oldData = [
             'username' => $existingUser['username'],
             'correo' => $existingUser['correo'],
@@ -260,13 +250,11 @@ class UsersController extends ControllerBase
             'rol_id' => $existingUser['rol_id'],
         ];
 
-        // Update user
         $this->userModel->update($userId, $updateData);
 
-        // Log to bitacora
         $this->bitacora->log([
             'accion' => 'UPDATE',
-            'modulo' => 'users',
+            'modulo' => 'usuarios',
             'entidad' => 'usuario',
             'entidad_id' => $userId,
             'descripcion' => "Usuario '{$data['username']}' actualizado",
@@ -280,7 +268,6 @@ class UsersController extends ControllerBase
             ],
         ]);
 
-        // Clear must change password flag
         unset($_SESSION['must_change_password']);
 
         $_SESSION['success_message'] = 'Usuario actualizado exitosamente.';
@@ -303,7 +290,6 @@ class UsersController extends ControllerBase
             return;
         }
 
-        // Cannot deactivate yourself
         $authUserId = SecurityHelper::getAuthUserId();
         if ($userId === $authUserId) {
             $_SESSION['error_message'] = 'No puede desactivar su propia cuenta.';
@@ -319,10 +305,9 @@ class UsersController extends ControllerBase
 
         $action = $newStatus === 'activo' ? 'reactivado' : 'desactivado';
 
-        // Log to bitacora
         $this->bitacora->log([
             'accion' => 'STATUS_CHANGE',
-            'modulo' => 'users',
+            'modulo' => 'usuarios',
             'entidad' => 'usuario',
             'entidad_id' => $userId,
             'descripcion' => "Usuario '{$user['username']}' {$action}",
@@ -358,7 +343,6 @@ class UsersController extends ControllerBase
     {
         $errors = [];
 
-        // Username
         if (empty($data['username'])) {
             $errors['username'] = 'El nombre de usuario es requerido.';
         } elseif (strlen($data['username']) < 3) {
@@ -367,7 +351,6 @@ class UsersController extends ControllerBase
             $errors['username'] = 'Este nombre de usuario ya está en uso.';
         }
 
-        // Email
         if (empty($data['correo'])) {
             $errors['correo'] = 'El correo electrónico es requerido.';
         } elseif (!filter_var($data['correo'], FILTER_VALIDATE_EMAIL)) {
@@ -376,7 +359,6 @@ class UsersController extends ControllerBase
             $errors['correo'] = 'Este correo electrónico ya está en uso.';
         }
 
-        // Password (required for new users, optional for updates)
         if ($excludeId === null || !empty($data['password'])) {
             if (empty($data['password'])) {
                 $errors['password'] = 'La contraseña es requerida.';
@@ -392,12 +374,10 @@ class UsersController extends ControllerBase
             }
         }
 
-        // Name
         if (empty($data['nombre_completo'])) {
             $errors['nombre_completo'] = 'El nombre completo es requerido.';
         }
 
-        // Role
         if (empty($data['rol_id'])) {
             $errors['rol_id'] = 'Debe seleccionar un rol.';
         }

@@ -5,7 +5,7 @@
  * READ-ONLY view
  */
 
-use App\Modules\Users\Helpers\SecurityHelper;
+use App\Modules\Usuarios\Helpers\SecurityHelper;
 
 ob_start();
 ?>

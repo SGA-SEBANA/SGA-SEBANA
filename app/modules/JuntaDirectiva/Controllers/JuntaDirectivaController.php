@@ -2,6 +2,7 @@
 
 namespace App\Modules\JuntaDirectiva\Controllers;
 use App\Modules\JuntaDirectiva\Models\JuntaDirectivaModel;
+use App\Modules\Usuarios\Models\Bitacora;
 
 class JuntaDirectivaController
 {
@@ -31,7 +32,6 @@ class JuntaDirectivaController
 
       if ($_POST) {
 
-         // Validation: Check dates
          if (!empty($_POST['fecha_fin']) && $_POST['fecha_fin'] < $_POST['fecha_inicio']) {
             die("Error: La fecha de fin no puede ser anterior a la fecha de inicio.");
          }
@@ -49,6 +49,17 @@ class JuntaDirectivaController
 
 
          );
+
+         // Log Bitacora
+         $bitacora = new Bitacora();
+         $bitacora->log([
+            'accion' => 'CREATE',
+            'modulo' => 'junta_directiva',
+            'entidad' => 'miembro_junta',
+            'entidad_id' => $juntaId,
+            'descripcion' => "Registro de nuevo miembro de junta: {$_POST['cargo']}",
+            'datos_nuevos' => $_POST
+         ]);
 
          if (!empty($_FILES['documentos']['name'][0])) {
 
@@ -99,7 +110,6 @@ class JuntaDirectivaController
       $model = new JuntaDirectivaModel();
 
       if ($_POST) {
-         // Validation: Check dates
          if (!empty($_POST['fecha_fin']) && $_POST['fecha_fin'] < $_POST['fecha_inicio']) {
             die("Error: La fecha de fin no puede ser anterior a la fecha de inicio.");
          }
@@ -114,6 +124,17 @@ class JuntaDirectivaController
             $_POST['responsabilidades'],
             $_POST['observaciones']
          );
+
+         // Log Bitacora
+         $bitacora = new Bitacora();
+         $bitacora->log([
+            'accion' => 'UPDATE',
+            'modulo' => 'junta_directiva',
+            'entidad' => 'miembro_junta',
+            'entidad_id' => $id,
+            'descripcion' => "Actualización de miembro de junta ID: {$id}",
+            'datos_nuevos' => $_POST
+         ]);
          if (!empty($_FILES['documentos']['name'][0])) {
             foreach ($_FILES['documentos']['name'] as $i => $nombreOriginal) {
 
@@ -155,6 +176,17 @@ class JuntaDirectivaController
       $modelo = new JuntaDirectivaModel();
       $modelo->updateEstadoFinalizar($id, 'finalizado');
 
+      // Log Bitacora
+      $bitacora = new Bitacora();
+      $bitacora->log([
+         'accion' => 'FINALIZAR',
+         'modulo' => 'junta_directiva',
+         'entidad' => 'miembro_junta',
+         'entidad_id' => $id,
+         'descripcion' => "Finalización de cargo para miembro ID: {$id}",
+         'resultado' => 'exitoso'
+      ]);
+
       header("Location: /SGA-SEBANA/public/junta");
       exit;
    }
@@ -166,6 +198,17 @@ class JuntaDirectivaController
    {
       $modelo = new JuntaDirectivaModel();
       $modelo->updateEstadoActivar($id, 'vigente');
+
+      // Log Bitacora
+      $bitacora = new Bitacora();
+      $bitacora->log([
+         'accion' => 'ACTIVAR',
+         'modulo' => 'junta_directiva',
+         'entidad' => 'miembro_junta',
+         'entidad_id' => $id,
+         'descripcion' => "Reactivación de cargo para miembro ID: {$id}",
+         'resultado' => 'exitoso'
+      ]);
 
       header("Location: /SGA-SEBANA/public/junta/history");
       exit;
@@ -188,49 +231,6 @@ class JuntaDirectivaController
    }
 
 
-
-   public function almacenar()
-   {
-
-      $juntaId = $this->model->insert($_POST);
-
-      if (!empty($_FILES['documentos']['name'][0])) {
-
-         foreach ($_FILES['documentos']['name'] as $i => $nombreOriginal) {
-
-            if ($_FILES['documentos']['size'][$i] > 5 * 1024 * 1024) {
-
-               die("Archivo muy grande");
-            }
-
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mime = finfo_file($finfo, $_FILES['documentos']['tmp_name'][$i]);
-
-            $permitidos = ['application/pdf', 'image/jpeg', 'image/png'];
-
-            if (!in_array($mime, $permitidos)) {
-               die("Tipo de archivo no permitido");
-            }
-
-            $text = pathinfo($nombreOriginal, PATHINFO_EXTENSION);
-            $nombreSeguro = uniqid("doc_") . "." . $text;
-
-            $destino = BASE_PATH . "/storage/junta/" . $nombreSeguro;
-            move_uploaded_file($_FILES['documentos']['tmp_name'][$i], $destino);
-
-            $this->model->insertDocumento(
-               $juntaId,
-               $nombreSeguro,
-               $nombreOriginal
-            );
-
-         }
-      }
-
-      header("Location: /junta");
-
-
-   }
 
    public function verDocumento($id)
    {

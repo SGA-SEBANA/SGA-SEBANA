@@ -1,6 +1,6 @@
 <?php
 // Force login check - redirect to login if not authenticated
-use App\Modules\Users\Helpers\SecurityHelper;
+use App\Modules\Usuarios\Helpers\SecurityHelper;
 
 if (!SecurityHelper::isAuthenticated()) {
     header('Location: /SGA-SEBANA/public/login');
@@ -68,7 +68,7 @@ $authUser = SecurityHelper::getAuthUser();
                     <ul class="navbar-mobile__list list-unstyled">
                         <li>
                             <a href="/SGA-SEBANA/public/home">
-                                <i class="fas fa-tachometer-alt"></i>Dashboard</a>
+                                <i class="fas fa-tachometer-alt"></i>Panel</a>
                         </li>
                         <li>
                             <a href="/SGA-SEBANA/public/afiliados">
@@ -77,7 +77,7 @@ $authUser = SecurityHelper::getAuthUser();
                     </ul>
                 </div>
             </nav>
-            
+
         </header>
         <!-- END HEADER MOBILE-->
 
@@ -93,7 +93,7 @@ $authUser = SecurityHelper::getAuthUser();
                     <ul class="list-unstyled navbar__list">
                         <li class="active">
                             <a href="/SGA-SEBANA/public/home">
-                                <i class="fas fa-tachometer-alt"></i>Dashboard</a>
+                                <i class="fas fa-tachometer-alt"></i>Panel</a>
                         </li>
                         <li>
                             <a href="/SGA-SEBANA/public/afiliados">
@@ -114,7 +114,7 @@ $authUser = SecurityHelper::getAuthUser();
                                 </li>
                             </ul>
                         </li>
-                         <li>
+                        <li>
                             <a href="/SGA-SEBANA/public/junta">
                                 <i class="fas fa-users"></i>Junta Directiva</a>
                         </li>

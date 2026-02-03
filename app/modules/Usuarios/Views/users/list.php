@@ -4,7 +4,7 @@
  * Uses base.html.php template
  */
 
-use App\Modules\Users\Helpers\SecurityHelper;
+use App\Modules\Usuarios\Helpers\SecurityHelper;
 
 ob_start();
 ?>

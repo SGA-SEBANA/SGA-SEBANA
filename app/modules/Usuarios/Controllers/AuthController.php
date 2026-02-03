@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Modules\Users\Controllers;
+namespace App\Modules\Usuarios\Controllers;
 
 use App\Core\ControllerBase;
-use App\Modules\Users\Models\User;
-use App\Modules\Users\Models\Bitacora;
-use App\Modules\Users\Helpers\SecurityHelper;
+use App\Modules\Usuarios\Models\User;
+use App\Modules\Usuarios\Models\Bitacora;
+use App\Modules\Usuarios\Helpers\SecurityHelper;
 
 /**
  * AuthController - Handles authentication (login/logout)
@@ -26,7 +26,6 @@ class AuthController extends ControllerBase
      */
     public function showLogin(): void
     {
-        // If already authenticated, redirect to home
         if (SecurityHelper::isAuthenticated()) {
             $this->redirect('/SGA-SEBANA/public/home');
             return;
@@ -38,7 +37,6 @@ class AuthController extends ControllerBase
             'error' => $_SESSION['login_error'] ?? null,
         ]);
 
-        // Clear error after displaying
         unset($_SESSION['login_error']);
     }
 
@@ -47,7 +45,6 @@ class AuthController extends ControllerBase
      */
     public function login(): void
     {
-        // Validate CSRF token
         $csrfToken = $_POST['_csrf_token'] ?? '';
         if (!SecurityHelper::validateCsrfToken($csrfToken)) {
             $_SESSION['login_error'] = 'Token de seguridad inválido. Por favor, intente de nuevo.';
@@ -58,17 +55,14 @@ class AuthController extends ControllerBase
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
 
-        // Basic validation
         if (empty($username) || empty($password)) {
             $_SESSION['login_error'] = 'Por favor, complete todos los campos.';
             $this->redirect('/SGA-SEBANA/public/login');
             return;
         }
 
-        // Find user by username
         $user = $this->userModel->findByUsername($username);
 
-        // User not found
         if (!$user) {
             $this->bitacora->logFailedLogin(null, $username, 'Usuario no encontrado');
             $_SESSION['login_error'] = 'Credenciales inválidas.';
@@ -76,7 +70,6 @@ class AuthController extends ControllerBase
             return;
         }
 
-        // Check if user is blocked
         if ($user['bloqueado'] || $user['estado'] === 'bloqueado') {
             $this->bitacora->logFailedLogin($user['id'], $username, 'Usuario bloqueado');
             $_SESSION['login_error'] = 'Su cuenta está bloqueada. Contacte al administrador.';
@@ -84,7 +77,6 @@ class AuthController extends ControllerBase
             return;
         }
 
-        // Check if user is inactive
         if ($user['estado'] === 'inactivo') {
             $this->bitacora->logFailedLogin($user['id'], $username, 'Usuario inactivo');
             $_SESSION['login_error'] = 'Su cuenta está inactiva. Contacte al administrador.';
@@ -92,7 +84,6 @@ class AuthController extends ControllerBase
             return;
         }
 
-        // Validate password
         if (!password_verify($password, $user['contrasena'])) {
             $attempts = $this->userModel->incrementFailedAttempts($user['id']);
             $this->bitacora->logFailedLogin($user['id'], $username, 'Contraseña incorrecta');
@@ -108,20 +99,14 @@ class AuthController extends ControllerBase
             return;
         }
 
-        // Successful login
-        // Regenerate session ID for security
         SecurityHelper::regenerateSession();
 
-        // Reset failed attempts
         $this->userModel->resetFailedAttempts($user['id']);
 
-        // Update last access
         $this->userModel->updateLastAccess($user['id']);
 
-        // Get user with role info
         $userWithRole = $this->userModel->findWithRole($user['id']);
 
-        // Set session data
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_authenticated'] = true;
         $_SESSION['user'] = [
@@ -134,17 +119,14 @@ class AuthController extends ControllerBase
             'nivel_acceso' => $userWithRole['nivel_acceso'] ?? 'basico',
         ];
 
-        // Log successful login
         $this->bitacora->logLogin($user['id'], $user['username']);
 
-        // Check if user must change password
         if ($user['debe_cambiar_contrasena']) {
             $_SESSION['must_change_password'] = true;
             $this->redirect('/SGA-SEBANA/public/users/' . $user['id'] . '/edit');
             return;
         }
 
-        // Redirect to home
         $this->redirect('/SGA-SEBANA/public/home');
     }
 

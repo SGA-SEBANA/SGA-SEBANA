@@ -1,78 +1,121 @@
 <?php
-$title = "Agregar miembro de Junta Directiva";
+/**
+ * Vista de Creación de Miembro Junta
+ */
 ob_start();
 ?>
 
-<h1 class="mb-4">Agregar miembro de Junta Directiva</h1>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="overview-wrap mb-4">
+            <h2 class="title-1">Nuevo Miembro Junta</h2>
+            <a href="/SGA-SEBANA/public/junta" class="au-btn au-btn-icon au-btn--blue">
+                <i class="zmdi zmdi-arrow-left"></i> Volver a la lista
+            </a>
+        </div>
 
-<form method="POST" enctype="multipart/form-data">
+        <form action="/SGA-SEBANA/public/junta/create" method="post" enctype="multipart/form-data"
+            class="form-horizontal">
 
-    <div class="form-group mb-3">
-        <label>Afiliado</label>
-        <select name="afiliado_id" class="form-control" required>
-            <option value="">Seleccione un afiliado</option>
-            <?php foreach ($afiliados as $a): ?>
-                <option value="<?= $a['id'] ?>">
-                    <?= $a['nombre_completo'] ?> - <?= $a['cedula'] ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+            <div class="card">
+                <div class="card-header">
+                    <strong>Datos del Miembro</strong>
+                </div>
+                <div class="card-body card-block">
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="afiliado_id" class="form-control-label">Afiliado</label>
+                            <select name="afiliado_id" id="afiliado_id" class="form-control" required>
+                                <?php foreach ($afiliados as $afiliado): ?>
+                                    <option value="<?= $afiliado['id'] ?>">
+                                        <?= htmlspecialchars($afiliado['nombre_completo']) ?> -
+                                        <?= htmlspecialchars($afiliado['cedula']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="cargo" class="form-control-label">Cargo</label>
+                            <input type="text" id="cargo" name="cargo" placeholder="Ej: Presidente" class="form-control"
+                                required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="estado" class="form-control-label">Estado</label>
+                            <select name="estado" id="estado" class="form-control" required>
+                                <option value="vigente">Vigente</option>
+                                <option value="suspendido">Suspendido</option>
+                                <option value="finalizado">Finalizado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="fecha_inicio" class="form-control-label">Fecha Inicio</label>
+                            <input type="date" id="fecha_inicio" name="fecha_inicio" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="fecha_fin" class="form-control-label">Fecha Fin (Estimada)</label>
+                            <input type="date" id="fecha_fin" name="fecha_fin" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="periodo" class="form-control-label">Periodo</label>
+                            <input type="text" id="periodo" name="periodo" placeholder="Ej: 2024-2026"
+                                class="form-control">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <strong><i class="zmdi zmdi-assignment"></i> Detalles Adicionales</strong>
+                </div>
+                <div class="card-body card-block">
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="responsabilidades" class="form-control-label">Responsabilidades</label>
+                            <textarea name="responsabilidades" id="responsabilidades" rows="3" class="form-control"
+                                placeholder="Describa las responsabilidades..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="documentos" class="form-control-label">Documentos (Actas, Nombramiento,
+                                etc)</label>
+                            <input type="file" name="documentos[]" multiple class="form-control">
+                            <small class="form-text text-muted">Formatos permitidos: PDF, JPG, PNG</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="observaciones" class="form-control-label">Observaciones</label>
+                            <input type="text" name="observaciones" id="observaciones" class="form-control"
+                                placeholder="Notas adicionales...">
+                        </div>
+                    </div>
+
+                </div>
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="zmdi zmdi-save"></i> Registrar Miembro
+                    </button>
+                    <button type="reset" class="btn btn-danger btn-sm">
+                        <i class="zmdi zmdi-refresh-alt"></i> Limpiar
+                    </button>
+                </div>
+            </div>
+
+        </form>
     </div>
-
-    <div class="form-group mb-3">
-        <label>Cargo</label>
-        <input type="text" name="cargo" class="form-control" required>
-    </div>
-
-    <div class="form-group mb-3">
-        <label>Estado</label>
-        <select name="estado" class="form-control" required>
-            <option value="vigente">Vigente</option>
-            <option value="suspendido">Suspendido</option>
-            <option value="finalizado">Finalizado</option>
-        </select>
-    </div>
-
-    <div class="form-group mb-3">
-        <label>Fecha inicio</label>
-        <input type="date" name="fecha_inicio" class="form-control" required>
-    </div>
-
-    <div class="form-group mb-3">
-        <label>Fecha fin</label>
-        <input type="date" name="fecha_fin" class="form-control">
-    </div>
-
-    <div class="form-group mb-3">
-        <label>Periodo</label>
-        <input type="text" name="periodo" class="form-control">
-    </div>
-
-    <div class="form-group mb-3">
-        <label>Responsabilidades</label>
-        <textarea name="responsabilidades" class="form-control"></textarea>
-    </div>
-
-    <div class="form-group mb-3">
-        <label>Documentos</label>
-        <input type="file" name="documentos[]" multiple class="form-control">
-    </div>
-
-    <div class="form-group mb-3">
-        <label>Observaciones</label>
-        <textarea name="observaciones" class="form-control"></textarea>
-    </div>
-
-    <button type="submit" class="btn btn-success">
-        <i class="zmdi zmdi-save"></i> Guardar
-    </button>
-
-    <a href="/SGA-SEBANA/public/junta" class="btn btn-secondary">
-        Cancelar
-    </a>
-
-</form>
+</div>
 
 <?php
 $content = ob_get_clean();
-require BASE_PATH . '/public/templates/base.html.php';
+require $_SERVER['DOCUMENT_ROOT'] . '/SGA-SEBANA/public/templates/base.html.php';
+?>

@@ -11,13 +11,14 @@
     //WidgetChart 1
     var ctx = document.getElementById("widgetChart1");
     if (ctx) {
+      ctx.height = 130;
       var myChart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+          labels: (window.dashboardChartsData && window.dashboardChartsData.chart1) ? window.dashboardChartsData.chart1.labels : ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
           datasets: [{
-            data: [78, 81, 80, 45, 34, 12, 40],
-            label: 'Dataset',
+            data: (window.dashboardChartsData && window.dashboardChartsData.chart1) ? window.dashboardChartsData.chart1.values : [78, 81, 80, 45, 34, 12, 40],
+            label: (window.dashboardChartsData && window.dashboardChartsData.chart1) ? window.dashboardChartsData.chart1.dataLabel : 'Afiliados',
             backgroundColor: 'rgba(255,255,255,.1)',
             borderColor: 'rgba(255,255,255,.55)',
             fill: true
@@ -80,10 +81,10 @@
       var myChart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+          labels: (window.dashboardChartsData && window.dashboardChartsData.chart2) ? window.dashboardChartsData.chart2.labels : ['January', 'February', 'March', 'April', 'May', 'June'],
           datasets: [{
-            data: [1, 18, 9, 17, 34, 22],
-            label: 'Dataset',
+            data: (window.dashboardChartsData && window.dashboardChartsData.chart2) ? window.dashboardChartsData.chart2.values : [1, 18, 9, 17, 34, 22],
+            label: (window.dashboardChartsData && window.dashboardChartsData.chart2) ? window.dashboardChartsData.chart2.dataLabel : 'Actividad',
             backgroundColor: 'transparent',
             borderColor: 'rgba(255,255,255,.55)',
           },]
@@ -152,10 +153,10 @@
       var myChart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+          labels: (window.dashboardChartsData && window.dashboardChartsData.chart3) ? window.dashboardChartsData.chart3.labels : ['January', 'February', 'March', 'April', 'May', 'June'],
           datasets: [{
-            data: [65, 59, 84, 84, 51, 55],
-            label: 'Dataset',
+            data: (window.dashboardChartsData && window.dashboardChartsData.chart3) ? window.dashboardChartsData.chart3.values : [65, 59, 84, 84, 51, 55],
+            label: (window.dashboardChartsData && window.dashboardChartsData.chart3) ? window.dashboardChartsData.chart3.dataLabel : 'Usuarios',
             backgroundColor: 'transparent',
             borderColor: 'rgba(255,255,255,.55)',
           },]
@@ -223,10 +224,10 @@
       var myChart = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+          labels: (window.dashboardChartsData && window.dashboardChartsData.chart4) ? window.dashboardChartsData.chart4.labels : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
           datasets: [{
-            label: "My First dataset",
-            data: [78, 81, 80, 65, 58, 75, 60, 75, 65, 60, 60, 75],
+            label: (window.dashboardChartsData && window.dashboardChartsData.chart4) ? window.dashboardChartsData.chart4.dataLabel : "Volumen",
+            data: (window.dashboardChartsData && window.dashboardChartsData.chart4) ? window.dashboardChartsData.chart4.values : [78, 81, 80, 65, 58, 75, 60, 75, 65, 60, 60, 75],
             borderColor: "transparent",
             borderWidth: "0",
             backgroundColor: "rgba(255,255,255,.3)"
