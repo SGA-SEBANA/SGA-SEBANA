@@ -5,7 +5,7 @@ ob_start();
 
 <h1 class="mb-4">Agregar miembro de Junta Directiva</h1>
 
-<form method="POST">
+<form method="POST" enctype="multipart/form-data">
 
     <div class="form-group mb-3">
         <label>Afiliado</label>
@@ -51,7 +51,7 @@ ob_start();
 
     <div class="form-group mb-3">
         <label>Documentos</label>
-        <textarea name="documentos" class="form-control"></textarea>
+        <input type="file" name="documentos[]" multiple class="form-control">
     </div>
 
     <div class="form-group mb-3">
