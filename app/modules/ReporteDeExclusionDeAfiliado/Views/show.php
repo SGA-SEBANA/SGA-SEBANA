@@ -18,10 +18,10 @@ ob_start();
         <p><strong>Observaciones:</strong> <?= htmlspecialchars($afiliado['observaciones'] ?? 'N/A') ?></p>
       </div>
       <div class="card-footer text-center">
-        <a href="/SGA-SEBANA/public/ReporteDeExclusiónDeAfiliado/pdf/<?= $afiliado['id'] ?>" class="btn btn-danger">
+        <a href="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado/pdf/<?= $afiliado['id'] ?>" class="btn btn-danger">
           <i class="zmdi zmdi-download"></i> Descargar PDF
         </a>
-        <a href="/SGA-SEBANA/public/ReporteDeExclusiónDeAfiliado" class="btn btn-secondary">
+        <a href="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado" class="btn btn-secondary">
           <i class="zmdi zmdi-arrow-left"></i> Volver al Reporte
         </a>
       </div>

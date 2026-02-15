@@ -15,19 +15,20 @@ ob_start();
         <strong><i class="zmdi zmdi-filter-list"></i> Filtros de Reporte</strong>
       </div>
       <div class="card-body">
-        <form action="/SGA-SEBANA/public/ReporteDeExclusiónDeAfiliado" method="GET">
-          <!-- filtros de fecha, tipo_baja y estado -->
-          <!-- ... -->
-          <div class="row mt-3">
-            <div class="col-md-12 text-right">
+        <form action="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado" method="GET">
+          <div class="row">
+            <div class="col-md-4">
+              <label for="nombre">Filtrar por nombre:</label>
+              <input type="text" name="nombre" id="nombre" class="form-control"
+                     value="<?= htmlspecialchars($filtros['nombre'] ?? '') ?>"
+                     placeholder="Ingrese nombre">
+            </div>
+            <div class="col-md-8 text-right align-self-end">
               <button type="submit" class="btn btn-primary">
-                <i class="zmdi zmdi-search"></i> Filtrar
+                <i class="zmdi zmdi-search"></i> Buscar
               </button>
-              <a href="/SGA-SEBANA/public/ReporteDeExclusiónDeAfiliado/exportar/pdf" class="btn btn-danger">
+              <a href="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado/exportar/pdf" class="btn btn-danger">
                 <i class="zmdi zmdi-download"></i> Exportar PDF
-              </a>
-              <a href="/SGA-SEBANA/public/ReporteDeExclusiónDeAfiliado/exportar/excel" class="btn btn-success">
-                <i class="zmdi zmdi-download"></i> Exportar Excel
               </a>
             </div>
           </div>
@@ -69,11 +70,8 @@ ob_start();
                 </td>
                 <td>
                   <div class="table-data-feature">
-                    <a href="/SGA-SEBANA/public/ReporteDeExclusiónDeAfiliado/show/<?= $exc['id'] ?>" class="item" title="Ver Detalle">
+                    <a href="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado/show/<?= $exc['id'] ?>" class="item" title="Ver Detalle">
                       <i class="zmdi zmdi-eye"></i>
-                    </a>
-                    <a href="/SGA-SEBANA/public/ReporteDeExclusiónDeAfiliado/pdf/<?= $exc['id'] ?>" class="item" title="Descargar PDF">
-                      <i class="zmdi zmdi-download"></i>
                     </a>
                   </div>
                 </td>

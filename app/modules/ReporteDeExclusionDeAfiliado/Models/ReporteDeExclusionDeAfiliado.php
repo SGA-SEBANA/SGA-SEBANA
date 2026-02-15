@@ -10,7 +10,6 @@ class ReporteDeExclusionDeAfiliado extends ModelBase
 
     public function getAll($filtros = [])
     {
-        // Mostrar registros con fecha_baja o estado inactivo
         $sql = "SELECT * FROM {$this->table} WHERE (fecha_baja IS NOT NULL OR estado = 'inactivo')";
         $params = [];
 
@@ -28,6 +27,12 @@ class ReporteDeExclusionDeAfiliado extends ModelBase
         if (!empty($filtros['estado'])) {
             $sql .= " AND estado = :estado";
             $params['estado'] = $filtros['estado'];
+        }
+
+        // 🔎 Nuevo filtro por nombre
+        if (!empty($filtros['nombre'])) {
+            $sql .= " AND nombre_completo LIKE :nombre";
+            $params['nombre'] = "%".$filtros['nombre']."%";
         }
 
         $sql .= " ORDER BY fecha_actualizacion DESC";
