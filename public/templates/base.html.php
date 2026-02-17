@@ -74,6 +74,10 @@ $authUser = SecurityHelper::getAuthUser();
                             <a href="/SGA-SEBANA/public/afiliados">
                                 <i class="fas fa-users"></i>Afiliados</a>
                         </li>
+                        <li>
+                            <a href="/SGA-SEBANA/public/puestos">
+                                <i class="fas fa-briefcase"></i>Puestos</a>
+                        </li>
                     </ul>
                 </div>
             </nav>
@@ -112,7 +116,7 @@ $authUser = SecurityHelper::getAuthUser();
                                 <li>
                                     <a href="/SGA-SEBANA/public/bitacora">Bitácora</a>
                                 </li>
-                                
+
                             </ul>
                         </li>
                         <li>
@@ -120,10 +124,14 @@ $authUser = SecurityHelper::getAuthUser();
                                 <i class="fas fa-users"></i>Junta Directiva</a>
                         </li>
                         <li>
-                           <a href="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado">
-                           <i class="fas fa-user-times"></i> Exclusiones
-                           </a>
-                           </li>
+                            <a href="/SGA-SEBANA/public/puestos">
+                                <i class="fas fa-briefcase"></i>Puestos</a>
+                        </li>
+                        <li>
+                            <a href="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado">
+                                <i class="fas fa-user-times"></i> Exclusiones
+                            </a>
+                        </li>
                         <li>
                             <a href="/SGA-SEBANA/public/ui/chart">
                                 <i class="fas fa-chart-bar"></i>Charts</a>
