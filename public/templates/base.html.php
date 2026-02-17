@@ -236,9 +236,9 @@ $authUser = SecurityHelper::getAuthUser();
                                                         <i class="zmdi zmdi-account"></i>Mi Cuenta</a>
                                                 </div>
                                                 <div class="account-dropdown__item">
-                                                    <span class="text-muted px-3">
+                                                    <span class="text-muted px-4">
                                                         <i
-                                                            class="zmdi zmdi-shield-check"></i><?= htmlspecialchars($authUser['rol_nombre'] ?? 'Sin rol') ?></span>
+                                                            class="zmdi zmdi-shield-check me-3"></i><?= htmlspecialchars($authUser['rol_nombre'] ?? 'Sin rol') ?></span>
                                                 </div>
                                             </div>
                                             <div class="account-dropdown__footer">

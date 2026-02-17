@@ -20,27 +20,25 @@ ob_start();
             <div class="col-md-4">
               <label for="nombre">Filtrar por nombre:</label>
               <input type="text" name="nombre" id="nombre" class="form-control"
-                     value="<?= htmlspecialchars($filtros['nombre'] ?? '') ?>"
-                     placeholder="Ingrese nombre">
+                value="<?= htmlspecialchars($filtros['nombre'] ?? '') ?>" placeholder="Ingrese nombre">
             </div>
-             <div class="col-md-3">
-    <label for="fecha_inicio">Fecha inicio:</label>
-    <input type="date" name="fecha_inicio" id="fecha_inicio"
-           class="form-control"
-           value="<?= htmlspecialchars($filtros['fecha_inicio'] ?? '') ?>">
-  </div>
+            <div class="col-md-3">
+              <label for="fecha_inicio">Fecha inicio:</label>
+              <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control"
+                value="<?= htmlspecialchars($filtros['fecha_inicio'] ?? '') ?>">
+            </div>
 
-  <div class="col-md-3">
-    <label for="fecha_fin">Fecha fin:</label>
-    <input type="date" name="fecha_fin" id="fecha_fin"
-           class="form-control"
-           value="<?= htmlspecialchars($filtros['fecha_fin'] ?? '') ?>">
-  </div>
-            <div class="col-md-8 text-right align-self-end">
+            <div class="col-md-3">
+              <label for="fecha_fin">Fecha fin:</label>
+              <input type="date" name="fecha_fin" id="fecha_fin" class="form-control"
+                value="<?= htmlspecialchars($filtros['fecha_fin'] ?? '') ?>">
+            </div>
+            <div class="col-md-8 text-right align-self-end mt-3">
               <button type="submit" class="au-btn au-btn-icon au-btn--blue au-btn--small">
                 <i class="zmdi zmdi-search"></i> Buscar
               </button>
-              <a href="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado/exportar/pdf" class="au-btn au-btn-icon au-btn--green au-btn--small" style="margin-left: 8px;">
+              <a href="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado/exportar/pdf"
+                class="au-btn au-btn-icon au-btn--green au-btn--small" style="margin-left: 8px;">
                 <i class="zmdi zmdi-download"></i> Exportar PDF
               </a>
             </div>
@@ -83,7 +81,8 @@ ob_start();
                 </td>
                 <td>
                   <div class="table-data-feature">
-                    <a href="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado/show/<?= $exc['id'] ?>" class="item" title="Ver Detalle">
+                    <a href="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado/show/<?= $exc['id'] ?>" class="item"
+                      title="Ver Detalle">
                       <i class="zmdi zmdi-eye"></i>
                     </a>
                   </div>
