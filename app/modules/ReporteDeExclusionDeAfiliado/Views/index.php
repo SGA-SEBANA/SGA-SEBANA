@@ -24,10 +24,10 @@ ob_start();
                      placeholder="Ingrese nombre">
             </div>
             <div class="col-md-8 text-right align-self-end">
-              <button type="submit" class="btn btn-primary">
+              <button type="submit" class="au-btn au-btn-icon au-btn--blue au-btn--small">
                 <i class="zmdi zmdi-search"></i> Buscar
               </button>
-              <a href="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado/exportar/pdf" class="btn btn-danger">
+              <a href="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado/exportar/pdf" class="au-btn au-btn-icon au-btn--green au-btn--small" style="margin-left: 8px;">
                 <i class="zmdi zmdi-download"></i> Exportar PDF
               </a>
             </div>
