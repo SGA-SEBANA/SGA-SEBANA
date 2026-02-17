@@ -14,7 +14,7 @@ ob_start();
         <!-- Page Header -->
         <div class="overview-wrap mb-4">
             <h2 class="title-1">Gestión de Usuarios</h2>
-            <a href="/SGA-SEBANA/public/users/create" class="au-btn au-btn-icon au-btn--green">
+            <a href="/SGA-SEBANA/public/users/create" class="au-btn au-btn-icon au-btn--green au-btn--small">
                 <i class="zmdi zmdi-plus"></i> Nuevo Usuario
             </a>
         </div>

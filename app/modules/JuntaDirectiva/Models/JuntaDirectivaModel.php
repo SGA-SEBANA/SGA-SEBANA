@@ -10,6 +10,9 @@ class JuntaDirectivaModel extends ModelBase
 
     public function getJuntaDirectiva()
     {
+        // Auto-update status for expired memberships
+        $this->checkAndCloseExpiredMemberships();
+
         $sql = "SELECT 
         a.nombre_completo AS nombre,
         jd.id,
@@ -305,6 +308,18 @@ class JuntaDirectivaModel extends ModelBase
             }
         }
         return false;
+    }
+
+    public function checkAndCloseExpiredMemberships()
+    {
+        // Update status to 'finalizado' for records where end date has passed and status is not already finalized
+        $sql = "UPDATE {$this->table} 
+                SET estado = 'finalizado' 
+                WHERE fecha_fin < CURDATE() 
+                AND estado NOT IN ('finalizado', 'Finalizado')";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
     }
 
 

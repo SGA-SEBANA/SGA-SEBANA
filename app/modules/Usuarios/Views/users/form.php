@@ -19,7 +19,7 @@ ob_start();
             <h2 class="title-1">
                 <?= $isEdit ? 'Editar Usuario' : 'Nuevo Usuario' ?>
             </h2>
-            <a href="/SGA-SEBANA/public/users" class="au-btn au-btn-icon au-btn--blue">
+            <a href="/SGA-SEBANA/public/users" class="au-btn au-btn-icon au-btn--blue au-btn--small">
                 <i class="zmdi zmdi-arrow-left"></i> Volver a la lista
             </a>
         </div>
