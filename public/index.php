@@ -11,6 +11,9 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+// Set default timezone to America/Costa_Rica
+date_default_timezone_set('America/Costa_Rica');
+
 // Start session (required for authentication)
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

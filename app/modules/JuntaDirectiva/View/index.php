@@ -12,7 +12,8 @@ ob_start();
                 <a href="/SGA-SEBANA/public/junta/create" class="au-btn au-btn-icon au-btn--green au-btn--small">
                     <i class="zmdi zmdi-plus"></i> Agregar miembro
                 </a>
-                <a href="/SGA-SEBANA/public/junta/history" class="au-btn au-btn-icon au-btn--blue au-btn--small ml-2">
+                <a href="/SGA-SEBANA/public/junta/history" class="au-btn au-btn-icon au-btn--blue au-btn--small ml-2"
+                    style="margin-left: 10px;">
                     <i class="zmdi zmdi-time"></i> Ver historial
                 </a>
             </div>
