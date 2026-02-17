@@ -24,17 +24,35 @@ class JuntaDirectivaController
 
    }
 
+   public function validarCargo($cargo = null){
+      $model = new JuntaDirectivaModel();
+      if ($cargo === null) {
+         return $model->getCargosActivos();
+      }
+      return $model->cargoExists($cargo);
+}
 
 
    public function create()
    {
+      session_start();
       $model = new JuntaDirectivaModel();
 
       if ($_POST) {
 
          if (!empty($_POST['fecha_fin']) && $_POST['fecha_fin'] < $_POST['fecha_inicio']) {
-            die("Error: La fecha de fin no puede ser anterior a la fecha de inicio.");
+            $_SESSION['error'] = "Error: La fecha de fin no puede ser anterior a la fecha de inicio.";
+            header("Location: /SGA-SEBANA/public/junta/create");
+            exit;
          }
+
+          if ($this->validarCargo($_POST['cargo'])) {
+            $_SESSION['error'] = "Ya existe un miembro con este cargo!";
+            header("Location: /SGA-SEBANA/public/junta/create");
+            exit;
+            
+         }
+  
 
          $juntaId = $model->createMiembroJunta(
             $_POST['afiliado_id'],
@@ -66,7 +84,9 @@ class JuntaDirectivaController
             foreach ($_FILES['documentos']['name'] as $i => $nombreOriginal) {
 
                if ($_FILES['documentos']['size'][$i] > 5 * 1024 * 1024) {
-                  die("Archivo muy grande");
+                 $_SESSION['error'] = "El archivo excede el tamaño máximo permitido (5MB).";
+                 header("Location: /SGA-SEBANA/public/junta/create");
+                 exit;
                }
 
                $finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -75,7 +95,9 @@ class JuntaDirectivaController
                $permitidos = ['application/pdf', 'image/jpeg', 'image/png'];
 
                if (!in_array($mime, $permitidos)) {
-                  die("Tipo de archivo no permitido");
+                  $_SESSION['error'] = "Tipo de archivo no permitido. Solo se permiten PDF, JPEG y PNG.";
+                   header("Location: /SGA-SEBANA/public/junta/create");
+                   exit;
                }
 
                $ext = pathinfo($nombreOriginal, PATHINFO_EXTENSION);
@@ -96,8 +118,10 @@ class JuntaDirectivaController
          exit;
       }
 
-
       $afiliados = $model->getAfiliados();
+
+      $error = $_SESSION['error'] ?? null;
+      unset($_SESSION['error']);
       require BASE_PATH . '/app/modules/JuntaDirectiva/View/create.php';
    }
 

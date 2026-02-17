@@ -64,6 +64,27 @@ class JuntaDirectivaModel extends ModelBase
     }
 
 
+    
+   public function getCargosActivos()
+   {
+       $sql = "SELECT DISTINCT cargo FROM {$this->table} WHERE LOWER(estado) IN ('vigente','suspendido')";
+       $stmt = $this->db->prepare($sql);
+       $stmt->execute();
+       return array_column($stmt->fetchAll(\PDO::FETCH_ASSOC), 'cargo');
+   }
+
+
+   public function cargoExists($cargo)
+   {
+       $sql = "SELECT COUNT(*) as c FROM {$this->table} WHERE LOWER(cargo) = LOWER(:cargo) AND LOWER(estado) IN ('vigente','suspendido')";
+       $stmt = $this->db->prepare($sql);
+       $stmt->bindParam(':cargo', $cargo);
+       $stmt->execute();
+       $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+       return !empty($result) && (int)$result['c'] > 0;
+   }
+
+
 
     public function createMiembroJunta($afiliado_id, $cargo, $estado, $fecha_inicio, $fecha_fin, $periodo, $responsabilidades, $observaciones, $fecha_actualizacion)
     {
