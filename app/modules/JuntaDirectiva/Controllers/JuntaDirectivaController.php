@@ -7,12 +7,12 @@ use App\Modules\Usuarios\Models\Bitacora;
 class JuntaDirectivaController
 {
 
-
    public function index()
    {
       $model = new JuntaDirectivaModel();
       $junta = $model->getJuntaDirectiva();
       require BASE_PATH . '/app/modules/JuntaDirectiva/View/index.php';
+      
    }
 
 
@@ -78,6 +78,7 @@ class JuntaDirectivaController
             'descripcion' => "Registro de nuevo miembro de junta: {$_POST['cargo']}",
             'datos_nuevos' => $_POST
          ]);
+
 
          if (!empty($_FILES['documentos']['name'][0])) {
 
