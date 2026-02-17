@@ -12,10 +12,7 @@
 
                 <form action="/SGA-SEBANA/public/afiliados/procesar-baja/<?= $afiliado['id'] ?>" method="POST">
 
-                    <div class="form-group">
-                        <label>Fecha de Baja</label>
-                        <input type="date" name="fecha_baja" class="form-control" required>
-                    </div>
+                    
 
                     <div class="form-group mt-3">
                         <label>Tipo de Baja</label>

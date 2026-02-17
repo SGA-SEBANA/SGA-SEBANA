@@ -10,7 +10,8 @@ class ReporteDeExclusionDeAfiliado extends ModelBase
 
     public function getAll($filtros = [])
     {
-        $sql = "SELECT * FROM {$this->table} WHERE (fecha_baja IS NOT NULL OR estado = 'inactivo')";
+        $sql = "SELECT * FROM {$this->table} WHERE estado = 'inactivo'";
+
         $params = [];
 
         if (!empty($filtros['fecha_inicio']) && !empty($filtros['fecha_fin'])) {

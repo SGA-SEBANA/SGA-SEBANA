@@ -212,7 +212,7 @@ class AfiliadosController extends ControllerBase
     $modelo = new Afiliados();
 
     $data = [
-        'fecha_baja' => $_POST['fecha_baja'],
+        'fecha_baja' => date('Y-m-d'), 
         'motivo_baja' => $_POST['motivo_baja'],
         'tipo_baja' => $_POST['tipo_baja']
     ];
@@ -222,6 +222,7 @@ class AfiliadosController extends ControllerBase
     header('Location: /SGA-SEBANA/public/afiliados?success=Afiliado desactivado correctamente');
     exit;
 }
+
 
 
 
