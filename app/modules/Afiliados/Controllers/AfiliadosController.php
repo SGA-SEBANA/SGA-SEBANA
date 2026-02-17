@@ -189,4 +189,40 @@ class AfiliadosController extends ControllerBase
             'observaciones' => trim($post['observaciones'] ?? '')
         ];
     }
+  public function desactivar($id)
+{
+    $modelo = new Afiliados();
+    $afiliado = $modelo->getById($id);
+
+    if (!$afiliado) {
+        header('Location: /SGA-SEBANA/public/afiliados');
+        exit;
+    }
+
+    $data = [
+        'titulo' => 'Desactivar Afiliado',
+        'afiliado' => $afiliado
+    ];
+
+    $this->view('baja', $data);
+}
+
+    public function procesarBaja($id)
+{
+    $modelo = new Afiliados();
+
+    $data = [
+        'fecha_baja' => $_POST['fecha_baja'],
+        'motivo_baja' => $_POST['motivo_baja'],
+        'tipo_baja' => $_POST['tipo_baja']
+    ];
+
+    $modelo->registrarBaja($id, $data);
+
+    header('Location: /SGA-SEBANA/public/afiliados?success=Afiliado desactivado correctamente');
+    exit;
+}
+
+
+
 }

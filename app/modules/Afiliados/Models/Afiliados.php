@@ -188,4 +188,23 @@ class Afiliados extends ModelBase
 
         return $nuevoEstado; // Retornamos el nuevo estado para loguearlo
     }
+    public function registrarBaja($id, $data)
+{
+    $sql = "UPDATE {$this->table} SET
+                estado = 'inactivo',
+                fecha_baja = :fecha_baja,
+                motivo_baja = :motivo_baja,
+                tipo_baja = :tipo_baja
+            WHERE id = :id";
+
+    $stmt = $this->db->prepare($sql);
+
+    return $stmt->execute([
+        'fecha_baja' => $data['fecha_baja'],
+        'motivo_baja' => $data['motivo_baja'],
+        'tipo_baja' => $data['tipo_baja'],
+        'id' => $id
+    ]);
+}
+
 }

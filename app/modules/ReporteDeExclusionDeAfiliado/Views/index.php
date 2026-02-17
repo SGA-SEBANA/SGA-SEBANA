@@ -23,6 +23,19 @@ ob_start();
                      value="<?= htmlspecialchars($filtros['nombre'] ?? '') ?>"
                      placeholder="Ingrese nombre">
             </div>
+             <div class="col-md-3">
+    <label for="fecha_inicio">Fecha inicio:</label>
+    <input type="date" name="fecha_inicio" id="fecha_inicio"
+           class="form-control"
+           value="<?= htmlspecialchars($filtros['fecha_inicio'] ?? '') ?>">
+  </div>
+
+  <div class="col-md-3">
+    <label for="fecha_fin">Fecha fin:</label>
+    <input type="date" name="fecha_fin" id="fecha_fin"
+           class="form-control"
+           value="<?= htmlspecialchars($filtros['fecha_fin'] ?? '') ?>">
+  </div>
             <div class="col-md-8 text-right align-self-end">
               <button type="submit" class="au-btn au-btn-icon au-btn--blue au-btn--small">
                 <i class="zmdi zmdi-search"></i> Buscar

@@ -27,35 +27,44 @@ ob_start();
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="q" class="control-label mb-1">Buscar</label>
-                                <input id="q" name="q" type="text" class="form-control" placeholder="Nombre o Cédula..."
+                                <input id="q" name="q" type="text" class="form-control"
+                                    placeholder="Nombre o Cédula..."
                                     value="<?= htmlspecialchars($filtros['busqueda']) ?>">
                             </div>
                         </div>
+
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label for="oficina" class="control-label mb-1">Oficina</label>
                                 <select name="oficina_id" id="oficina" class="form-control">
                                     <option value="">Todas las Oficinas</option>
                                     <?php foreach ($oficinas as $of): ?>
-                                        <option value="<?= $of['id'] ?>" <?= $filtros['oficina_id'] == $of['id'] ? 'selected' : '' ?>>
+                                        <option value="<?= $of['id'] ?>"
+                                            <?= $filtros['oficina_id'] == $of['id'] ? 'selected' : '' ?>>
                                             <?= htmlspecialchars($of['nombre']) ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
                         </div>
+
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label for="estado" class="control-label mb-1">Estado</label>
                                 <select name="estado" id="estado" class="form-control">
                                     <option value="">Todos</option>
-                                    <option value="activo" <?= $filtros['estado'] === 'activo' ? 'selected' : '' ?>>Activos
+                                    <option value="activo"
+                                        <?= $filtros['estado'] === 'activo' ? 'selected' : '' ?>>
+                                        Activos
                                     </option>
-                                    <option value="inactivo" <?= $filtros['estado'] === 'inactivo' ? 'selected' : '' ?>>
-                                        Inactivos</option>
+                                    <option value="inactivo"
+                                        <?= $filtros['estado'] === 'inactivo' ? 'selected' : '' ?>>
+                                        Inactivos
+                                    </option>
                                 </select>
                             </div>
                         </div>
+
                         <div class="col-md-2 d-flex align-items-end">
                             <button type="submit" class="btn btn-primary btn-block">
                                 <i class="zmdi zmdi-search"></i> Filtrar
@@ -68,11 +77,10 @@ ob_start();
 
         <!-- ACCIONES -->
         <div class="table-data__tool">
-            <div class="table-data__tool-left">
-                <!-- Se podrían agregar botones de exportación aquí -->
-            </div>
+            <div class="table-data__tool-left"></div>
             <div class="table-data__tool-right">
-                <a href="/SGA-SEBANA/public/afiliados/create" class="au-btn au-btn-icon au-btn--green au-btn--small">
+                <a href="/SGA-SEBANA/public/afiliados/create"
+                    class="au-btn au-btn-icon au-btn--green au-btn--small">
                     <i class="zmdi zmdi-plus"></i> Nuevo Afiliado
                 </a>
             </div>
@@ -92,34 +100,45 @@ ob_start();
                         <th>Acciones</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     <?php if (empty($afiliados)): ?>
                         <tr>
                             <td colspan="7" class="text-center p-4">
-                                <?php if (!empty($filtros['busqueda'])): ?>
-                                    No se encontraron resultados para su búsqueda.
-                                <?php else: ?>
-                                    <p>No hay afiliados registrados aún.</p>
-                                    <a href="/SGA-SEBANA/public/afiliados/create" class="btn btn-primary btn-sm mt-2">Crear el
-                                        primero</a>
-                                <?php endif; ?>
+                                <p>No hay afiliados registrados aún.</p>
+                                <a href="/SGA-SEBANA/public/afiliados/create"
+                                    class="btn btn-primary btn-sm mt-2">
+                                    Crear el primero
+                                </a>
                             </td>
                         </tr>
                     <?php else: ?>
+
                         <?php foreach ($afiliados as $afiliado): ?>
                             <tr class="tr-shadow">
                                 <td>
                                     <?= htmlspecialchars($afiliado['nombre_completo']) ?>
-                                    <div class="small text-muted"><?= htmlspecialchars($afiliado['correo']) ?></div>
+                                    <div class="small text-muted">
+                                        <?= htmlspecialchars($afiliado['correo']) ?>
+                                    </div>
                                 </td>
+
                                 <td>
-                                    <span class="block-email"><?= htmlspecialchars($afiliado['cedula']) ?></span>
+                                    <span class="block-email">
+                                        <?= htmlspecialchars($afiliado['cedula']) ?>
+                                    </span>
                                 </td>
+
                                 <td><?= htmlspecialchars($afiliado['oficina_nombre'] ?? '-') ?></td>
+
                                 <td>
-                                    <?= !empty($afiliado['categoria_nombre']) ? htmlspecialchars($afiliado['categoria_nombre']) : '-' ?>
+                                    <?= !empty($afiliado['categoria_nombre'])
+                                        ? htmlspecialchars($afiliado['categoria_nombre'])
+                                        : '-' ?>
                                 </td>
+
                                 <td><?= htmlspecialchars($afiliado['telefono']) ?></td>
+
                                 <td>
                                     <?php if ($afiliado['estado'] === 'activo'): ?>
                                         <span class="status--process">Activo</span>
@@ -127,41 +146,63 @@ ob_start();
                                         <span class="status--denied">Inactivo</span>
                                     <?php endif; ?>
                                 </td>
+
                                 <td>
                                     <div class="table-data-feature">
-                                        <a href="/SGA-SEBANA/public/afiliados/edit/<?= $afiliado['id'] ?>" class="item"
-                                            data-toggle="tooltip" data-placement="top" title="Editar">
+
+                                        <!-- EDITAR -->
+                                        <a href="/SGA-SEBANA/public/afiliados/edit/<?= $afiliado['id'] ?>"
+                                            class="item"
+                                            data-toggle="tooltip"
+                                            title="Editar">
                                             <i class="zmdi zmdi-edit"></i>
                                         </a>
 
-                                        <form action="/SGA-SEBANA/public/afiliados/toggle/<?= $afiliado['id'] ?>" method="post"
-                                            style="display:inline;">
-                                            <button type="submit" class="item" data-toggle="tooltip" data-placement="top"
-                                                title="<?= $afiliado['estado'] === 'activo' ? 'Desactivar' : 'Activar' ?>"
-                                                onclick="return confirm('¿Estás seguro de cambiar el estado?')">
+                                        <!-- DESACTIVAR / ACTIVAR -->
+                                        <?php if ($afiliado['estado'] === 'activo'): ?>
 
-                                                <?php if ($afiliado['estado'] === 'activo'): ?>
-                                                    <i class="zmdi zmdi-block" style="color: #fa4251;"></i>
-                                                <?php else: ?>
-                                                    <i class="zmdi zmdi-check" style="color: #00b5e9;"></i>
-                                                <?php endif; ?>
+                                            <!-- Ahora abre vista de baja -->
+                                            <a href="/SGA-SEBANA/public/afiliados/desactivar/<?= $afiliado['id'] ?>"
+                                                class="item"
+                                                data-toggle="tooltip"
+                                                title="Desactivar">
+                                                <i class="zmdi zmdi-block"
+                                                    style="color: #fa4251;"></i>
+                                            </a>
 
-                                            </button>
-                                        </form>
-                                         <!-- 🔗 Nuevo botón para generar carné -->
-    <?php if ($afiliado['estado'] === 'activo'): ?>
-        <a href="/SGA-SEBANA/public/carnets/emitir/<?= $afiliado['id'] ?>" class="item"
-           data-toggle="tooltip" data-placement="top" title="Generar Carné">
-            <i class="zmdi zmdi-card"></i>
-        </a>
-    <?php endif; ?>
+                                        <?php else: ?>
 
+                                            <!-- Activar normal -->
+                                            <form action="/SGA-SEBANA/public/afiliados/toggle/<?= $afiliado['id'] ?>"
+                                                method="post"
+                                                style="display:inline;">
+                                                <button type="submit"
+                                                    class="item"
+                                                    data-toggle="tooltip"
+                                                    title="Activar">
+                                                    <i class="zmdi zmdi-check"
+                                                        style="color: #00b5e9;"></i>
+                                                </button>
+                                            </form>
+
+                                        <?php endif; ?>
+
+                                        <!-- GENERAR CARNÉ -->
+                                        <?php if ($afiliado['estado'] === 'activo'): ?>
+                                            <a href="/SGA-SEBANA/public/carnets/emitir/<?= $afiliado['id'] ?>"
+                                                class="item"
+                                                data-toggle="tooltip"
+                                                title="Generar Carné">
+                                                <i class="zmdi zmdi-card"></i>
+                                            </a>
+                                        <?php endif; ?>
 
                                     </div>
                                 </td>
                             </tr>
                             <tr class="spacer"></tr>
                         <?php endforeach; ?>
+
                     <?php endif; ?>
                 </tbody>
             </table>
