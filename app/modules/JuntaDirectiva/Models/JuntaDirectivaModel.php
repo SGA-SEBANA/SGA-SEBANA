@@ -21,10 +21,12 @@ class JuntaDirectivaModel extends ModelBase
         jd.fecha_fin,
         jd.estado,
         jd.documentos
-    FROM junta_directiva jd
-    INNER JOIN afiliados a ON jd.afiliado_id = a.id
-    WHERE jd.estado IN ('vigente','suspendido','Vigente','Suspendido')
-    ORDER BY jd.fecha_inicio DESC";
+
+        FROM junta_directiva jd
+        INNER JOIN afiliados a ON jd.afiliado_id = a.id
+        WHERE jd.estado IN ('vigente','suspendido','Vigente','Suspendido')
+        ORDER BY jd.fecha_inicio DESC";       
+
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
@@ -34,12 +36,16 @@ class JuntaDirectivaModel extends ModelBase
             $docs = json_decode($row['documentos'] ?? '[]', true);
             $row['total_documentos'] = is_array($docs) ? count($docs) : 0;
             unset($row['documentos']);
+
         }
 
         return $results;
+
     }
+
     public function gethistorial()
     {
+             
         $sql = "SELECT 
         a.nombre_completo AS nombre,
         jd.id,
@@ -48,11 +54,11 @@ class JuntaDirectivaModel extends ModelBase
         jd.fecha_fin,
         jd.estado,
         jd.documentos
-    FROM junta_directiva jd
-    INNER JOIN afiliados a ON jd.afiliado_id = a.id
-    WHERE jd.estado IN ('finalizado','Finalizado')
-    ORDER BY jd.fecha_inicio DESC";
 
+        FROM junta_directiva jd
+        INNER JOIN afiliados a ON jd.afiliado_id = a.id
+        WHERE jd.estado IN ('finalizado','Finalizado')
+        ORDER BY jd.fecha_inicio DESC";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
@@ -63,13 +69,39 @@ class JuntaDirectivaModel extends ModelBase
             $row['total_documentos'] = is_array($docs) ? count($docs) : 0;
             unset($row['documentos']);
         }
+        
         return $results;
     }
+
+
+   public function getCargosActivos()
+   {
+    
+       $sql = "SELECT DISTINCT cargo FROM {$this->table} WHERE LOWER(estado) IN ('vigente','suspendido')";
+       $stmt = $this->db->prepare($sql);
+       $stmt->execute();
+       return array_column($stmt->fetchAll(\PDO::FETCH_ASSOC), 'cargo');
+
+   }
+
+
+   public function cargoExists($cargo)
+   {
+
+       $sql = "SELECT COUNT(*) as c FROM {$this->table} WHERE LOWER(cargo) = LOWER(:cargo) AND LOWER(estado) IN ('vigente','suspendido')";
+       $stmt = $this->db->prepare($sql);
+       $stmt->bindParam(':cargo', $cargo);
+       $stmt->execute();
+       $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+       return !empty($result) && (int)$result['c'] > 0;
+
+   }
 
 
 
     public function createMiembroJunta($afiliado_id, $cargo, $estado, $fecha_inicio, $fecha_fin, $periodo, $responsabilidades, $observaciones, $fecha_actualizacion)
     {
+
         $sql = "INSERT INTO {$this->table}(
             afiliado_id,
             cargo,
@@ -256,6 +288,7 @@ class JuntaDirectivaModel extends ModelBase
         $stmt->execute([$juntaId]);
         $result = $stmt->fetch(\PDO::FETCH_ASSOC);
 
+
         if ($result && !empty($result['documentos'])) {
             $docs = json_decode($result['documentos'], true);
             if (is_array($docs)) {
@@ -269,11 +302,12 @@ class JuntaDirectivaModel extends ModelBase
         }
 
         return null;
+
     }
+
 
     public function deleteDocumento($id)
     {
-
         $parts = explode('_', $id);
         if (count($parts) < 2) {
             return false;

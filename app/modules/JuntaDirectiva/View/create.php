@@ -14,6 +14,12 @@ ob_start();
             </a>
         </div>
 
+        <?php if(!empty($error)): ?>
+            <div class="alert alert-danger" role="alert">
+                <?= $error ?>
+            </div>
+        <?php endif; ?>
+        
         <form action="/SGA-SEBANA/public/junta/create" method="post" enctype="multipart/form-data"
             class="form-horizontal">
 
