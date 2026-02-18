@@ -43,6 +43,9 @@ $authUser = SecurityHelper::getAuthUser();
     <link href="/SGA-SEBANA/public/assets/css/theme.css" rel="stylesheet" media="all">
     <link href="/SGA-SEBANA/public/assets/css/custom-fixes.css?v=2" rel="stylesheet" media="all">
 
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/SGA-SEBANA/public/assets/img/favicon/icono-SEBANA.png" type="image/x-icon">
+
 </head>
 
 <body>

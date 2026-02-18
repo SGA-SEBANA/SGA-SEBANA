@@ -14,7 +14,7 @@ ob_start();
         <!-- Page Header -->
         <div class="overview-wrap mb-4">
             <h2 class="title-1">Detalle de Usuario</h2>
-            <a href="/SGA-SEBANA/public/users" class="au-btn au-btn-icon au-btn--blue">
+            <a href="/SGA-SEBANA/public/users" class="au-btn au-btn-icon au-btn--blue au-btn--small">
                 <i class="zmdi zmdi-arrow-left"></i> Volver
             </a>
         </div>
