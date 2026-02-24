@@ -30,9 +30,9 @@ ob_start();
                 <strong><i class="zmdi zmdi-filter-list"></i> Búsqueda y Filtros</strong>
             </div>
             <div class="card-body">
-                <form action="/SGA-SEBANA/public/categorias" method="GET">
+                <form action="/SGA-SEBANA/public/Categorias" method="GET">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label for="q" class="control-label mb-1">Buscar Categoría</label>
                                 <input id="q" name="q" type="text" class="form-control"
@@ -41,13 +41,25 @@ ob_start();
                             </div>
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label for="estado" class="control-label mb-1">Estado</label>
                                 <select name="estado" id="estado" class="form-control">
                                     <option value="">Todos los estados</option>
                                     <option value="activo" <?= ($filtros['estado'] ?? '') === 'activo' ? 'selected' : '' ?>>Activos</option>
                                     <option value="inactivo" <?= ($filtros['estado'] ?? '') === 'inactivo' ? 'selected' : '' ?>>Inactivos</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="tipo" class="control-label mb-1">Tipo</label>
+                                <select name="tipo" id="tipo" class="form-control">
+                                    <option value="">Todos los tipos</option>
+                                    <option value="afiliado" <?= ($filtros['tipo'] ?? '') === 'afiliado' ? 'selected' : '' ?>>Afiliado</option>
+                                    <option value="caso_rrll" <?= ($filtros['tipo'] ?? '') === 'caso_rrll' ? 'selected' : '' ?>>Caso RRLL</option>
+                                    <option value="general" <?= ($filtros['tipo'] ?? '') === 'general' ? 'selected' : '' ?>>General</option>
                                 </select>
                             </div>
                         </div>
@@ -65,7 +77,7 @@ ob_start();
         <div class="table-data__tool">
             <div class="table-data__tool-left"></div>
             <div class="table-data__tool-right">
-                <a href="/SGA-SEBANA/public/categorias/create"
+                <a href="/SGA-SEBANA/public/Categorias/create"
                     class="au-btn au-btn-icon au-btn--green au-btn--small">
                     <i class="zmdi zmdi-plus"></i> Nueva Categoría
                 </a>
@@ -79,8 +91,10 @@ ob_start();
                         <th>ID</th>
                         <th>Nombre de Categoría</th>
                         <th>Descripción</th>
+                        <th>Tipo</th>
                         <th>Estado</th>
                         <th>Fecha Registro</th>
+                        <th>Fecha Actualización</th>
                         <th class="text-right">Acciones</th>
                     </tr>
                 </thead>
@@ -91,7 +105,7 @@ ob_start();
                             <td colspan="6" class="text-center p-5 bg-white">
                                 <i class="zmdi zmdi-info-outline zmdi-hc-3x text-muted mb-3"></i>
                                 <p>No se encontraron categorías con los filtros aplicados.</p>
-                                <a href="/SGA-SEBANA/public/categorias" class="btn btn-link btn-sm">Limpiar filtros</a>
+                                <a href="/SGA-SEBANA/public/Categorias" class="btn btn-link btn-sm">Limpiar filtros</a>
                             </td>
                         </tr>
                     <?php else: ?>
@@ -108,22 +122,44 @@ ob_start();
                                     <span class="desc"><?= htmlspecialchars($cat['descripcion'] ?: 'Sin descripción') ?></span>
                                 </td>
                                 <td>
+                                    <span class="au-badge au-badge--blue px-2 py-1">
+                                        <?= htmlspecialchars($cat['tipo'] ?? 'Sin tipo') ?>
+                                    </span>
+                                </td>
+                                <td>
                                     <?php if ($cat['estado'] === 'activo'): ?>
                                         <span class="status--process">Activo</span>
                                     <?php else: ?>
                                         <span class="status--denied">Inactivo</span>
                                     <?php endif; ?>
                                 </td>
-                                <td><?= date('d/m/Y', strtotime($cat['created_at'])) ?></td>
+                                <td>
+                                    <?php
+                                    $fecha = $cat['fecha_creacion'] ?? null;
+                                    if ($fecha && strtotime($fecha)) {
+                                        echo date('d/m/Y', strtotime($fecha));
+                                    } else {
+                                        echo 'Sin fecha';
+                                    }
+                                    ?>
+                                </td>
+                                <td>
+                                    <?php
+                                    $fechaAct = $cat['fecha_actualizacion'] ?? null;
+                                    if ($fechaAct && strtotime($fechaAct)) {
+                                        echo date('d/m/Y H:i', strtotime($fechaAct));
+                                    } else {
+                                        echo 'Sin actualización';
+                                    }
+                                    ?>
+                                </td>
                                 <td>
                                     <div class="table-data-feature">
-                                        
-                                        <a href="/SGA-SEBANA/public/categorias/<?= $cat['id'] ?>/edit" 
+                                        <a href="/SGA-SEBANA/public/Categorias/<?= $cat['id'] ?>/edit" 
                                            class="item" data-toggle="tooltip" title="Editar">
                                             <i class="zmdi zmdi-edit"></i>
                                         </a>
-
-                                        <form action="/SGA-SEBANA/public/categorias/<?= $cat['id'] ?>/toggle" method="POST" style="display:inline;">
+                                        <form action="/SGA-SEBANA/public/Categorias/<?= $cat['id'] ?>/toggle" method="POST" style="display:inline;">
                                             <?php if ($cat['estado'] === 'activo'): ?>
                                                 <button type="submit" class="item" data-toggle="tooltip" title="Desactivar" onclick="return confirm('¿Inactivar categoría?');">
                                                     <i class="zmdi zmdi-block" style="color: #fa4251;"></i>
@@ -134,8 +170,7 @@ ob_start();
                                                 </button>
                                             <?php endif; ?>
                                         </form>
-
-                                        <a href="/SGA-SEBANA/public/categorias/<?= $cat['id'] ?>/show" 
+                                        <a href="/SGA-SEBANA/public/Categorias/<?= $cat['id'] ?>/show" 
                                            class="item" data-toggle="tooltip" title="Ver Detalles">
                                             <i class="zmdi zmdi-more"></i>
                                         </a>

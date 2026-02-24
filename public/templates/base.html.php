@@ -136,6 +136,11 @@ $authUser = SecurityHelper::getAuthUser();
                             </a>
                         </li>
                         <li>
+                            <a href="/SGA-SEBANA/public/Categorias">
+                                <i class="fas fa-list"></i> Categorias
+                            </a>
+                        </li>
+                        <li>
                             <a href="/SGA-SEBANA/public/ui/chart">
                                 <i class="fas fa-chart-bar"></i>Charts</a>
                         </li>

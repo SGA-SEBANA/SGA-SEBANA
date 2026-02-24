@@ -15,7 +15,8 @@ class CategoriaController extends ControllerBase {
     public function index() {
         $filtros = [
             'q' => $_GET['q'] ?? '',
-            'estado' => $_GET['estado'] ?? ''
+            'estado' => $_GET['estado'] ?? '',
+            'tipo' => $_GET['tipo'] ?? ''
         ];
 
         $categorias = $this->model->obtenerTodas($filtros);
@@ -36,7 +37,7 @@ class CategoriaController extends ControllerBase {
         $categoria = $this->model->find($id);
 
         if (!$categoria) {
-            $this->redirect('/SGA-SEBANA/public/categorias?error=no_encontrado');
+            $this->redirect('/SGA-SEBANA/public/Categorias?error=no_encontrado');
             return;
         }
 
@@ -56,24 +57,25 @@ class CategoriaController extends ControllerBase {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nombre = trim($_POST['nombre'] ?? '');
             $descripcion = trim($_POST['descripcion'] ?? '');
+                $tipo = trim($_POST['tipo'] ?? 'general'); // Ensure $tipo is passed correctly
 
             if (empty($nombre)) {
-                $this->redirect('/SGA-SEBANA/public/categorias/create?error=vacio');
+                $this->redirect('/SGA-SEBANA/public/Categorias/create?error=vacio');
                 return;
             }
 
             if ($this->model->existeNombre($nombre)) {
-                $this->redirect('/SGA-SEBANA/public/categorias/create?error=duplicado');
+                $this->redirect('/SGA-SEBANA/public/Categorias/create?error=duplicado');
                 return;
             }
 
-            if ($this->model->registrar($nombre, $descripcion)) {
+                if ($this->model->registrar($nombre, $descripcion, $tipo)) {
                 // HU-GC-01: Notificación y correo de registro exitoso
                 $this->enviarNotificacionMail($nombre, 'registro');
-                $this->redirect('/SGA-SEBANA/public/categorias?success=creado');
+                $this->redirect('/SGA-SEBANA/public/Categorias?success=creado');
                 return;
             } else {
-                $this->redirect('/SGA-SEBANA/public/categorias/create?error=db');
+                $this->redirect('/SGA-SEBANA/public/Categorias/create?error=db');
                 return;
             }
         }
@@ -83,7 +85,7 @@ class CategoriaController extends ControllerBase {
         $categoria = $this->model->find($id);
 
         if (!$categoria) {
-            $this->redirect('/SGA-SEBANA/public/categorias?error=no_encontrado');
+            $this->redirect('/SGA-SEBANA/public/Categorias?error=no_encontrado');
             return;
         }
 
@@ -97,23 +99,24 @@ class CategoriaController extends ControllerBase {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nombre = trim($_POST['nombre'] ?? '');
             $descripcion = trim($_POST['descripcion'] ?? '');
+                $tipo = trim($_POST['tipo'] ?? 'general'); // Ensure $tipo is passed correctly
 
             if (empty($nombre)) {
-                $this->redirect("/SGA-SEBANA/public/categorias/$id/edit?error=vacio");
+                $this->redirect("/SGA-SEBANA/public/Categorias/$id/edit?error=vacio");
                 return;
             }
 
             if ($this->model->existeNombre($nombre, $id)) {
-                $this->redirect("/SGA-SEBANA/public/categorias/$id/edit?error=duplicado");
+                $this->redirect("/SGA-SEBANA/public/Categorias/$id/edit?error=duplicado");
                 return;
             }
 
-            if ($this->model->actualizar($id, $nombre, $descripcion)) {
+                if ($this->model->actualizar($id, $nombre, $descripcion, $tipo)) {
                 // HU-GC-02: Notificación y correo informando la actualización
                 $this->enviarNotificacionMail($nombre, 'actualización');
-                $this->redirect('/SGA-SEBANA/public/categorias?success=actualizado');
+                $this->redirect('/SGA-SEBANA/public/Categorias?success=actualizado');
             } else {
-                $this->redirect("/SGA-SEBANA/public/categorias/$id/edit?error=db");
+                $this->redirect("/SGA-SEBANA/public/Categorias/$id/edit?error=db");
             }
         }
     }
@@ -123,9 +126,9 @@ class CategoriaController extends ControllerBase {
         if ($this->model->toggleStatus($id)) {
             // HU-GC-03: Notificación y correo confirmando la acción
             $this->enviarNotificacionMail($categoria['nombre'] ?? 'ID: '.$id, 'cambio de estado');
-            $this->redirect('/SGA-SEBANA/public/categorias?success=estado_cambiado');
+            $this->redirect('/SGA-SEBANA/public/Categorias?success=estado_cambiado');
         } else {
-            $this->redirect('/SGA-SEBANA/public/categorias?error=db');
+            $this->redirect('/SGA-SEBANA/public/Categorias?error=db');
         }
     }
 
@@ -140,9 +143,9 @@ class CategoriaController extends ControllerBase {
             if ($this->model->inactivar($id)) {
                 // HU-GC-03: Notificación y correo tras inactivación lógica
                 $this->enviarNotificacionMail($nombre, 'inactivación (con elementos asociados)');
-                $this->redirect('/SGA-SEBANA/public/categorias?success=inactivado_por_asociacion');
+                $this->redirect('/SGA-SEBANA/public/Categorias?success=inactivado_por_asociacion');
             } else {
-                $this->redirect('/SGA-SEBANA/public/categorias?error=db');
+                $this->redirect('/SGA-SEBANA/public/Categorias?error=db');
             }
             return;
         }
@@ -150,9 +153,9 @@ class CategoriaController extends ControllerBase {
         if ($this->model->eliminar($id)) {
             // HU-GC-03: Notificación y correo tras eliminación física
             $this->enviarNotificacionMail($nombre, 'eliminación física');
-            $this->redirect('/SGA-SEBANA/public/categorias?success=eliminado_fisico');
+            $this->redirect('/SGA-SEBANA/public/Categorias?success=eliminado_fisico');
         } else {
-            $this->redirect('/SGA-SEBANA/public/categorias?error=db');
+            $this->redirect('/SGA-SEBANA/public/Categorias?error=db');
         }
     }
 

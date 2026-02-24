@@ -42,19 +42,21 @@ class CategoriaModel extends ModelBase {
         $params = [];
 
         if (!empty($filtros['q'])) {
-            // Se usan marcadores únicos para evitar errores en ciertos motores PDO
             $sql .= " AND (nombre LIKE :q_nombre OR descripcion LIKE :q_desc)";
             $busqueda = '%' . trim($filtros['q']) . '%';
             $params[':q_nombre'] = $busqueda;
             $params[':q_desc'] = $busqueda;
         }
-
         if (!empty($filtros['estado'])) {
             $sql .= " AND estado = :estado";
             $params[':estado'] = $filtros['estado'];
         }
+        if (!empty($filtros['tipo'])) {
+            $sql .= " AND tipo = :tipo";
+            $params[':tipo'] = $filtros['tipo'];
+        }
 
-        $sql .= " ORDER BY created_at DESC";
+            $sql .= " ORDER BY id ASC";
 
         try {
             $stmt = $this->db->prepare($sql);
@@ -67,13 +69,14 @@ class CategoriaModel extends ModelBase {
     }
 
     // Registro oficial en la base de datos
-    public function registrar($nombre, $descripcion) {
-        $sql = "INSERT INTO {$this->table} (nombre, descripcion, estado) VALUES (:nombre, :descripcion, 'activo')";
+    public function registrar($nombre, $descripcion, $tipo) {
+        $sql = "INSERT INTO {$this->table} (nombre, descripcion, tipo, estado) VALUES (:nombre, :descripcion, :tipo, 'activo')";
         try {
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
                 ':nombre' => trim($nombre),
-                ':descripcion' => trim($descripcion)
+                ':descripcion' => trim($descripcion),
+                ':tipo' => trim($tipo)
             ]);
         } catch (PDOException $e) {
             error_log("Error registrando categoría: " . $e->getMessage());
@@ -99,13 +102,14 @@ class CategoriaModel extends ModelBase {
     /**
      * Actualiza los datos de una categoría existente
      */
-    public function actualizar($id, $nombre, $descripcion) {
-        $sql = "UPDATE {$this->table} SET nombre = :nombre, descripcion = :descripcion WHERE id = :id";
+    public function actualizar($id, $nombre, $descripcion, $tipo) {
+        $sql = "UPDATE {$this->table} SET nombre = :nombre, descripcion = :descripcion, tipo = :tipo, fecha_actualizacion = CURRENT_TIMESTAMP WHERE id = :id";
         try {
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
                 ':nombre' => trim($nombre),
                 ':descripcion' => trim($descripcion),
+                ':tipo' => trim($tipo),
                 ':id' => $id
             ]);
         } catch (PDOException $e) {
