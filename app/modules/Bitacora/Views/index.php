@@ -98,8 +98,7 @@ ob_start();
 
                         <div class="col-md-1 d-flex align-items-end">
                             <a href="/SGA-SEBANA/public/bitacora/exportarExcel" class="btn btn-primary btn-block"
-                                style="margin-left: 10px;">
-                                <i class="zmdi zmdi-format-list-bulleted"></i> Exportar
+                                style="margin-left: 10px;"><i class="zmdi zmdi-format-list-bulleted"></i>Exportar
                             </a>
                         </div>
 
