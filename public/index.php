@@ -6,6 +6,9 @@
 // Define base 
 define('BASE_PATH', dirname(__DIR__));
 
+
+
+
 // DEBUGGING: Enable error reporting
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -109,4 +112,3 @@ try {
     echo "CRITICAL: Dispatch error: " . $e->getMessage() . "<br>";
     echo "<pre>" . $e->getTraceAsString() . "</pre>";
 }
-

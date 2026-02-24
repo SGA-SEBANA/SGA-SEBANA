@@ -1,4 +1,5 @@
 <?php
+
 // Force login check - redirect to login if not authenticated
 use App\Modules\Usuarios\Helpers\SecurityHelper;
 
@@ -116,10 +117,6 @@ $authUser = SecurityHelper::getAuthUser();
                                 <li>
                                     <a href="/SGA-SEBANA/public/users/create">Nuevo Usuario</a>
                                 </li>
-                                <li>
-                                    <a href="/SGA-SEBANA/public/bitacora">Bitácora</a>
-                                </li>
-
                             </ul>
                         </li>
                         <li>
