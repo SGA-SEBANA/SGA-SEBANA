@@ -9,7 +9,7 @@ ob_start();
     <div class="col-lg-12">
         <div class="overview-wrap mb-4">
             <h2 class="title-1">Información de la Categoría</h2>
-            <a href="/SGA-SEBANA/public/categorias" class="au-btn au-btn-icon au-btn--blue">
+            <a href="/SGA-SEBANA/public/Categorias" class="au-btn au-btn-icon au-btn--blue">
                 <i class="zmdi zmdi-arrow-left"></i> Volver al listado
             </a>
         </div>
@@ -41,10 +41,39 @@ ob_start();
                             <div class="col-sm-4 font-weight-bold text-dark">Nombre oficial:</div>
                             <div class="col-sm-8 text-muted"><?= htmlspecialchars($categoria['nombre']) ?></div>
                         </div>
-                        
+                        <div class="row mb-4">
+                            <div class="col-sm-4 font-weight-bold text-dark">Tipo:</div>
+                            <div class="col-sm-8 text-muted">
+                                <span class="au-badge au-badge--blue">
+                                    <?= htmlspecialchars($categoria['tipo'] ?? 'Sin tipo') ?>
+                                </span>
+                            </div>
+                        </div>
                         <div class="row mb-4">
                             <div class="col-sm-4 font-weight-bold text-dark">Fecha de creación:</div>
-                            <div class="col-sm-8 text-muted"><?= date('d/m/Y H:i:s', strtotime($categoria['created_at'])) ?></div>
+                            <div class="col-sm-8 text-muted">
+                                <?php
+                                $fecha = $categoria['fecha_creacion'] ?? null;
+                                if ($fecha && strtotime($fecha)) {
+                                    echo date('d/m/Y H:i:s', strtotime($fecha));
+                                } else {
+                                    echo 'Sin fecha';
+                                }
+                                ?>
+                            </div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-sm-4 font-weight-bold text-dark">Fecha de actualización:</div>
+                            <div class="col-sm-8 text-muted">
+                                <?php
+                                $fechaAct = $categoria['fecha_actualizacion'] ?? null;
+                                if ($fechaAct && strtotime($fechaAct)) {
+                                    echo date('d/m/Y H:i:s', strtotime($fechaAct));
+                                } else {
+                                    echo 'Sin actualización';
+                                }
+                                ?>
+                            </div>
                         </div>
 
                         <div class="row mb-4">
@@ -57,7 +86,7 @@ ob_start();
                         </div>
                     </div>
                     <div class="card-footer bg-white text-right py-3">
-                        <a href="/SGA-SEBANA/public/categorias/<?= $categoria['id'] ?>/edit" class="btn btn-primary btn-sm px-4">
+                        <a href="/SGA-SEBANA/public/Categorias/<?= $categoria['id'] ?>/edit" class="btn btn-primary btn-sm px-4">
                             <i class="zmdi zmdi-edit"></i> Editar Información
                         </a>
                     </div>

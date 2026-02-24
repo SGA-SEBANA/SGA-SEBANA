@@ -9,7 +9,7 @@ ob_start();
     <div class="col-lg-12">
         <div class="overview-wrap mb-4">
             <h2 class="title-1">Nueva Categoría</h2>
-            <a href="/SGA-SEBANA/public/categorias" class="au-btn au-btn-icon au-btn--blue">
+            <a href="/SGA-SEBANA/public/Categorias" class="au-btn au-btn-icon au-btn--blue">
                 <i class="zmdi zmdi-arrow-left"></i> Volver a la lista
             </a>
         </div>
@@ -27,13 +27,12 @@ ob_start();
             </div>
         <?php endif; ?>
 
-        <form action="/SGA-SEBANA/public/categorias/store" method="post" class="form-horizontal">
+        <form action="/SGA-SEBANA/public/Categorias/store" method="post" class="form-horizontal">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white py-3">
                     <strong><i class="zmdi zmdi-assignment"></i> Formulario de Registro</strong>
                 </div>
                 <div class="card-body card-block">
-                    
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <div class="form-group">
@@ -43,8 +42,18 @@ ob_start();
                                 <small class="form-text text-muted">Este nombre debe ser único para evitar conflictos en el sistema.</small>
                             </div>
                         </div>
-                        
-                        <div class="col-md-6">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="tipo" class="form-control-label font-weight-bold">Tipo <span class="text-danger">*</span></label>
+                                <select id="tipo" name="tipo" class="form-control" required>
+                                    <option value="afiliado">Afiliado</option>
+                                    <option value="caso_rrll">Caso RRLL</option>
+                                    <option value="general">General</option>
+                                </select>
+                                <small class="form-text text-muted">Selecciona el tipo de categoría.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label class="form-control-label">Estado Inicial</label>
                                 <div class="input-group">

@@ -9,7 +9,7 @@ ob_start();
     <div class="col-lg-12">
         <div class="overview-wrap mb-4">
             <h2 class="title-1">Editar Categoría</h2>
-            <a href="/SGA-SEBANA/public/categorias" class="au-btn au-btn-icon au-btn--blue">
+            <a href="/SGA-SEBANA/public/Categorias" class="au-btn au-btn-icon au-btn--blue">
                 <i class="zmdi zmdi-arrow-left"></i> Volver a la lista
             </a>
         </div>
@@ -27,7 +27,7 @@ ob_start();
             </div>
         <?php endif; ?>
 
-        <form action="/SGA-SEBANA/public/categorias/<?= $categoria['id'] ?>/update" method="post" class="form-horizontal">
+        <form action="/SGA-SEBANA/public/Categorias/<?= $categoria['id'] ?>/update" method="post" class="form-horizontal">
             <input type="hidden" name="_csrf_token" value="<?= $_SESSION['_csrf_token'] ?? '' ?>">
 
             <div class="card shadow-sm border-0">
@@ -46,8 +46,18 @@ ob_start();
                                 <small class="form-text text-muted">Asegúrate de que el nombre siga siendo descriptivo y único.</small>
                             </div>
                         </div>
-                        
-                        <div class="col-md-6">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="tipo" class="form-control-label font-weight-bold">Tipo <span class="text-danger">*</span></label>
+                                <select id="tipo" name="tipo" class="form-control" required>
+                                    <option value="afiliado" <?= $categoria['tipo'] === 'afiliado' ? 'selected' : '' ?>>Afiliado</option>
+                                    <option value="caso_rrll" <?= $categoria['tipo'] === 'caso_rrll' ? 'selected' : '' ?>>Caso RRLL</option>
+                                    <option value="general" <?= $categoria['tipo'] === 'general' ? 'selected' : '' ?>>General</option>
+                                </select>
+                                <small class="form-text text-muted">Selecciona el tipo de categoría.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label class="form-control-label">Estado Actual</label>
                                 <div class="input-group">
@@ -74,7 +84,7 @@ ob_start();
                 </div>
 
                 <div class="card-footer bg-white text-right py-3">
-                    <a href="/SGA-SEBANA/public/categorias" class="btn btn-outline-danger btn-sm px-4 mr-2">
+                    <a href="/SGA-SEBANA/public/Categorias" class="btn btn-outline-danger btn-sm px-4 mr-2">
                         <i class="zmdi zmdi-close"></i> Cancelar
                     </a>
                     <button type="submit" class="btn btn-primary btn-sm px-4 shadow-sm">
