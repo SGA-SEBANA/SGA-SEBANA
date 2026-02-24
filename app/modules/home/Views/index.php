@@ -61,6 +61,7 @@ ob_start();
             </div>
         </div>
     </div>
+
     <!-- JUNTA DIRECTIVA -->
     <div class="col-sm-6 col-lg-3">
         <div class="overview-item overview-item--c3">
@@ -82,6 +83,7 @@ ob_start();
             </div>
         </div>
     </div>
+
     <!-- USUARIOS / LOGS -->
     <div class="col-sm-6 col-lg-3">
         <div class="overview-item overview-item--c4">
@@ -155,14 +157,14 @@ ob_start();
             <div class="au-task js-list-load">
                 <div class="au-task-list js-scrollbar3">
                     <?php if (empty($recentLogs)): ?>
-                        <div class="au-task__item">
-                            <div class="au-task__item-inner">
-                                <h5 class="task">No hay actividad reciente.</h5>
-                            </div>
+                    <div class="au-task__item">
+                        <div class="au-task__item-inner">
+                            <h5 class="task">No hay actividad reciente.</h5>
                         </div>
+                    </div>
                     <?php else: ?>
-                        <?php foreach ($recentLogs as $log): ?>
-                            <?php
+                    <?php foreach ($recentLogs as $log): ?>
+                    <?php
                             // Determine color/icon based on action
                             $iconClass = 'zmdi-file-text';
                             $itemClass = 'au-task__item--primary';
@@ -177,19 +179,19 @@ ob_start();
                                 $iconClass = 'zmdi-delete';
                             }
                             ?>
-                            <div class="au-task__item <?= $itemClass ?>">
-                                <div class="au-task__item-inner">
-                                    <h5 class="task">
-                                        <a href="#"><?= $log['descripcion'] ?></a>
-                                    </h5>
-                                    <span class="time">
-                                        <i class="zmdi <?= $iconClass ?>"></i>
-                                        <?= date('H:i', strtotime($log['fecha_creacion'])) ?> -
-                                        <?= $log['usuario_nombre'] ?? 'Sistema' ?>
-                                    </span>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
+                    <div class="au-task__item <?= $itemClass ?>">
+                        <div class="au-task__item-inner">
+                            <h5 class="task">
+                                <a href="#"><?= $log['descripcion'] ?></a>
+                            </h5>
+                            <span class="time">
+                                <i class="zmdi <?= $iconClass ?>"></i>
+                                <?= date('H:i', strtotime($log['fecha_creacion'])) ?> -
+                                <?= $log['usuario_nombre'] ?? 'Sistema' ?>
+                            </span>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
                 <div class="au-task__footer">
@@ -257,81 +259,99 @@ ob_start();
 
 <!-- CHARTS JS INITIALIZATION -->
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // 1. AFILIADOS GROWTH CHART
-        try {
-            const ctxGrowth = document.getElementById("afiliadosGrowthChart");
-            if (ctxGrowth) {
-                ctxGrowth.height = 150;
-                new Chart(ctxGrowth, {
-                    type: 'line',
-                    data: {
-                        labels: <?= json_encode($stats['charts']['growth']['labels']) ?>,
-                        datasets: [{
-                            label: 'Nuevas Afiliaciones',
-                            backgroundColor: 'transparent',
-                            borderColor: 'rgba(63, 166, 255, 0.85)', // Blue
-                            pointBackgroundColor: 'rgba(63, 166, 255, 0.85)',
-                            borderWidth: 3,
-                            data: <?= json_encode($stats['charts']['growth']['data']) ?>
-                        }]
-                    },
-                    options: {
-                        maintainAspectRatio: false,
-                        responsive: true,
-                        plugins: { legend: { display: false } }, // Hide legend
-                        scales: {
-                            x: { grid: { display: false, drawBorder: false } },
-                            y: {
-                                grid: { color: "rgba(0,0,0,0.05)", drawBorder: false },
-                                ticks: { stepSize: 1 }
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. AFILIADOS GROWTH CHART
+    try {
+        const ctxGrowth = document.getElementById("afiliadosGrowthChart");
+        if (ctxGrowth) {
+            ctxGrowth.height = 150;
+            new Chart(ctxGrowth, {
+                type: 'line',
+                data: {
+                    labels: <?= json_encode($stats['charts']['growth']['labels']) ?>,
+                    datasets: [{
+                        label: 'Nuevas Afiliaciones',
+                        backgroundColor: 'transparent',
+                        borderColor: 'rgba(63, 166, 255, 0.85)', // Blue
+                        pointBackgroundColor: 'rgba(63, 166, 255, 0.85)',
+                        borderWidth: 3,
+                        data: <?= json_encode($stats['charts']['growth']['data']) ?>
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }, // Hide legend
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: "rgba(0,0,0,0.05)",
+                                drawBorder: false
+                            },
+                            ticks: {
+                                stepSize: 1
                             }
                         }
                     }
-                });
-            }
-        } catch (e) {
-            console.error("Error init Growth Chart", e);
+                }
+            });
         }
+    } catch (e) {
+        console.error("Error init Growth Chart", e);
+    }
 
-        // 2. PUESTOS DISTRIBUTION CHART (Doughnut)
-        try {
-            const ctxPie = document.getElementById("puestosPieChart");
-            if (ctxPie) {
-                ctxPie.height = 200;
-                new Chart(ctxPie, {
-                    type: 'doughnut',
-                    data: {
-                        datasets: [{
-                            data: [
-                                <?= $stats['puestos']['activos'] ?>,
-                                <?= $stats['puestos']['finalizados'] ?>,
-                                <?= $stats['puestos']['suspendidos'] ?>
-                            ],
-                            backgroundColor: [
-                                "rgba(0, 181, 233, 0.9)", // Activos (Blue/Cyan)
-                                "rgba(250, 66, 81, 0.9)", // Finalizados (Red)
-                                "rgba(255, 193, 7, 0.9)"  // Suspendidos (Yellow)
-                            ],
-                            hoverBackgroundColor: [
-                                "rgba(0, 181, 233, 0.7)",
-                                "rgba(250, 66, 81, 0.7)",
-                                "rgba(255, 193, 7, 0.7)"
-                            ]
-                        }],
-                        labels: ["Activos", "Finalizados", "Suspendidos"]
-                    },
-                    options: {
-                        maintainAspectRatio: false,
-                        responsive: true,
-                        plugins: { legend: { position: 'right' } }
+    // 2. PUESTOS DISTRIBUTION CHART (Doughnut)
+    try {
+        const ctxPie = document.getElementById("puestosPieChart");
+        if (ctxPie) {
+            ctxPie.height = 200;
+            new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [
+                            <?= $stats['puestos']['activos'] ?>,
+                            <?= $stats['puestos']['finalizados'] ?>,
+                            <?= $stats['puestos']['suspendidos'] ?>
+                        ],
+                        backgroundColor: [
+                            "rgba(0, 181, 233, 0.9)", // Activos (Blue/Cyan)
+                            "rgba(250, 66, 81, 0.9)", // Finalizados (Red)
+                            "rgba(255, 193, 7, 0.9)" // Suspendidos (Yellow)
+                        ],
+                        hoverBackgroundColor: [
+                            "rgba(0, 181, 233, 0.7)",
+                            "rgba(250, 66, 81, 0.7)",
+                            "rgba(255, 193, 7, 0.7)"
+                        ]
+                    }],
+                    labels: ["Activos", "Finalizados", "Suspendidos"]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
                     }
-                });
-            }
-        } catch (e) {
-            console.error("Error init Pie Chart", e);
+                }
+            });
         }
-    });
+    } catch (e) {
+        console.error("Error init Pie Chart", e);
+    }
+});
 </script>
 
 <?php

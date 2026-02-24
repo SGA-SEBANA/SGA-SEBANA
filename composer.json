@@ -10,7 +10,8 @@
     "require": {
         "dompdf/dompdf": "^2.0",
         "chillerlan/php-qrcode": "^4.3",
-        "endroid/qr-code": "^4.2"
+        "endroid/qr-code": "^4.2",
+        "phpoffice/phpspreadsheet": "^5.4"
 
     }
 }
