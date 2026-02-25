@@ -117,9 +117,7 @@ $authUser = SecurityHelper::getAuthUser();
                                 <li>
                                     <a href="/SGA-SEBANA/public/users/create">Nuevo Usuario</a>
                                 </li>
-                                <li>
-                                    <a href="/SGA-SEBANA/public/bitacora">Bitácora</a>
-                                </li>
+
                             </ul>
                         </li>
                         <li>
@@ -138,6 +136,11 @@ $authUser = SecurityHelper::getAuthUser();
                         <li>
                             <a href="/SGA-SEBANA/public/Categorias">
                                 <i class="fas fa-list"></i> Categorías
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/SGA-SEBANA/public/bitacora">
+                                <i class="fas fa-table"></i> Bitácora
                             </a>
                         </li>
                         <li>

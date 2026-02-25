@@ -10,7 +10,6 @@ protected $table = "bitacora";
 
 
 
-
 public function getBitacora($filtros = [])
 {
     $sql = "SELECT
