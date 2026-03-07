@@ -21,4 +21,8 @@ $router->post('/CategoriasRRLL/{id}/toggleEstado', [CategoriasRRLLController::cl
 $router->get('/CategoriasRRLL/{id}/show', [CategoriasRRLLController::class, 'show']);
 
 
+$router->get('/CategoriasRRLL/exportarHistorialPDF', [CategoriasRRLLController::class, 'exportarHistorialPDF']);
+
+
+
 

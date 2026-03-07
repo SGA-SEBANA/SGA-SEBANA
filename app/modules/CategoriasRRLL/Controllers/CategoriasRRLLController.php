@@ -4,7 +4,10 @@ namespace App\Modules\CategoriasRRLL\Controllers;
 
 use App\Core\ControllerBase;
 use App\Modules\CategoriasRRLL\Models\CategoriasRRLLModel;
-use App\Modules\Usuarios\Models\Bitacora;
+use App\Modules\Usuarios\Models\Bitacora; // para registrar acciones
+use App\Modules\Bitacora\Models\BitacoraModel; // para consultar historial
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class CategoriasRRLLController extends ControllerBase {
 
@@ -32,20 +35,20 @@ class CategoriasRRLLController extends ControllerBase {
     public function create() {
         $this->view('create', ['titulo' => 'Nueva Categoría RRLL']);
     }
+
     public function show($id) {
-    $categoria = $this->model->find($id);
+        $categoria = $this->model->find($id);
 
-    if (!$categoria) {
-        $this->redirect('/SGA-SEBANA/public/CategoriasRRLL?error=no_encontrada');
-        return;
+        if (!$categoria) {
+            $this->redirect('/SGA-SEBANA/public/CategoriasRRLL?error=no_encontrada');
+            return;
+        }
+
+        $this->view('show', [
+            'titulo' => 'Detalle Categoría RRLL',
+            'categoria' => $categoria
+        ]);
     }
-
-    $this->view('show', [
-        'titulo' => 'Detalle Categoría RRLL',
-        'categoria' => $categoria
-    ]);
-}
-
 
     public function store() {
         $nombre = trim($_POST['nombre'] ?? '');
@@ -117,7 +120,6 @@ class CategoriasRRLLController extends ControllerBase {
             return;
         }
 
-        // Si está activo y tiene asociaciones, no se puede inactivar
         if ($categoria['estado'] === 'activo' && $this->model->tieneAsociaciones($id)) {
             $this->redirect('/SGA-SEBANA/public/CategoriasRRLL?error=en_uso');
             return;
@@ -136,5 +138,43 @@ class CategoriasRRLLController extends ControllerBase {
             ]);
             $this->redirect('/SGA-SEBANA/public/CategoriasRRLL?success=estado_actualizado');
         }
+    }
+
+    // HU-CAT-04: Exportar historial de modificaciones a PDF usando BitacoraModel
+    public function exportarHistorialPDF() {
+        $bitacoraModel = new BitacoraModel();
+        $filtros = ['modulo' => 'categorias_rrll', 'accion' => 'UPDATE'];
+        $datos = $bitacoraModel->getBitacora($filtros);
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
+
+        $html = '<h2 style="text-align:center;">Historial de Categorías RRLL Modificadas</h2>';
+        $html .= '<table border="1" cellspacing="0" cellpadding="5" width="100%">';
+        $html .= '<thead><tr>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Acción</th>
+                    <th>Descripción</th>
+                    <th>Fecha</th>
+                  </tr></thead><tbody>';
+
+        foreach ($datos as $row) {
+            $html .= '<tr>
+                        <td>'.htmlspecialchars($row['id']).'</td>
+                        <td>'.htmlspecialchars($row['usuario_id']).'</td>
+                        <td>'.htmlspecialchars($row['accion']).'</td>
+                        <td>'.htmlspecialchars($row['descripcion']).'</td>
+                        <td>'.htmlspecialchars($row['fecha_creacion'] ?? '').'</td>
+                      </tr>';
+        }
+
+        $html .= '</tbody></table>';
+
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+        $dompdf->stream("historial_categorias_rrll.pdf", ["Attachment" => true]);
     }
 }

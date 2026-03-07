@@ -28,7 +28,8 @@ public function getBitacora($filtros = [])
         codigo_error,
         mensaje_error,
         url_accedida,
-        duracion_ms
+        duracion_ms,
+         fecha_creacion
     FROM {$this->table}
     WHERE 1=1
     ";
