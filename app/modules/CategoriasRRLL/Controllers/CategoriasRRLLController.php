@@ -32,6 +32,20 @@ class CategoriasRRLLController extends ControllerBase {
     public function create() {
         $this->view('create', ['titulo' => 'Nueva Categoría RRLL']);
     }
+    public function show($id) {
+    $categoria = $this->model->find($id);
+
+    if (!$categoria) {
+        $this->redirect('/SGA-SEBANA/public/CategoriasRRLL?error=no_encontrada');
+        return;
+    }
+
+    $this->view('show', [
+        'titulo' => 'Detalle Categoría RRLL',
+        'categoria' => $categoria
+    ]);
+}
+
 
     public function store() {
         $nombre = trim($_POST['nombre'] ?? '');
@@ -94,23 +108,33 @@ class CategoriasRRLLController extends ControllerBase {
         }
     }
 
-    // HU-CAT-03: Eliminar
-    public function delete($id) {
-        if ($this->model->tieneAsociaciones($id)) {
+    // HU-CAT-03: Cambiar estado (activo ↔ inactivo)
+    public function toggleEstado($id) {
+        $categoria = $this->model->find($id);
+
+        if (!$categoria) {
+            $this->redirect('/SGA-SEBANA/public/CategoriasRRLL?error=no_encontrada');
+            return;
+        }
+
+        // Si está activo y tiene asociaciones, no se puede inactivar
+        if ($categoria['estado'] === 'activo' && $this->model->tieneAsociaciones($id)) {
             $this->redirect('/SGA-SEBANA/public/CategoriasRRLL?error=en_uso');
             return;
         }
-        if ($this->model->eliminar($id)) {
-            // Bitácora HU-CAT-03
+
+        $nuevoEstado = $categoria['estado'] === 'activo' ? 'inactivo' : 'activo';
+
+        if ($this->model->cambiarEstado($id, $nuevoEstado)) {
             $bitacora = new Bitacora();
             $bitacora->log([
-                'accion' => 'DELETE',
+                'accion' => 'UPDATE',
                 'modulo' => 'categorias_rrll',
                 'entidad' => 'categoria',
                 'entidad_id' => $id,
-                'descripcion' => "Eliminación de categoría RRLL ID: $id"
+                'descripcion' => "Cambio de estado categoría RRLL ID: $id a $nuevoEstado"
             ]);
-            $this->redirect('/SGA-SEBANA/public/CategoriasRRLL?success=eliminado');
+            $this->redirect('/SGA-SEBANA/public/CategoriasRRLL?success=estado_actualizado');
         }
     }
 }

@@ -52,10 +52,14 @@ class CategoriasRRLLModel extends ModelBase {
         return $stmt->execute([':id' => $id, ':nombre' => $nombre, ':descripcion' => $descripcion]);
     }
 
-    public function eliminar($id) {
-        $stmt = $this->db->prepare("DELETE FROM {$this->table} WHERE id = :id AND tipo = 'caso_rrll'");
-        return $stmt->execute([':id' => $id]);
-    }
+    public function cambiarEstado($id, $nuevoEstado) {
+    $sql = "UPDATE {$this->table} 
+            SET estado = :estado, fecha_actualizacion = NOW() 
+            WHERE id = :id AND tipo = 'caso_rrll'";
+    $stmt = $this->db->prepare($sql);
+    return $stmt->execute([':id' => $id, ':estado' => $nuevoEstado]);
+}
+
 
     public function tieneAsociaciones($id) {
         $stmt = $this->db->prepare("SELECT COUNT(*) FROM casos_relaciones_laborales WHERE categoria_id = :id");
