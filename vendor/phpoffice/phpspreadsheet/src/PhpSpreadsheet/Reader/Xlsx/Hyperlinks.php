@@ -9,10 +9,11 @@ use SimpleXMLElement;
 
 class Hyperlinks
 {
-    private Worksheet $worksheet;
+    /** @var Worksheet */
+    private $worksheet;
 
-    /** @var string[] */
-    private array $hyperlinks = [];
+    /** @var array */
+    private $hyperlinks = [];
 
     public function __construct(Worksheet $workSheet)
     {
@@ -32,7 +33,9 @@ class Hyperlinks
     public function setHyperlinks(SimpleXMLElement $worksheetXml): void
     {
         foreach ($worksheetXml->children(Namespaces::MAIN)->hyperlink as $hyperlink) {
-            $this->setHyperlink($hyperlink, $this->worksheet);
+            if ($hyperlink !== null) {
+                $this->setHyperlink($hyperlink, $this->worksheet);
+            }
         }
     }
 
@@ -44,20 +47,19 @@ class Hyperlinks
         $attributes = Xlsx::getAttributes($hyperlink);
         foreach (Coordinate::extractAllCellReferencesInRange($attributes->ref) as $cellReference) {
             $cell = $worksheet->getCell($cellReference);
-            if (isset($attributes['location'])) {
-                $cell->getHyperlink()->setUrl('sheet://' . (string) $attributes['location']);
-            } elseif (isset($linkRel['id'])) {
-                $hyperlinkUrl = $this->hyperlinks[(string) $linkRel['id']] ?? '';
+            if (isset($linkRel['id'])) {
+                $hyperlinkUrl = $this->hyperlinks[(string) $linkRel['id']] ?? null;
+                if (isset($attributes['location'])) {
+                    $hyperlinkUrl .= '#' . (string) $attributes['location'];
+                }
                 $cell->getHyperlink()->setUrl($hyperlinkUrl);
+            } elseif (isset($attributes['location'])) {
+                $cell->getHyperlink()->setUrl('sheet://' . (string) $attributes['location']);
             }
 
             // Tooltip
             if (isset($attributes['tooltip'])) {
                 $cell->getHyperlink()->setTooltip((string) $attributes['tooltip']);
-            }
-
-            if (isset($attributes['display'])) {
-                $cell->getHyperlink()->setDisplay((string) $attributes['display']);
             }
         }
     }

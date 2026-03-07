@@ -4,13 +4,14 @@ namespace PhpOffice\PhpSpreadsheet;
 
 class Theme
 {
-    private string $themeColorName = 'Office';
+    /** @var string */
+    private $themeColorName = 'Office';
 
-    private string $themeFontName = 'Office';
+    /** @var string */
+    private $themeFontName = 'Office';
 
-    public const HYPERLINK_THEME = 10;
-    public const COLOR_SCHEME_2013_2022_NAME = 'Office 2013-2022';
-    public const COLOR_SCHEME_2013_2022 = [
+    public const COLOR_SCHEME_2013_PLUS_NAME = 'Office 2013+';
+    public const COLOR_SCHEME_2013_PLUS = [
         'dk1' => '000000',
         'lt1' => 'FFFFFF',
         'dk2' => '44546A',
@@ -24,7 +25,6 @@ class Theme
         'hlink' => '0563C1',
         'folHlink' => '954F72',
     ];
-    private const COLOR_SCHEME_2013_PLUS_NAME = 'Office 2013+';
 
     public const COLOR_SCHEME_2007_2010_NAME = 'Office 2007-2010';
     public const COLOR_SCHEME_2007_2010 = [
@@ -42,50 +42,40 @@ class Theme
         'folHlink' => '800080',
     ];
 
-    public const COLOR_SCHEME_2023_PLUS_NAME = 'Office 2023+';
-    public const COLOR_SCHEME_2023_PLUS = [
-        'dk1' => '000000',
-        'lt1' => 'FFFFFF',
-        'dk2' => '0E2841',
-        'lt2' => 'E8E8E8',
-        'accent1' => '156082',
-        'accent2' => 'E97132',
-        'accent3' => '196B24',
-        'accent4' => '0F9ED5',
-        'accent5' => 'A02B93',
-        'accent6' => '4EA72E',
-        'hlink' => '467886',
-        'folHlink' => '96607D',
-    ];
-
     /** @var string[] */
-    private array $themeColors = self::COLOR_SCHEME_2007_2010;
+    private $themeColors = self::COLOR_SCHEME_2007_2010;
 
-    private string $majorFontLatin = 'Cambria';
+    /** @var string */
+    private $majorFontLatin = 'Cambria';
 
-    private string $majorFontEastAsian = '';
+    /** @var string */
+    private $majorFontEastAsian = '';
 
-    private string $majorFontComplexScript = '';
+    /** @var string */
+    private $majorFontComplexScript = '';
 
-    private string $minorFontLatin = 'Calibri';
+    /** @var string */
+    private $minorFontLatin = 'Calibri';
 
-    private string $minorFontEastAsian = '';
+    /** @var string */
+    private $minorFontEastAsian = '';
 
-    private string $minorFontComplexScript = '';
+    /** @var string */
+    private $minorFontComplexScript = '';
 
     /**
      * Map of Major (header) fonts to write.
      *
      * @var string[]
      */
-    private array $majorFontSubstitutions = self::FONTS_TIMES_SUBSTITUTIONS;
+    private $majorFontSubstitutions = self::FONTS_TIMES_SUBSTITUTIONS;
 
     /**
      * Map of Minor (body) fonts to write.
      *
      * @var string[]
      */
-    private array $minorFontSubstitutions = self::FONTS_ARIAL_SUBSTITUTIONS;
+    private $minorFontSubstitutions = self::FONTS_ARIAL_SUBSTITUTIONS;
 
     public const FONTS_TIMES_SUBSTITUTIONS = [
         'Jpan' => 'ＭＳ Ｐゴシック',
@@ -153,7 +143,6 @@ class Theme
         'Geor' => 'Sylfaen',
     ];
 
-    /** @return string[] */
     public function getThemeColors(): array
     {
         return $this->themeColors;
@@ -171,34 +160,16 @@ class Theme
         return $this->themeColorName;
     }
 
-    /** @param null|string[] $themeColors */
-    public function setThemeColorName(string $name, ?array $themeColors = null, ?Spreadsheet $spreadsheet = null): self
+    public function setThemeColorName(string $name, ?array $themeColors = null): self
     {
-        if ($name === self::COLOR_SCHEME_2013_PLUS_NAME) {
-            // Ensure against this value being found in
-            // spreadsheets created while constant was public.
-            $name = self::COLOR_SCHEME_2013_2022_NAME;
-        }
         $this->themeColorName = $name;
         if ($name === self::COLOR_SCHEME_2007_2010_NAME) {
             $themeColors = $themeColors ?? self::COLOR_SCHEME_2007_2010;
-            $this->majorFontLatin = 'Cambria';
-            $this->minorFontLatin = 'Calibri';
-        } elseif ($name === self::COLOR_SCHEME_2013_2022_NAME) {
-            $themeColors = $themeColors ?? self::COLOR_SCHEME_2013_2022;
-            $this->majorFontLatin = 'Calibri Light';
-            $this->minorFontLatin = 'Calibri';
-        } elseif ($name === self::COLOR_SCHEME_2023_PLUS_NAME) {
-            $themeColors = $themeColors ?? self::COLOR_SCHEME_2023_PLUS;
-            $this->majorFontLatin = 'Aptos Display';
-            $this->minorFontLatin = 'Aptos Narrow';
+        } elseif ($name === self::COLOR_SCHEME_2013_PLUS_NAME) {
+            $themeColors = $themeColors ?? self::COLOR_SCHEME_2013_PLUS;
         }
         if ($themeColors !== null) {
             $this->themeColors = $themeColors;
-        }
-        if ($spreadsheet !== null) {
-            $spreadsheet->getDefaultStyle()->getFont()
-                ->applyThemeFonts($this);
         }
 
         return $this;
@@ -219,14 +190,13 @@ class Theme
         return $this->majorFontComplexScript;
     }
 
-    /** @return string[] */
     public function getMajorFontSubstitutions(): array
     {
         return $this->majorFontSubstitutions;
     }
 
-    /** @param null|string[] $substitutions */
-    public function setMajorFontValues(?string $latin, ?string $eastAsian, ?string $complexScript, ?array $substitutions): self
+    /** @param null|array $substitutions */
+    public function setMajorFontValues(?string $latin, ?string $eastAsian, ?string $complexScript, $substitutions): self
     {
         if (!empty($latin)) {
             $this->majorFontLatin = $latin;
@@ -259,14 +229,13 @@ class Theme
         return $this->minorFontComplexScript;
     }
 
-    /** @return string[] */
     public function getMinorFontSubstitutions(): array
     {
         return $this->minorFontSubstitutions;
     }
 
-    /** @param null|string[] $substitutions */
-    public function setMinorFontValues(?string $latin, ?string $eastAsian, ?string $complexScript, ?array $substitutions): self
+    /** @param null|array $substitutions */
+    public function setMinorFontValues(?string $latin, ?string $eastAsian, ?string $complexScript, $substitutions): self
     {
         if (!empty($latin)) {
             $this->minorFontLatin = $latin;

@@ -10,7 +10,6 @@ use PhpOffice\PhpSpreadsheet\RichText\RichText;
 use PhpOffice\PhpSpreadsheet\RichText\Run;
 use PhpOffice\PhpSpreadsheet\Shared\StringHelper;
 use PhpOffice\PhpSpreadsheet\Shared\XMLWriter;
-use PhpOffice\PhpSpreadsheet\Style\Font;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet as ActualWorksheet;
 
 class StringTable extends WriterPart
@@ -22,11 +21,15 @@ class StringTable extends WriterPart
      *
      * @return string[] String table for worksheet
      */
-    public function createStringTable(ActualWorksheet $worksheet, ?array $existingTable = null): array
+    public function createStringTable(ActualWorksheet $worksheet, $existingTable = null)
     {
         // Create string lookup table
-        /** @var string[] */
-        $aStringTable = $existingTable ?? [];
+        $aStringTable = [];
+
+        // Is an existing table given?
+        if (($existingTable !== null) && is_array($existingTable)) {
+            $aStringTable = $existingTable;
+        }
 
         // Fill index array
         $aFlippedStringTable = $this->flipStringTable($aStringTable);
@@ -35,26 +38,25 @@ class StringTable extends WriterPart
         foreach ($worksheet->getCellCollection()->getCoordinates() as $coordinate) {
             /** @var Cell $cell */
             $cell = $worksheet->getCellCollection()->get($coordinate);
-            /** @var null|int|RichText|string */
             $cellValue = $cell->getValue();
             if (
-                !is_object($cellValue)
-                && ($cellValue !== null)
-                && $cellValue !== ''
-                && ($cell->getDataType() == DataType::TYPE_STRING || $cell->getDataType() == DataType::TYPE_STRING2 || $cell->getDataType() == DataType::TYPE_NULL)
-                && !isset($aFlippedStringTable[$cellValue])
+                !is_object($cellValue) &&
+                ($cellValue !== null) &&
+                $cellValue !== '' &&
+                ($cell->getDataType() == DataType::TYPE_STRING || $cell->getDataType() == DataType::TYPE_STRING2 || $cell->getDataType() == DataType::TYPE_NULL) &&
+                !isset($aFlippedStringTable[$cellValue])
             ) {
                 $aStringTable[] = $cellValue;
                 $aFlippedStringTable[$cellValue] = true;
             } elseif (
-                $cellValue instanceof RichText
-                && !isset($aFlippedStringTable[$cellValue->getHashCode()])
+                $cellValue instanceof RichText &&
+                ($cellValue !== null) &&
+                !isset($aFlippedStringTable[$cellValue->getHashCode()])
             ) {
                 $aStringTable[] = $cellValue;
                 $aFlippedStringTable[$cellValue->getHashCode()] = true;
             }
         }
-        /** @var string[] $aStringTable */
 
         return $aStringTable;
     }
@@ -66,7 +68,7 @@ class StringTable extends WriterPart
      *
      * @return string XML Output
      */
-    public function writeStringTable(array $stringTable): string
+    public function writeStringTable(array $stringTable)
     {
         // Create XML writer
         $objWriter = null;
@@ -111,9 +113,9 @@ class StringTable extends WriterPart
     /**
      * Write Rich Text.
      *
-     * @param ?string $prefix Optional Namespace prefix
+     * @param string $prefix Optional Namespace prefix
      */
-    public function writeRichText(XMLWriter $objWriter, RichText $richText, ?string $prefix = null, ?Font $defaultFont = null): void
+    public function writeRichText(XMLWriter $objWriter, RichText $richText, $prefix = null): void
     {
         if ($prefix !== null) {
             $prefix .= ':';
@@ -124,36 +126,35 @@ class StringTable extends WriterPart
         foreach ($elements as $element) {
             // r
             $objWriter->startElement($prefix . 'r');
-            $font = ($element instanceof Run) ? $element->getFont() : $defaultFont;
 
             // rPr
-            if ($font !== null) {
+            if ($element instanceof Run && $element->getFont() !== null) {
                 // rPr
                 $objWriter->startElement($prefix . 'rPr');
 
                 // rFont
-                if ($font->getName() !== null) {
+                if ($element->getFont()->getName() !== null) {
                     $objWriter->startElement($prefix . 'rFont');
-                    $objWriter->writeAttribute('val', $font->getName());
+                    $objWriter->writeAttribute('val', $element->getFont()->getName());
                     $objWriter->endElement();
                 }
 
                 // Bold
                 $objWriter->startElement($prefix . 'b');
-                $objWriter->writeAttribute('val', ($font->getBold() ? 'true' : 'false'));
+                $objWriter->writeAttribute('val', ($element->getFont()->getBold() ? 'true' : 'false'));
                 $objWriter->endElement();
 
                 // Italic
                 $objWriter->startElement($prefix . 'i');
-                $objWriter->writeAttribute('val', ($font->getItalic() ? 'true' : 'false'));
+                $objWriter->writeAttribute('val', ($element->getFont()->getItalic() ? 'true' : 'false'));
                 $objWriter->endElement();
 
                 // Superscript / subscript
-                if ($font->getSuperscript() || $font->getSubscript()) {
+                if ($element->getFont()->getSuperscript() || $element->getFont()->getSubscript()) {
                     $objWriter->startElement($prefix . 'vertAlign');
-                    if ($font->getSuperscript()) {
+                    if ($element->getFont()->getSuperscript()) {
                         $objWriter->writeAttribute('val', 'superscript');
-                    } elseif ($font->getSubscript()) {
+                    } elseif ($element->getFont()->getSubscript()) {
                         $objWriter->writeAttribute('val', 'subscript');
                     }
                     $objWriter->endElement();
@@ -161,27 +162,27 @@ class StringTable extends WriterPart
 
                 // Strikethrough
                 $objWriter->startElement($prefix . 'strike');
-                $objWriter->writeAttribute('val', ($font->getStrikethrough() ? 'true' : 'false'));
+                $objWriter->writeAttribute('val', ($element->getFont()->getStrikethrough() ? 'true' : 'false'));
                 $objWriter->endElement();
 
                 // Color
-                if ($font->getColor()->getARGB() !== null) {
+                if ($element->getFont()->getColor()->getARGB() !== null) {
                     $objWriter->startElement($prefix . 'color');
-                    $objWriter->writeAttribute('rgb', $font->getColor()->getARGB());
+                    $objWriter->writeAttribute('rgb', $element->getFont()->getColor()->getARGB());
                     $objWriter->endElement();
                 }
 
                 // Size
-                if ($font->getSize() !== null) {
+                if ($element->getFont()->getSize() !== null) {
                     $objWriter->startElement($prefix . 'sz');
-                    $objWriter->writeAttribute('val', (string) $font->getSize());
+                    $objWriter->writeAttribute('val', (string) $element->getFont()->getSize());
                     $objWriter->endElement();
                 }
 
                 // Underline
-                if ($font->getUnderline() !== null) {
+                if ($element->getFont()->getUnderline() !== null) {
                     $objWriter->startElement($prefix . 'u');
-                    $objWriter->writeAttribute('val', $font->getUnderline());
+                    $objWriter->writeAttribute('val', $element->getFont()->getUnderline());
                     $objWriter->endElement();
                 }
 
@@ -204,7 +205,7 @@ class StringTable extends WriterPart
      * @param RichText|string $richText text string or Rich text
      * @param string $prefix Optional Namespace prefix
      */
-    public function writeRichTextForCharts(XMLWriter $objWriter, $richText = null, string $prefix = ''): void
+    public function writeRichTextForCharts(XMLWriter $objWriter, $richText = null, $prefix = ''): void
     {
         if (!($richText instanceof RichText)) {
             $textRun = $richText;
@@ -306,7 +307,7 @@ class StringTable extends WriterPart
                 $objWriter->writeAttribute('val', $value);
                 $alpha = $underlineColor->getAlpha();
                 if (is_numeric($alpha)) {
-                    $objWriter->startElement($prefix . 'alpha');
+                    $objWriter->startElement('a:alpha');
                     $objWriter->writeAttribute('val', ChartColor::alphaToXml((int) $alpha));
                     $objWriter->endElement();
                 }
@@ -322,11 +323,11 @@ class StringTable extends WriterPart
     /**
      * Flip string table (for index searching).
      *
-     * @param array<RichText|string> $stringTable Stringtable
+     * @param array $stringTable Stringtable
      *
-     * @return array<RichText|string>
+     * @return array
      */
-    public function flipStringTable(array $stringTable): array
+    public function flipStringTable(array $stringTable)
     {
         // Return value
         $returnValue = [];

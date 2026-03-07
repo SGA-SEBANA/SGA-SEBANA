@@ -4,13 +4,16 @@ namespace PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 
 use PhpOffice\PhpSpreadsheet\Document\Properties as DocumentProperties;
 use PhpOffice\PhpSpreadsheet\Reader\Security\XmlScanner;
+use PhpOffice\PhpSpreadsheet\Settings;
 use SimpleXMLElement;
 
 class Properties
 {
-    private XmlScanner $securityScanner;
+    /** @var XmlScanner */
+    private $securityScanner;
 
-    private DocumentProperties $docProps;
+    /** @var DocumentProperties */
+    private $docProps;
 
     public function __construct(XmlScanner $securityScanner, DocumentProperties $docProps)
     {
@@ -18,14 +21,24 @@ class Properties
         $this->docProps = $docProps;
     }
 
+    /**
+     * @param mixed $obj
+     */
+    private static function nullOrSimple($obj): ?SimpleXMLElement
+    {
+        return ($obj instanceof SimpleXMLElement) ? $obj : null;
+    }
+
     private function extractPropertyData(string $propertyData): ?SimpleXMLElement
     {
         // okay to omit namespace because everything will be processed by xpath
         $obj = simplexml_load_string(
-            $this->securityScanner->scan($propertyData)
+            $this->securityScanner->scan($propertyData),
+            'SimpleXMLElement',
+            Settings::getLibXmlLoaderOptions()
         );
 
-        return $obj === false ? null : $obj;
+        return self::nullOrSimple($obj);
     }
 
     public function readCoreProperties(string $propertyData): void
@@ -37,15 +50,15 @@ class Properties
             $xmlCore->registerXPathNamespace('dcterms', Namespaces::DC_TERMS);
             $xmlCore->registerXPathNamespace('cp', Namespaces::CORE_PROPERTIES2);
 
-            $this->docProps->setCreator($this->getArrayItem($xmlCore->xpath('dc:creator')));
-            $this->docProps->setLastModifiedBy($this->getArrayItem($xmlCore->xpath('cp:lastModifiedBy')));
-            $this->docProps->setCreated($this->getArrayItem($xmlCore->xpath('dcterms:created'))); //! respect xsi:type
-            $this->docProps->setModified($this->getArrayItem($xmlCore->xpath('dcterms:modified'))); //! respect xsi:type
-            $this->docProps->setTitle($this->getArrayItem($xmlCore->xpath('dc:title')));
-            $this->docProps->setDescription($this->getArrayItem($xmlCore->xpath('dc:description')));
-            $this->docProps->setSubject($this->getArrayItem($xmlCore->xpath('dc:subject')));
-            $this->docProps->setKeywords($this->getArrayItem($xmlCore->xpath('cp:keywords')));
-            $this->docProps->setCategory($this->getArrayItem($xmlCore->xpath('cp:category')));
+            $this->docProps->setCreator((string) self::getArrayItem($xmlCore->xpath('dc:creator')));
+            $this->docProps->setLastModifiedBy((string) self::getArrayItem($xmlCore->xpath('cp:lastModifiedBy')));
+            $this->docProps->setCreated((string) self::getArrayItem($xmlCore->xpath('dcterms:created'))); //! respect xsi:type
+            $this->docProps->setModified((string) self::getArrayItem($xmlCore->xpath('dcterms:modified'))); //! respect xsi:type
+            $this->docProps->setTitle((string) self::getArrayItem($xmlCore->xpath('dc:title')));
+            $this->docProps->setDescription((string) self::getArrayItem($xmlCore->xpath('dc:description')));
+            $this->docProps->setSubject((string) self::getArrayItem($xmlCore->xpath('dc:subject')));
+            $this->docProps->setKeywords((string) self::getArrayItem($xmlCore->xpath('cp:keywords')));
+            $this->docProps->setCategory((string) self::getArrayItem($xmlCore->xpath('cp:category')));
         }
     }
 
@@ -79,9 +92,7 @@ class Properties
                     $cellDataOfficeChildren = $xmlProperty->children('http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes');
 
                     $attributeType = $cellDataOfficeChildren->getName();
-                    /** @var SimpleXMLElement */
-                    $attributeValue = $cellDataOfficeChildren->{$attributeType};
-                    $attributeValue = (string) $attributeValue;
+                    $attributeValue = (string) $cellDataOfficeChildren->{$attributeType};
                     $attributeValue = DocumentProperties::convertProperty($attributeValue, $attributeType);
                     $attributeType = DocumentProperties::convertPropertyType($attributeType);
                     $this->docProps->setCustomProperty($propertyName, $attributeValue, $attributeType);
@@ -90,9 +101,12 @@ class Properties
         }
     }
 
-    /** @param null|false|scalar[] $array */
-    private function getArrayItem(null|array|false $array): string
+    /**
+     * @param null|array|false $array
+     * @param mixed $key
+     */
+    private static function getArrayItem($array, $key = 0): ?SimpleXMLElement
     {
-        return is_array($array) ? (string) ($array[0] ?? '') : '';
+        return is_array($array) ? ($array[$key] ?? null) : null;
     }
 }

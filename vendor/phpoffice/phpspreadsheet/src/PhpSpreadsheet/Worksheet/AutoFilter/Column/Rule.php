@@ -158,7 +158,7 @@ class Rule
         self::AUTOFILTER_COLUMN_RULE_TOPTEN_BOTTOM,
     ];
 
-    //  Unimplemented Rule Operators (Numeric, Boolean etc)
+    //  Unimplented Rule Operators (Numeric, Boolean etc)
     //    const AUTOFILTER_COLUMN_RULE_BETWEEN = 'between';        //    greaterThanOrEqual 1 && lessThanOrEqual 2
     // Rule Operators (Numeric Special) which are translated to standard numeric operators with calculated values
     // Rule Operators (String) which are set as wild-carded values
@@ -169,15 +169,20 @@ class Rule
     // Rule Operators (Date Special) which are translated to standard numeric operators with calculated values
     //    const AUTOFILTER_COLUMN_RULE_BEFORE                = 'lessThan';
     //    const AUTOFILTER_COLUMN_RULE_AFTER                = 'greaterThan';
+
     /**
      * Autofilter Column.
+     *
+     * @var ?Column
      */
-    private ?Column $parent;
+    private $parent;
 
     /**
      * Autofilter Rule Type.
+     *
+     * @var string
      */
-    private string $ruleType = self::AUTOFILTER_RULETYPE_FILTER;
+    private $ruleType = self::AUTOFILTER_RULETYPE_FILTER;
 
     /**
      * Autofilter Rule Value.
@@ -188,13 +193,17 @@ class Rule
 
     /**
      * Autofilter Rule Operator.
+     *
+     * @var string
      */
-    private string $operator = self::AUTOFILTER_COLUMN_RULE_EQUAL;
+    private $operator = self::AUTOFILTER_COLUMN_RULE_EQUAL;
 
     /**
      * DateTimeGrouping Group Value.
+     *
+     * @var string
      */
-    private string $grouping = '';
+    private $grouping = '';
 
     /**
      * Create a new Rule.
@@ -213,8 +222,10 @@ class Rule
 
     /**
      * Get AutoFilter Rule Type.
+     *
+     * @return string
      */
-    public function getRuleType(): string
+    public function getRuleType()
     {
         return $this->ruleType;
     }
@@ -226,7 +237,7 @@ class Rule
      *
      * @return $this
      */
-    public function setRuleType(string $ruleType): static
+    public function setRuleType($ruleType)
     {
         $this->setEvaluatedFalse();
         if (!in_array($ruleType, self::RULE_TYPES)) {
@@ -255,7 +266,7 @@ class Rule
      *
      * @return $this
      */
-    public function setValue($value): static
+    public function setValue($value)
     {
         $this->setEvaluatedFalse();
         if (is_array($value)) {
@@ -274,8 +285,7 @@ class Rule
                 throw new PhpSpreadsheetException('Invalid rule value for column AutoFilter Rule.');
             }
             //    Set the dateTime grouping that we've anticipated
-            //    I have no idea what Phpstan is complaining about below
-            $this->setGrouping(self::DATE_TIME_GROUPS[$grouping]); // @phpstan-ignore-line
+            $this->setGrouping(self::DATE_TIME_GROUPS[$grouping]);
         }
         $this->value = $value;
 
@@ -284,8 +294,10 @@ class Rule
 
     /**
      * Get AutoFilter Rule Operator.
+     *
+     * @return string
      */
-    public function getOperator(): string
+    public function getOperator()
     {
         return $this->operator;
     }
@@ -297,15 +309,15 @@ class Rule
      *
      * @return $this
      */
-    public function setOperator(string $operator): static
+    public function setOperator($operator)
     {
         $this->setEvaluatedFalse();
         if (empty($operator)) {
             $operator = self::AUTOFILTER_COLUMN_RULE_EQUAL;
         }
         if (
-            (!in_array($operator, self::OPERATORS))
-            && (!in_array($operator, self::TOP_TEN_VALUE))
+            (!in_array($operator, self::OPERATORS)) &&
+            (!in_array($operator, self::TOP_TEN_VALUE))
         ) {
             throw new PhpSpreadsheetException('Invalid operator for column AutoFilter Rule.');
         }
@@ -316,8 +328,10 @@ class Rule
 
     /**
      * Get AutoFilter Rule Grouping.
+     *
+     * @return string
      */
-    public function getGrouping(): string
+    public function getGrouping()
     {
         return $this->grouping;
     }
@@ -325,15 +339,18 @@ class Rule
     /**
      * Set AutoFilter Rule Grouping.
      *
+     * @param string $grouping
+     *
      * @return $this
      */
-    public function setGrouping(string $grouping): static
+    public function setGrouping($grouping)
     {
         $this->setEvaluatedFalse();
         if (
-            (!in_array($grouping, self::DATE_TIME_GROUPS))
-            && (!in_array($grouping, self::DYNAMIC_TYPES))
-            && (!in_array($grouping, self::TOP_TEN_TYPE))
+            ($grouping !== null) &&
+            (!in_array($grouping, self::DATE_TIME_GROUPS)) &&
+            (!in_array($grouping, self::DYNAMIC_TYPES)) &&
+            (!in_array($grouping, self::TOP_TEN_TYPE))
         ) {
             throw new PhpSpreadsheetException('Invalid grouping for column AutoFilter Rule.');
         }
@@ -347,17 +364,18 @@ class Rule
      *
      * @param string $operator see self::AUTOFILTER_COLUMN_RULE_*
      * @param int|int[]|string|string[] $value
+     * @param string $grouping
      *
      * @return $this
      */
-    public function setRule(string $operator, $value, ?string $grouping = null): static
+    public function setRule($operator, $value, $grouping = null)
     {
         $this->setEvaluatedFalse();
         $this->setOperator($operator);
         $this->setValue($value);
         //  Only set grouping if it's been passed in as a user-supplied argument,
         //      otherwise we're calculating it when we setValue() and don't want to overwrite that
-        //      If the user supplies an argument for grouping, then on their own head be it
+        //      If the user supplies an argumnet for grouping, then on their own head be it
         if ($grouping !== null) {
             $this->setGrouping($grouping);
         }
@@ -367,8 +385,10 @@ class Rule
 
     /**
      * Get this Rule's AutoFilter Column Parent.
+     *
+     * @return ?Column
      */
-    public function getParent(): ?Column
+    public function getParent()
     {
         return $this->parent;
     }
@@ -378,7 +398,7 @@ class Rule
      *
      * @return $this
      */
-    public function setParent(?Column $parent = null): static
+    public function setParent(?Column $parent = null)
     {
         $this->setEvaluatedFalse();
         $this->parent = $parent;

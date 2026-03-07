@@ -12,9 +12,6 @@ use PhpOffice\PhpSpreadsheet\Shared\Escher\DggContainer\BstoreContainer;
 use PhpOffice\PhpSpreadsheet\Shared\Escher\DggContainer\BstoreContainer\BSE;
 use PhpOffice\PhpSpreadsheet\Shared\Escher\DggContainer\BstoreContainer\BSE\Blip;
 
-/**
- * @template T of BSE|BstoreContainer|DgContainer|DggContainer|\PhpOffice\PhpSpreadsheet\Shared\Escher|SpContainer|SpgrContainer
- */
 class Escher
 {
     const DGGCONTAINER = 0xF000;
@@ -38,32 +35,38 @@ class Escher
 
     /**
      * Escher stream data (binary).
+     *
+     * @var string
      */
-    private string $data;
+    private $data;
 
     /**
      * Size in bytes of the Escher stream data.
+     *
+     * @var int
      */
-    private int $dataSize;
+    private $dataSize;
 
     /**
      * Current position of stream pointer in Escher stream data.
+     *
+     * @var int
      */
-    private int $pos;
+    private $pos;
 
     /**
      * The object to be returned by the reader. Modified during load.
      *
-     * @var T
+     * @var BSE|BstoreContainer|DgContainer|DggContainer|\PhpOffice\PhpSpreadsheet\Shared\Escher|SpContainer|SpgrContainer
      */
-    private BSE|BstoreContainer|DgContainer|DggContainer|\PhpOffice\PhpSpreadsheet\Shared\Escher|SpContainer|SpgrContainer $object;
+    private $object;
 
     /**
      * Create a new Escher instance.
      *
-     * @param T $object
+     * @param mixed $object
      */
-    public function __construct(BSE|BstoreContainer|DgContainer|DggContainer|\PhpOffice\PhpSpreadsheet\Shared\Escher|SpContainer|SpgrContainer $object)
+    public function __construct($object)
     {
         $this->object = $object;
     }
@@ -92,9 +95,11 @@ class Escher
     /**
      * Load Escher stream data. May be a partial Escher stream.
      *
-     * @return T
+     * @param string $data
+     *
+     * @return BSE|BstoreContainer|DgContainer|DggContainer|\PhpOffice\PhpSpreadsheet\Shared\Escher|SpContainer|SpgrContainer
      */
-    public function load(string $data): BSE|BstoreContainer|DgContainer|DggContainer|\PhpOffice\PhpSpreadsheet\Shared\Escher|SpContainer|SpgrContainer
+    public function load($data)
     {
         $this->data = $data;
 
@@ -548,7 +553,10 @@ class Escher
         $this->applyAttribute('setEndOffsetY', $endOffsetY);
     }
 
-    private function applyAttribute(string $name, mixed $value): void
+    /**
+     * @param mixed $value
+     */
+    private function applyAttribute(string $name, $value): void
     {
         if (method_exists($this->object, $name)) {
             $this->object->$name($value);
@@ -573,7 +581,7 @@ class Escher
      * @param string $data Binary data
      * @param int $n Number of properties
      */
-    private function readOfficeArtRGFOPTE(string $data, int $n): void
+    private function readOfficeArtRGFOPTE($data, $n): void
     {
         $splicedComplexData = substr($data, 6 * $n);
 
