@@ -48,12 +48,10 @@ ob_start();
                  class="au-btn au-btn-icon au-btn--green au-btn--small" style="margin-left: 8px;">
                 <i class="zmdi zmdi-plus"></i> Nueva Categoría
               </a>
-     <a href="/SGA-SEBANA/public/CategoriasRRLL/exportarHistorialPDF"
-   class="au-btn au-btn-icon au-btn--green au-btn--small" style="margin-left: 8px;">
-   <i class="zmdi zmdi-download"></i> Exportar Historial PDF
-</a>
-
-
+              <a href="/SGA-SEBANA/public/CategoriasRRLL/exportarHistorialPDF"
+                 class="au-btn au-btn-icon au-btn--green au-btn--small" style="margin-left: 8px;">
+                <i class="zmdi zmdi-download"></i> Exportar Historial PDF
+              </a>
             </div>
           </div>
         </form>
@@ -103,12 +101,12 @@ ob_start();
                       <?php if ($cat['estado'] === 'activo'): ?>
                         <button type="submit" class="item" title="Inactivar"
                                 onclick="return confirm('¿Inactivar categoría RRLL?');">
-                          <i class="zmdi zmdi-block"></i>
+                          <i class="zmdi zmdi-block" style="color:#fa4251;"></i>
                         </button>
                       <?php else: ?>
                         <button type="submit" class="item" title="Activar"
                                 onclick="return confirm('¿Activar categoría RRLL?');">
-                          <i class="zmdi zmdi-check"></i>
+                          <i class="zmdi zmdi-check" style="color:#00b5e9;"></i>
                         </button>
                       <?php endif; ?>
                     </form>
