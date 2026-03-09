@@ -2,64 +2,62 @@
 
 namespace PhpOffice\PhpSpreadsheet\Shared;
 
-use PhpOffice\PhpSpreadsheet\Exception as SpreadsheetException;
-
 class Escher
 {
     /**
      * Drawing Group Container.
+     *
+     * @var ?Escher\DggContainer
      */
-    private ?Escher\DggContainer $dggContainer = null;
+    private $dggContainer;
 
     /**
      * Drawing Container.
+     *
+     * @var ?Escher\DgContainer
      */
-    private ?Escher\DgContainer $dgContainer = null;
+    private $dgContainer;
 
     /**
      * Get Drawing Group Container.
+     *
+     * @return ?Escher\DggContainer
      */
-    public function getDggContainer(): ?Escher\DggContainer
+    public function getDggContainer()
     {
         return $this->dggContainer;
     }
 
     /**
-     * Get Drawing Group Container.
-     */
-    public function getDggContainerOrThrow(): Escher\DggContainer
-    {
-        return $this->dggContainer ?? throw new SpreadsheetException('dggContainer is unexpectedly null');
-    }
-
-    /**
      * Set Drawing Group Container.
+     *
+     * @param Escher\DggContainer $dggContainer
+     *
+     * @return Escher\DggContainer
      */
-    public function setDggContainer(Escher\DggContainer $dggContainer): Escher\DggContainer
+    public function setDggContainer($dggContainer)
     {
         return $this->dggContainer = $dggContainer;
     }
 
     /**
      * Get Drawing Container.
+     *
+     * @return ?Escher\DgContainer
      */
-    public function getDgContainer(): ?Escher\DgContainer
+    public function getDgContainer()
     {
         return $this->dgContainer;
     }
 
     /**
-     * Get Drawing Container.
-     */
-    public function getDgContainerOrThrow(): Escher\DgContainer
-    {
-        return $this->dgContainer ?? throw new SpreadsheetException('dgContainer is unexpectedly null');
-    }
-
-    /**
      * Set Drawing Container.
+     *
+     * @param Escher\DgContainer $dgContainer
+     *
+     * @return Escher\DgContainer
      */
-    public function setDgContainer(Escher\DgContainer $dgContainer): Escher\DgContainer
+    public function setDgContainer($dgContainer)
     {
         return $this->dgContainer = $dgContainer;
     }

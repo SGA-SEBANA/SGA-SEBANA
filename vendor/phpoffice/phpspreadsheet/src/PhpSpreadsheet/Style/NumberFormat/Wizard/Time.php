@@ -57,7 +57,7 @@ class Time extends DateTimeWizard
     ];
 
     /**
-     * @var array<?string>
+     * @var string[]
      */
     protected array $separators;
 

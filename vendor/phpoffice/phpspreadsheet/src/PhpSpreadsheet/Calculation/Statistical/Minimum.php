@@ -17,15 +17,17 @@ class Minimum extends MaxMinBase
      *        MIN(value1[,value2[, ...]])
      *
      * @param mixed ...$args Data values
+     *
+     * @return float
      */
-    public static function min(mixed ...$args): float|int|string
+    public static function min(...$args)
     {
         $returnValue = null;
 
         // Loop through arguments
         $aArgs = Functions::flattenArray($args);
         foreach ($aArgs as $arg) {
-            if (ErrorValue::isError($arg, true)) {
+            if (ErrorValue::isError($arg)) {
                 $returnValue = $arg;
 
                 break;
@@ -41,7 +43,6 @@ class Minimum extends MaxMinBase
         if ($returnValue === null) {
             return 0;
         }
-        /** @var float|int|string $returnValue */
 
         return $returnValue;
     }
@@ -55,15 +56,17 @@ class Minimum extends MaxMinBase
      *        MINA(value1[,value2[, ...]])
      *
      * @param mixed ...$args Data values
+     *
+     * @return float
      */
-    public static function minA(mixed ...$args): float|int|string
+    public static function minA(...$args)
     {
         $returnValue = null;
 
         // Loop through arguments
         $aArgs = Functions::flattenArray($args);
         foreach ($aArgs as $arg) {
-            if (ErrorValue::isError($arg, true)) {
+            if (ErrorValue::isError($arg)) {
                 $returnValue = $arg;
 
                 break;
@@ -80,7 +83,6 @@ class Minimum extends MaxMinBase
         if ($returnValue === null) {
             return 0;
         }
-        /** @var float|int|string $returnValue */
 
         return $returnValue;
     }
