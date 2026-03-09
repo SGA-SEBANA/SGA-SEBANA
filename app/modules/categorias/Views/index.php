@@ -24,6 +24,24 @@ ob_start();
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
+        
+        <?php if (!empty($error)): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="zmdi zmdi-alert-triangle"></i>
+                <strong>¡Error!</strong>
+                <?php
+                    if ($error === 'en_uso') {
+                        echo "No se puede inactivar la categoría porque está en uso.";
+                    } elseif ($error === 'vacio') {
+                        echo "El nombre no puede quedar vacío.";
+                    } elseif ($error === 'duplicado') {
+                        echo "Ya existe otra categoría con ese nombre.";
+                    }
+                ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
 
         <div class="card mb-4 shadow-sm">
             <div class="card-header">
@@ -74,15 +92,21 @@ ob_start();
             </div>
         </div>
 
-        <div class="table-data__tool">
+          <div class="table-data__tool">
             <div class="table-data__tool-left"></div>
             <div class="table-data__tool-right">
                 <a href="/SGA-SEBANA/public/Categorias/create"
-                    class="au-btn au-btn-icon au-btn--green au-btn--small">
+                   class="au-btn au-btn-icon au-btn--green au-btn--small">
                     <i class="zmdi zmdi-plus"></i> Nueva Categoría
+                </a>
+                <!-- NUEVO BOTÓN PARA EXPORTAR HISTORIAL -->
+                <a href="/SGA-SEBANA/public/Categorias/exportarHistorialPDF"
+                   class="au-btn au-btn-icon au-btn--green au-btn--small" style="margin-left: 8px;">
+                    <i class="zmdi zmdi-download"></i> Exportar Historial PDF
                 </a>
             </div>
         </div>
+
 
         <div class="table-responsive table-responsive-data2">
             <table class="table table-data2">
