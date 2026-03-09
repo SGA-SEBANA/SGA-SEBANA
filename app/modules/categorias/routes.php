@@ -24,3 +24,5 @@ $router->post('/Categorias/{id}/delete', [CategoriaController::class, 'delete'])
 
 // 6. Visualización de detalles completos [HU-GC-04 - Escenario 3]
 $router->get('/Categorias/{id}/show', [CategoriaController::class, 'show']);
+
+$router->get('/Categorias/exportarHistorialPDF', [CategoriaController::class, 'exportarHistorialPDF']);
