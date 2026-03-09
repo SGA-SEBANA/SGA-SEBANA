@@ -143,12 +143,6 @@ $authUser = SecurityHelper::getAuthUser();
                                 <i class="fas fa-table"></i> Bitácora
                             </a>
                         </li>
-                        <li>
-  <a href="/SGA-SEBANA/public/CategoriasRRLL">
-    <i class="fas fa-list"></i> Categorías RRLL
-  </a>
-</li>
-
 
                         <li>
                             <a href="/SGA-SEBANA/public/ui/chart">
