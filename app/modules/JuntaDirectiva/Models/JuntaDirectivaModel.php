@@ -149,7 +149,8 @@ class JuntaDirectivaModel extends ModelBase
 
     public function updateMiembroJunta($id, $cargo, $fecha_inicio, $fecha_fin, $periodo, $estado, $responsabilidades, $observaciones)
     {
-        $sql = "UPDATE {$this->table}
+        
+    $sql = "UPDATE {$this->table}
     set cargo = :cargo,
     fecha_inicio = :fecha_inicio,
     fecha_fin = :fecha_fin,
@@ -176,9 +177,10 @@ class JuntaDirectivaModel extends ModelBase
 
     public function updateEstadoFinalizar($id, $estado)
     {
+            
         $sql = "UPDATE {$this->table}
-    set estado = :estado
-    WHERE id = :id AND estado = 'vigente'";
+        set estado = :estado
+        WHERE id = :id AND estado = 'vigente'";
 
         $estado = strtolower($estado);
 
@@ -192,9 +194,10 @@ class JuntaDirectivaModel extends ModelBase
 
     public function updateEstadoActivar($id, $estado)
     {
+        
         $sql = "UPDATE {$this->table}
-    set estado = :estado
-    WHERE id = :id AND estado = 'finalizado'";
+        set estado = :estado
+        WHERE id = :id AND estado = 'finalizado'";
 
         $estado = strtolower($estado);
 
@@ -209,9 +212,9 @@ class JuntaDirectivaModel extends ModelBase
     public function getMiembroById($id)
     {
         $sql = "SELECT jd.*, a.nombre_completo AS nombre
-           FROM {$this->table} jd
-           INNER JOIN afiliados a ON jd.afiliado_id = a.id
-           WHERE jd.id = :id";
+        FROM {$this->table} jd
+        INNER JOIN afiliados a ON jd.afiliado_id = a.id
+        WHERE jd.id = :id";
 
         $stmt = $this->db->prepare($sql);
         $stmt->bindParam(':id', $id);

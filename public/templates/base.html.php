@@ -47,6 +47,9 @@ $authUser = SecurityHelper::getAuthUser();
     <!-- Favicon -->
     <link rel="shortcut icon" href="/SGA-SEBANA/public/assets/img/favicon/icono-SEBANA.png" type="image/x-icon">
 
+    <!-- Calendar requests visits-->
+    <link rel="stylesheet" href="/SGA-SEBANA/public/assets/css/calendar.css">
+
 </head>
 
 <body>
@@ -141,6 +144,17 @@ $authUser = SecurityHelper::getAuthUser();
                         <li>
                             <a href="/SGA-SEBANA/public/bitacora">
                                 <i class="fas fa-table"></i> Bitácora
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="/SGA-SEBANA/public/visit-requests">
+                                <i class="fa-solid fa-building-user"></i> Solicitar Visita
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/SGA-SEBANA/public/admin/visit-requests">
+                                <i class="fa-solid fa-envelopes-bulk"></i> Administrar Solicitudes
                             </a>
                         </li>
 
