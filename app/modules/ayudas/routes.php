@@ -25,3 +25,6 @@ $router->post('/ayudas/cancel/(\d+)', [AyudaEconomicaController::class, 'request
 
 // Agregar más evidencia posterior al envío (HU-SAEC-5)
 $router->post('/ayudas/evidence/(\d+)', [AyudaEconomicaController::class, 'addEvidence']);
+
+// Descargar/ver evidencia desde storage
+$router->get('/ayudas/archivo/(\d+)', [AyudaEconomicaController::class, 'archivo']);

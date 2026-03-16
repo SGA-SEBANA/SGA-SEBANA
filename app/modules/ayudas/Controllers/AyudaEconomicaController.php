@@ -54,12 +54,14 @@ class AyudaEconomicaController extends ControllerBase {
             $ayuda_id = $this->model->crearSolicitud($usuario_id, $motivo, $monto_solicitado);
 
             if ($ayuda_id) {
+                unset($_SESSION['error_detail']);
                 // HU-SAEC-3: Adjuntar evidencia inicial
                 if (isset($_FILES['evidencia']) && $_FILES['evidencia']['error'] === UPLOAD_ERR_OK) {
                     $this->procesarArchivo($ayuda_id, $usuario_id, $_FILES['evidencia'], 'Pendiente');
                 }
                 $this->redirect('/SGA-SEBANA/public/ayudas?success=creado');
             } else {
+                $_SESSION['error_detail'] = $this->model->getLastError();
                 $this->redirect('/SGA-SEBANA/public/ayudas/create?error=db_error');
             }
         }
@@ -154,7 +156,7 @@ class AyudaEconomicaController extends ControllerBase {
         $fileExtension = strtolower(end($fileNameCmps));
 
         $nuevoNombreArchivo = md5(time() . $fileName) . '.' . $fileExtension;
-        $directorioDestino = $_SERVER['DOCUMENT_ROOT'] . '/SGA-SEBANA/public/uploads/ayudas/';
+        $directorioDestino = BASE_PATH . '/storage/ayudas/';
         
         if (!is_dir($directorioDestino)) {
             mkdir($directorioDestino, 0777, true);
@@ -163,11 +165,56 @@ class AyudaEconomicaController extends ControllerBase {
         $rutaDestinoFisica = $directorioDestino . $nuevoNombreArchivo;
         
         if (move_uploaded_file($fileTmpPath, $rutaDestinoFisica)) {
-            $rutaArchivoFinal = 'uploads/ayudas/' . $nuevoNombreArchivo;
+            $rutaArchivoFinal = 'storage/ayudas/' . $nuevoNombreArchivo;
             $this->model->guardarEvidencia($ayuda_id, $usuario_id, $fileName, $rutaArchivoFinal, $estado_actual);
             return true;
         }
         return false;
+    }
+
+    public function archivo($evidencia_id) {
+        $evidencia = $this->model->obtenerEvidenciaPorId($evidencia_id);
+
+        $rutaDb = $evidencia['path'] ?? null;
+        $rutaStorage = $evidencia['ruta_archivo'] ?? null;
+        $rutaBase = $rutaDb ?: $rutaStorage;
+
+        if (!$evidencia || empty($rutaBase)) {
+            http_response_code(404);
+            echo "Archivo no encontrado.";
+            return;
+        }
+
+        $rutaRelativa = ltrim($rutaBase, '/\\');
+        $candidato = BASE_PATH . DIRECTORY_SEPARATOR . $rutaRelativa;
+        $rutaFisica = file_exists($candidato) ? $candidato : null;
+
+        if (!$rutaFisica && file_exists(BASE_PATH . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $rutaRelativa)) {
+            $rutaFisica = BASE_PATH . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $rutaRelativa;
+        }
+
+        if (!$rutaFisica || !file_exists($rutaFisica)) {
+            http_response_code(404);
+            echo "Archivo no encontrado.";
+            return;
+        }
+
+        $realBase = realpath(BASE_PATH);
+        $realFile = realpath($rutaFisica);
+        if (!$realBase || !$realFile || strpos($realFile, $realBase) !== 0) {
+            http_response_code(403);
+            echo "Acceso no permitido.";
+            return;
+        }
+
+        $mime = function_exists('mime_content_type') ? mime_content_type($rutaFisica) : 'application/octet-stream';
+        $disposition = isset($_GET['download']) ? 'attachment' : 'inline';
+
+        header('Content-Type: ' . ($mime ?: 'application/octet-stream'));
+        header('Content-Length: ' . filesize($rutaFisica));
+        header('Content-Disposition: ' . $disposition . '; filename="' . basename($rutaFisica) . '"');
+        readfile($rutaFisica);
+        exit;
     }
 
     private function notificarCambioEstado($correo, $estado, $id) {

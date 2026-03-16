@@ -125,7 +125,7 @@ $authUser = SecurityHelper::getAuthUser();
                         </li>
                         <li>
                             <a href="/SGA-SEBANA/public/junta">
-                                <i class="fas fa-users"></i>Junta Directiva</a>
+                                <i class="fas fa-user-tie"></i>Junta Directiva</a>
                         </li>
                         <li>
                             <a href="/SGA-SEBANA/public/puestos">
@@ -155,6 +155,18 @@ $authUser = SecurityHelper::getAuthUser();
                         <li>
                             <a href="/SGA-SEBANA/public/admin/visit-requests">
                                 <i class="fa-solid fa-envelopes-bulk"></i> Administrar Solicitudes
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="/SGA-SEBANA/public/ayudas">
+                                <i class="fa-solid fa-hand-holding-dollar"></i> Ayudas Económicas
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="/SGA-SEBANA/public/viaticos">
+                                <i class="fa-solid fa-receipt"></i> Viáticos
                             </a>
                         </li>
 

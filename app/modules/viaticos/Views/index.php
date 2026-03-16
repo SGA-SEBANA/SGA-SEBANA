@@ -26,6 +26,8 @@ ob_start();
                 <thead>
                     <tr>
                         <th>Consecutivo</th>
+                        <th>Empleado(s)</th>
+                        <th>Rango</th>
                         <th>Fecha</th>
                         <th>Estado</th>
                         <th>Alimentación</th>
@@ -39,6 +41,12 @@ ob_start();
                         <?php foreach ($viaticos as $v): ?>
                             <tr class="tr-shadow">
                                 <td><strong><?= htmlspecialchars($v['consecutivo']) ?></strong></td>
+                                <td><?= !empty($v['empleados']) ? nl2br(htmlspecialchars($v['empleados'])) : 'N/D' ?></td>
+                                <td>
+                                    <?= !empty($v['fecha_inicio']) ? date('d/m/Y', strtotime($v['fecha_inicio'])) : 'N/D' ?>
+                                    -
+                                    <?= !empty($v['fecha_fin']) ? date('d/m/Y', strtotime($v['fecha_fin'])) : 'N/D' ?>
+                                </td>
                                 <td><?= date('d/m/Y h:i A', strtotime($v['creado_en'])) ?></td>
                                 <td>
                                     <?php if($v['estado'] === 'Borrador'): ?>
@@ -67,7 +75,7 @@ ob_start();
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="7" class="text-center">No hay solicitudes de viáticos registradas aún.</td>
+                            <td colspan="9" class="text-center">No hay solicitudes de viáticos registradas aún.</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
