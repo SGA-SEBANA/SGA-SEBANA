@@ -238,4 +238,25 @@ class User extends ModelBase
         $stmt->execute(['estado' => $status]);
         return (int) $stmt->fetchColumn();
     }
+
+
+    
+    /**
+     * Get admin in charge for visit request
+     */
+    public function getAdmins(): array
+    {
+        $sql = "
+            SELECT u.id
+            FROM {$this->table} u
+            INNER JOIN roles r ON u.rol_id = r.id
+            WHERE r.id = 3
+            AND u.estado = 'activo'
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

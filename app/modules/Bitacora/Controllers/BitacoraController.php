@@ -80,8 +80,20 @@ public function index()
         'fecha'     => $_GET['fecha'] ?? ''
     ];
 
-    $model = new BitacoraModel();
-    $bitacora = $model->getBitacora($filtros);
+     $model = new BitacoraModel();
+
+        $limit = 10;
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $page = max($page, 1);
+
+        $start = ($page - 1) * $limit;
+
+   
+        $bitacora = $model->getBitacora($filtros, $start, $limit);
+
+ 
+        $totalRegistros = $model->countBitacora($filtros);
+        $totalPaginas = ceil($totalRegistros / $limit);
 
 
     $modulos    = $model->getModulos();

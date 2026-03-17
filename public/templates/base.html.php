@@ -9,6 +9,21 @@ if (!SecurityHelper::isAuthenticated()) {
 }
 
 $authUser = SecurityHelper::getAuthUser();
+
+use App\Modules\Visitas\Models\Notification;
+
+$notiModel = new Notification();
+
+$userId = $authUser['id'] ?? null;
+
+$notificaciones = [];
+$totalNoLeidas = 0;
+
+if ($userId) {
+    $notificaciones = $notiModel->getUnreadByUser($userId);
+    $totalNoLeidas = $notiModel->countUnread($userId);
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -144,6 +159,9 @@ $authUser = SecurityHelper::getAuthUser();
                                         Viáticos</a></li>
                                 <li><a href="/SGA-SEBANA/public/casos-rrll"><i class="fa-solid fa-people-group"></i>
                                         Casos RRLL</a></li>
+                                <li><a href="/SGA-SEBANA/public/oficinas"><i class="fa-solid fa-building"></i>
+                                        Oficinas</a>
+                                </li>
                             </ul>
                         </li>
 
@@ -170,6 +188,40 @@ $authUser = SecurityHelper::getAuthUser();
                 <div class="section__content section__content--p30">
                     <div class="container-fluid">
                         <div class="header-wrap">
+
+                            <!-- Notificaciones -->
+                            <div class="header-noti js-item-menu me-4 position-relative">
+                                <i class="fa fa-bell fs-5"></i>
+
+                                <?php if ($totalNoLeidas > 0): ?>
+                                <span class="quantity"><?= $totalNoLeidas ?></span>
+                                <?php endif; ?>
+
+                                <div class="notifi-dropdown js-dropdown">
+                                    <?php if (empty($notificaciones)): ?>
+                                    <div class="notifi__title p-3">
+                                        <p>No hay notificaciones</p>
+                                    </div>
+                                    <?php else: ?>
+                                    <div class="notifi__title p-3">
+                                        <p>Tienes <?= $totalNoLeidas ?> notificaciones</p>
+                                    </div>
+
+                                    <?php foreach ($notificaciones as $n): ?>
+                                    <div class="notifi__item">
+                                        <div class="content">
+                                            <a href="/SGA-SEBANA/public/notificaciones/read/<?= $n['id'] ?>">
+                                                <p><strong><?= htmlspecialchars($n['titulo']) ?></strong></p>
+                                                <span><?= htmlspecialchars($n['mensaje']) ?></span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <!-- Fin Notificaciones -->
+
                             <div class="header-button">
                                 <div class="account-wrap">
                                     <div class="account-item clearfix js-item-menu">
@@ -215,6 +267,7 @@ $authUser = SecurityHelper::getAuthUser();
                                     </div>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
