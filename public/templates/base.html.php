@@ -42,7 +42,6 @@ $authUser = SecurityHelper::getAuthUser();
 
     <!-- Main CSS-->
     <link href="/SGA-SEBANA/public/assets/css/theme.css" rel="stylesheet" media="all">
-    <link href="/SGA-SEBANA/public/assets/css/custom-fixes.css?v=2" rel="stylesheet" media="all">
 
     <!-- Favicon -->
     <link rel="shortcut icon" href="/SGA-SEBANA/public/assets/img/favicon/icono-SEBANA.png" type="image/x-icon">
@@ -104,129 +103,58 @@ $authUser = SecurityHelper::getAuthUser();
                     <ul class="list-unstyled navbar__list">
                         <li class="active">
                             <a href="/SGA-SEBANA/public/home">
-                                <i class="fas fa-tachometer-alt"></i>Panel</a>
+                                <i class="fas fa-tachometer-alt"></i>Panel de Control</a>
                         </li>
-                        <li>
-                            <a href="/SGA-SEBANA/public/afiliados">
-                                <i class="fas fa-users"></i>Afiliados</a>
-                        </li>
+
                         <li class="has-sub">
                             <a class="js-arrow" href="#">
-                                <i class="fas fa-user-shield"></i>Usuarios</a>
+                                <i class="fas fa-users"></i>Gestión de Afiliados</a>
                             <ul class="list-unstyled navbar__sub-list js-sub-list">
-                                <li>
-                                    <a href="/SGA-SEBANA/public/users">Lista de Usuarios</a>
+                                <li><a href="/SGA-SEBANA/public/afiliados"><i class="fas fa-user-friends"></i> Lista de
+                                        Afiliados</a></li>
+                                <li><a href="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado"><i
+                                            class="fas fa-user-times"></i> Exclusiones</a></li>
+                                <li><a href="/SGA-SEBANA/public/Categorias"><i class="fas fa-tags"></i> Categorías</a>
                                 </li>
-                                <li>
-                                    <a href="/SGA-SEBANA/public/users/create">Nuevo Usuario</a>
-                                </li>
-
                             </ul>
                         </li>
-                        <li>
-                            <a href="/SGA-SEBANA/public/junta">
-                                <i class="fas fa-user-tie"></i>Junta Directiva</a>
-                        </li>
-                        <li>
-                            <a href="/SGA-SEBANA/public/puestos">
-                                <i class="fas fa-briefcase"></i>Puestos</a>
-                        </li>
-                        <li>
-                            <a href="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado">
-                                <i class="fas fa-user-times"></i> Exclusiones
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/SGA-SEBANA/public/Categorias">
-                                <i class="fas fa-list"></i> Categorías
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/SGA-SEBANA/public/bitacora">
-                                <i class="fas fa-table"></i> Bitácora
-                            </a>
-                        </li>
 
-                        <li>
-                            <a href="/SGA-SEBANA/public/visit-requests">
-                                <i class="fa-solid fa-building-user"></i> Solicitar Visita
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/SGA-SEBANA/public/admin/visit-requests">
-                                <i class="fa-solid fa-envelopes-bulk"></i> Administrar Solicitudes
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="/SGA-SEBANA/public/ayudas">
-                                <i class="fa-solid fa-hand-holding-dollar"></i> Ayudas Económicas
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="/SGA-SEBANA/public/viaticos">
-                                <i class="fa-solid fa-receipt"></i> Viáticos
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="/SGA-SEBANA/public/ui/chart">
-                                <i class="fas fa-chart-bar"></i>Charts</a>
-                        </li>
-                        <li>
-                            <a href="/SGA-SEBANA/public/ui/table">
-                                <i class="fas fa-table"></i>Tables</a>
-                        </li>
-                        <li>
-                            <a href="/SGA-SEBANA/public/ui/form">
-                                <i class="far fa-check-square"></i>Forms</a>
-                        </li>
-                        <li>
-                            <a href="/SGA-SEBANA/public/ui/calendar">
-                                <i class="fas fa-calendar-alt"></i>Calendar</a>
-                        </li>
-                        <li>
-                            <a href="/SGA-SEBANA/public/ui/map">
-                                <i class="fas fa-map-marker-alt"></i>Maps</a>
-                        </li>
                         <li class="has-sub">
                             <a class="js-arrow" href="#">
-                                <i class="fas fa-desktop"></i>UI Elements</a>
+                                <i class="fas fa-sitemap"></i>Estructura Orgánica</a>
                             <ul class="list-unstyled navbar__sub-list js-sub-list">
-                                <li>
-                                    <a href="/SGA-SEBANA/public/ui/button">Button</a>
+                                <li><a href="/SGA-SEBANA/public/junta"><i class="fas fa-user-tie"></i> Junta
+                                        Directiva</a></li>
+                                <li><a href="/SGA-SEBANA/public/puestos"><i class="fas fa-briefcase"></i> Puestos</a>
                                 </li>
-                                <li>
-                                    <a href="/SGA-SEBANA/public/ui/badge">Badges</a>
+                            </ul>
+                        </li>
+
+                        <li class="has-sub">
+                            <a class="js-arrow" href="#">
+                                <i class="fas fa-file-invoice-dollar"></i>Trámites y Solicitudes</a>
+                            <ul class="list-unstyled navbar__sub-list js-sub-list">
+                                <li><a href="/SGA-SEBANA/public/visit-requests"><i
+                                            class="fa-solid fa-building-user"></i> Solicitar Visita</a></li>
+                                <li><a href="/SGA-SEBANA/public/admin/visit-requests"><i
+                                            class="fa-solid fa-envelopes-bulk"></i> Admin. Visitas</a></li>
+                                <li><a href="/SGA-SEBANA/public/ayudas"><i class="fa-solid fa-hand-holding-dollar"></i>
+                                        Ayudas </a></li>
+                                <li><a href="/SGA-SEBANA/public/viaticos"><i class="fa-solid fa-receipt"></i>
+                                        Viáticos</a></li>
+                                <li><a href="/SGA-SEBANA/public/casos-rrll"><i class="fa-solid fa-people-group"></i>
+                                        Casos RRLL</a></li>
+                            </ul>
+                        </li>
+
+                        <li class="has-sub">
+                            <a class="js-arrow" href="#">
+                                <i class="fas fa-cogs"></i>Configuración</a>
+                            <ul class="list-unstyled navbar__sub-list js-sub-list">
+                                <li><a href="/SGA-SEBANA/public/users"><i class="fas fa-user-shield"></i> Usuarios</a>
                                 </li>
-                                <li>
-                                    <a href="/SGA-SEBANA/public/ui/tab">Tabs</a>
-                                </li>
-                                <li>
-                                    <a href="/SGA-SEBANA/public/ui/card">Cards</a>
-                                </li>
-                                <li>
-                                    <a href="/SGA-SEBANA/public/ui/alert">Alerts</a>
-                                </li>
-                                <li>
-                                    <a href="/SGA-SEBANA/public/ui/progress-bar">Progress Bars</a>
-                                </li>
-                                <li>
-                                    <a href="/SGA-SEBANA/public/ui/modal">Modals</a>
-                                </li>
-                                <li>
-                                    <a href="/SGA-SEBANA/public/ui/switch">Switchs</a>
-                                </li>
-                                <li>
-                                    <a href="/SGA-SEBANA/public/ui/grid">Grids</a>
-                                </li>
-                                <li>
-                                    <a href="/SGA-SEBANA/public/ui/fontawesome">Fontawesome Icon</a>
-                                </li>
-                                <li>
-                                    <a href="/SGA-SEBANA/public/ui/typo">Typography</a>
-                                </li>
+                                <li><a href="/SGA-SEBANA/public/bitacora"><i class="fas fa-history"></i> Bitácora de
+                                        Sistema</a></li>
                             </ul>
                         </li>
                     </ul>
