@@ -89,14 +89,17 @@ ob_start();
                         <td class="text-center">
                             <div class="table-data-feature d-flex justify-content-center">
                                 <?php if ($s['estado'] == 'pendiente'): ?>
-                                <a href="/SGA-SEBANA/public/admin/visit-requests/accept/<?= $s['id'] ?>" class="item">
+                                <a href="/SGA-SEBANA/public/admin/visit-requests/accept/<?= $s['id'] ?>" class="item"
+                                    title="Aceptar solicitud">
+                                    <i class="fa-regular fa-circle-check"></i>
+                                </a>
 
-                                    <a href="/SGA-SEBANA/public/admin/visit-requests/reject/<?= $s['id'] ?>"
-                                        class="item" title="Rechazar solicitud"
-                                        onclick="return confirm('¿Desea rechazar esta solicitud?')">
-                                        <i class="zmdi zmdi-close"></i>
-                                    </a>
-                                    <?php endif; ?>
+                                <a href="/SGA-SEBANA/public/admin/visit-requests/reject/<?= $s['id'] ?>" class="item"
+                                    title="Rechazar solicitud"
+                                    onclick="return confirm('¿Desea rechazar esta solicitud?')">
+                                    <i class="zmdi zmdi-close"></i>
+                                </a>
+                                <?php endif; ?>
                             </div>
                         </td>
                     </tr>
