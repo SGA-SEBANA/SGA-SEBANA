@@ -13,7 +13,22 @@ class VisitRequestController{
 public function index()
 {
     $model = new VisitRequest();
-    $solicitud = $model->getVisits();
+
+
+    $limit = 10; 
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $page = max($page, 1); 
+    $start = ($page - 1) * $limit;
+
+    // Nota: si se agregan filtros a futuro
+    $filtros = []; 
+
+    $solicitud = $model->getVisits($start, $limit);
+
+    $totalRegistros = $model->countVisits($filtros);
+    $totalPaginas = ceil($totalRegistros / $limit);
+
+  
     require BASE_PATH . '/app/modules/Visitas/Views/index.php';
 }
 

@@ -9,11 +9,25 @@ class AdminVisitRequestController{
 public function index()
 {
     $model = new VisitRequest();
-    $solicitud = $model->getVisits();
+
+   
+    $limit = 10;
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $page = max($page, 1);
+    $start = ($page - 1) * $limit;
+
+
+    $filtros = [];
+
+
+    $solicitud = $model->getVisits($start, $limit);
+
+   
+    $totalRegistros = $model->countVisits($filtros);
+    $totalPaginas = ceil($totalRegistros / $limit);
+
     require BASE_PATH . '/app/modules/Visitas/Views/Admin/index.php';
 }
-
-
 
 
 public function calendar()
@@ -45,13 +59,12 @@ public function acceptVisits($id){
 public function rejectRequest($id)
 {
     $model = new VisitRequest();
-
     $model->updateEstado($id, 'rechazada');
 
-    header("Location: /SGA-SEBANA/public/Visitas/admin/visit-requests");
+
+    header("Location: /SGA-SEBANA/public/admin/visit-requests");
     exit;
 }
-
 
 
 

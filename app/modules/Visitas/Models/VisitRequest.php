@@ -7,30 +7,27 @@ class VisitRequest extends ModelBase{
     
    protected $table = "solicitudes_visitas_oficinas";
    
-   public function getVisits(){
-   $sql = "SELECT s.id, 
-    s.codigo_solicitud, 
-    s.afiliado_id,
-    a.nombre AS afiliado_nombre, 
-    s.oficina_id,
-    o.nombre AS oficina_nombre,
-    s.numero_empleado, s.nombre_empleado, s.fecha_visita, s.hora_visita, s.motivo, s.tipo_visita, s.estado, s.fecha_reprogramada, 
-    s.hora_reprogramada, s.motivo_reprogramacion, s.motivo_cancelacion, s.motivo_rechazo, s.resultado_visita, s.aprobado_por,
-    s.fecha_aprobacion, s.observaciones, s.fecha_creacion, s.fecha_actualizacion	
-    
+  public function getVisits($start = 0, $limit = 10)
+{
+    $sql = "SELECT s.id, 
+        s.codigo_solicitud, 
+        s.afiliado_id,
+        a.nombre AS afiliado_nombre, 
+        s.oficina_id,
+        o.nombre AS oficina_nombre,
+        s.numero_empleado, s.nombre_empleado, s.fecha_visita, s.hora_visita, s.motivo, s.tipo_visita, s.estado, s.fecha_reprogramada, 
+        s.hora_reprogramada, s.motivo_reprogramacion, s.motivo_cancelacion, s.motivo_rechazo, s.resultado_visita, s.aprobado_por,
+        s.fecha_aprobacion, s.observaciones, s.fecha_creacion, s.fecha_actualizacion
     FROM solicitudes_visitas_oficinas s
-
     INNER JOIN afiliados a ON s.afiliado_id = a.id
-
-    INNER JOIN oficinas o  ON s.oficina_id = o.id";
+    INNER JOIN oficinas o  ON s.oficina_id = o.id
+    ORDER BY s.fecha_creacion DESC
+    LIMIT $start, $limit"; 
 
     $stmt = $this->db->prepare($sql);
     $stmt->execute();
-    $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-    return $results;
-   }
-
-
+    return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+}
 
    
    public function getOffices() {
@@ -265,6 +262,12 @@ public function getUpcomingVisits()
     return $stmt->fetchAll(\PDO::FETCH_ASSOC);
 }
 
-
+public function countVisits($filtros = [])
+{
+    $sql = "SELECT COUNT(*) as total FROM {$this->table}";
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute();
+    return (int) $stmt->fetchColumn();
+}
 
 }

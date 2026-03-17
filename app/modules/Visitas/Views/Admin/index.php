@@ -39,7 +39,7 @@ ob_start();
                     <?php else: ?>
                     <?php foreach ($solicitud as $s): ?>
                     <tr class="tr-shadow">
-                        <!-- Código con fondo gris -->
+
                         <td>
                             <span
                                 style="background-color:#e9ecef; padding:3px 8px; border-radius:4px; font-weight:500;">
@@ -51,7 +51,7 @@ ob_start();
                         <td><?= htmlspecialchars($s['oficina_nombre']) ?></td>
                         <td><?= htmlspecialchars($s['nombre_empleado']) ?></td>
 
-                        <!-- Fecha con resaltado si está reprogramada -->
+
                         <td>
                             <?php if (!empty($s['fecha_reprogramada'])): ?>
                             <span style="color:#ff9800;">
@@ -64,7 +64,7 @@ ob_start();
 
                         <td><?= htmlspecialchars($s['motivo']) ?></td>
 
-                        <!-- Estado con fondo de color -->
+
                         <td>
                             <?php 
                                     $estado = strtolower($s['estado'] ?? '');
@@ -108,6 +108,14 @@ ob_start();
                     <?php endif; ?>
                 </tbody>
             </table>
+            <div class="mt-3 d-flex justify-content-center gap-2">
+                <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
+                <a href="?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>"
+                    class="btn btn-sm <?= $i == $page ? 'btn-primary' : 'btn-secondary' ?>">
+                    <?= $i ?>
+                </a>
+                <?php endfor; ?>
+            </div>
         </div>
 
     </div>
