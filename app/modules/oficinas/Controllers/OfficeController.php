@@ -15,8 +15,9 @@ class OfficeController {
 
     public function index() {
         $offices = $this->officeModel->getOffice();
-        require BASE_PATH . '/app/modules/oficinas/View/index.php';
+        require BASE_PATH . '/app/modules/oficinas/view/index.php';
     }
+    
     // Crear oficina
     public function create() {
         session_start();
