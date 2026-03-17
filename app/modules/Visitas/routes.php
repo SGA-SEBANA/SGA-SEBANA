@@ -1,8 +1,8 @@
 <?php
 
 use App\Modules\Visitas\Controllers\VisitRequestController;
-
 use App\Modules\Visitas\Controllers\AdminVisitRequestController;
+use App\Modules\Visitas\Controllers\NotificationController;
 
 // List request
 $router->get('/visit-requests', [VisitRequestController::class, 'index']);
@@ -37,3 +37,10 @@ $router->get('/admin/visit-requests/reject/{id}', [AdminVisitRequestController::
 $router->get('/admin/request-calendar',[AdminVisitRequestController::class, 'calendar']);
 
 $router->get('/admin/visit-calendar-events', [AdminVisitRequestController::class, 'calendarEvents']);
+
+
+
+//Notifications
+$router->get('/notificaciones/read/{id}', [NotificationController::class, 'read']);
+
+$router->get('/notificaciones/read-all', [NotificationController::class, 'markAllAsRead']);

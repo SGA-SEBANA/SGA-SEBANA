@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Modules\Visitas\Controllers;
+use App\Modules\Usuarios\Models\User;
 use App\Modules\Visitas\Models\VisitRequest;
+use App\Modules\Visitas\Models\Notification;
 
 class VisitRequestController{
 
@@ -16,7 +18,6 @@ public function index()
 }
 
 
-
 public function createVisit(){
     if (session_status() === PHP_SESSION_NONE){
         session_start();
@@ -26,22 +27,21 @@ public function createVisit(){
 
     if ($_POST){
         
-       $afiliado_id = 1;
+        // Usuario en sesión
+        $afiliado_id = $_SESSION['user_id'] ?? null;
 
         if (!$afiliado_id){
-            $_SESSION['error'] = "Sesión inválida.";
+            $_SESSION['error'] = "Debe iniciar sesión.";
             header("Location: /SGA-SEBANA/public/login");
             exit;
         }
-  
+
+        //  Datos base
         $estado = "pendiente";
-   
-        $fecha_creacion = date('Y-m-d H:i:s');
-        
+        $fecha_creacion = date('Y-m-d H:i:s'); 
         $fecha_actualizacion = date('Y-m-d H:i:s');
 
-        $solicitudId = $model->createVisits
-        (
+        $solicitudId = $model->createVisits(
             $afiliado_id,
             $_POST['oficina_id'] ?? null,
             $_POST['numero_empleado'] ?? null,
@@ -51,31 +51,60 @@ public function createVisit(){
             $_POST['motivo'] ?? null,
             $_POST['tipo_visita'] ?? null,
             $estado,
-
-            null, // fecha_reprogramada
-            null, // hora_reprogramada
-            null, // motivo_reprogramacion
-            null, // motivo_cancelacion
-            null, // motivo_rechazo
-            null, // resultado_visita
-            null, // aprobado_por
-            null, // fecha_aprobacion
-
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
             $_POST['observaciones'] ?? null,
-
             $fecha_creacion,
             $fecha_actualizacion
         );
 
+        //  Solo si se creo correctamente
+        if ($solicitudId) {
+
+            $userModel = new User();
+            $notification = new Notification();
+            
+            //  Obtener admins
+            $admins = $userModel->getAdmins();
+
+            //  Mensaje 
+            $nombre = $_POST['nombre_empleado'] ?? 'Empleado';
+            $fecha = $_POST['fecha_visita'] ?? 'fecha no especificada';
+
+            $titulo = "Nueva solicitud de visita";
+            $mensaje = "Solicitud de {$nombre} para el {$fecha}";
+
+            //  Crear notificacion para cada admin
+            foreach ($admins as $admin) {
+            $notification->createNotification(
+            $admin['id'],
+            'sistema',
+            'visitas',
+            $titulo,
+            $mensaje,
+            'visita',
+            $solicitudId,
+            '/SGA-SEBANA/public/Visitas/admin/visit-requests'
+        );
+        }
+        }
+
+        
         header("Location: /SGA-SEBANA/public/visit-requests");
         exit;
     }
 
     $error = $_SESSION['error'] ?? null;
     unset($_SESSION['error']);
+
     require BASE_PATH . '/app/modules/Visitas/Views/submit_request.php';
 }
-
 
 
 
