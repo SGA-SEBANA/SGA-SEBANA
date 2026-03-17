@@ -30,8 +30,18 @@ class VisitRequest extends ModelBase{
     return $results;
    }
 
+
+
    
+   public function getOffices() {
+    $sql = "SELECT id, nombre FROM oficinas ORDER BY nombre ASC";
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute();
+    return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+}
    
+
+
    
 public function createVisits(
     $afiliado_id,
@@ -138,8 +148,9 @@ public function rescheduleVisit($id, $fecha_reprogramada, $hora_reprogramada, $m
     $sql = "UPDATE {$this->table}
             SET fecha_reprogramada = :fecha_reprogramada,
                 hora_reprogramada = :hora_reprogramada,
-                motivo_reprogramacion = :motivo_reprogramacion
-                
+                motivo_reprogramacion = :motivo_reprogramacion,
+                estado = 'pendiente',  
+                fecha_actualizacion = NOW()
             WHERE id = :id";
 
     $stmt = $this->db->prepare($sql);
@@ -149,6 +160,7 @@ public function rescheduleVisit($id, $fecha_reprogramada, $hora_reprogramada, $m
     $stmt->bindParam(':id', $id);
     return $stmt->execute();
 }
+
 
 
    
@@ -176,8 +188,6 @@ public function deleteVisit($id){
 
 
 
-
-// --- METODOS PARA ADMINISTRACION DE SOLICITUDES --- //
 
 public function acceptVisit($id){  
     
@@ -211,8 +221,6 @@ public function updateEstado($id, $estado)
 
 
 
-// METODOS PARA CALENDARIO //
-
 public function getCalendarEvents()
 {
     $sql = "SELECT id, fecha_visita, hora_visita, estado
@@ -242,7 +250,6 @@ public function getApprovedVisits()
 
 
 
-
 public function getUpcomingVisits()
 {
     $sql = "SELECT nombre_empleado, fecha_visita, hora_visita
@@ -257,7 +264,6 @@ public function getUpcomingVisits()
 
     return $stmt->fetchAll(\PDO::FETCH_ASSOC);
 }
-
 
 
 

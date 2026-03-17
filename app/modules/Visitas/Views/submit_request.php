@@ -34,7 +34,14 @@ ob_start();
 
                         <div class="col-md-4 mb-3">
                             <label>Oficina</label>
-                            <input type="number" name="oficina_id" class="form-control" required>
+                            <select name="oficina_id" class="form-control" required>
+                                <option value="">-- Seleccione una oficina --</option>
+                                <?php foreach($oficinas as $oficina): ?>
+                                <option value="<?= $oficina['id'] ?>">
+                                    <?= htmlspecialchars($oficina['nombre']) ?>
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
 
                         <div class="col-md-4 mb-3">

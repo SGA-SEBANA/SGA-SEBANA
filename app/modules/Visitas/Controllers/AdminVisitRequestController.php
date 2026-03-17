@@ -14,6 +14,8 @@ public function index()
 }
 
 
+
+
 public function calendar()
 {
     $model = new VisitRequest();
@@ -25,15 +27,18 @@ public function calendar()
 }
 
 
+
+
 public function acceptVisits($id){
     
     $model = new VisitRequest();
 
     $model->acceptVisit($id, 'aprobado');
 
-    header("Location: /SGA-SEBANA/public/Visitas/admin/visit-requests");
-    exit;
+  header("Location: /SGA-SEBANA/public/admin/visit-requests");
+  exit;
 }
+
 
 
 
@@ -46,6 +51,9 @@ public function rejectRequest($id)
     header("Location: /SGA-SEBANA/public/Visitas/admin/visit-requests");
     exit;
 }
+
+
+
 
 public function calendarEvents()
 {

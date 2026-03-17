@@ -18,6 +18,7 @@ public function index()
 }
 
 
+
 public function createVisit(){
     if (session_status() === PHP_SESSION_NONE){
         session_start();
@@ -102,9 +103,11 @@ public function createVisit(){
 
     $error = $_SESSION['error'] ?? null;
     unset($_SESSION['error']);
+    $oficinas = $model->getOffices();
 
     require BASE_PATH . '/app/modules/Visitas/Views/submit_request.php';
 }
+
 
 
 
@@ -119,9 +122,39 @@ public function rescheduleVisit($id){
         $motivo = $_POST['motivo_reprogramacion'] ?? null;
 
         if ($fecha && $hora && $motivo) {
+
+           
             $model->rescheduleVisit($id, $fecha, $hora, $motivo);
+
+        
+            $userModel = new \App\Modules\Usuarios\Models\User();
+            $notificationModel = new \App\Modules\Visitas\Models\Notification();
+
+            $admins = $userModel->getAdmins(); 
+
+            $solicitud = $model->getVisitById($id);
+            $nombreEmpleado = $solicitud['nombre_empleado'] ?? 'Empleado';
+            $fechaNueva = $solicitud['fecha_reprogramada'] ?? $fecha;
+
+            $titulo = "Solicitud reprogramada";
+            $mensaje = "La solicitud de {$nombreEmpleado} fue reprogramada para el {$fechaNueva}";
+
+            foreach ($admins as $admin) {
+                $notificationModel->createNotification(
+                    $admin['id'],      
+                    'sistema',         
+                    'visitas',        
+                    $titulo,
+                    $mensaje,
+                    'visita',           
+                    $id,             
+                    '/SGA-SEBANA/public/admin/visit-requests'  
+                );
+            }
+
             header("Location: /SGA-SEBANA/public/visit-requests");
             exit;
+
         } else {
             echo "Todos los campos son obligatorios.";
         }
@@ -131,6 +164,7 @@ public function rescheduleVisit($id){
         include BASE_PATH . '/app/modules/Visitas/Views/reschedule.php';
     }
 }
+
 
 
 
@@ -155,6 +189,10 @@ public function delete($id){
     }
 }
 */
+
+
+
+
 
 public function cancelVisits($id)
 {
