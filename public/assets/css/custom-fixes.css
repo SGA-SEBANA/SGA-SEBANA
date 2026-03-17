@@ -66,3 +66,78 @@
     font-size: 18px;
     color: rgba(255, 255, 255, 0.6);
 }
+
+/* ===== CRITICAL FIX: Allow containers to not clip dropdowns and modals ===== */
+/* Let overflow:auto on scrollable containers allow dropdowns to show */
+.page-wrapper {
+    overflow: visible !important;
+}
+
+.main-content {
+    overflow: visible !important;
+}
+
+.section__content {
+    overflow: visible !important;
+}
+
+.container-fluid {
+    overflow: visible !important;
+}
+
+/* ===== TABLE RESPONSIVE: Allow dropdowns to overflow naturally ===== */
+.table-responsive {
+    overflow-x: auto !important;
+    /* IMPORTANT: Don't set overflow-y to hidden so dropdowns can show */
+}
+
+.table {
+    position: relative;
+}
+
+/* ===== MODAL STYLES ===== */
+/* Move modals outside of containers (done in JS) then style them */
+.modal {
+    display: none;
+}
+
+.modal.show {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+}
+
+.modal-dialog {
+    position: relative;
+    z-index: 1051;
+    margin: auto;
+}
+
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+.modal-backdrop.show {
+    display: block !important;
+}
+
+/* ===== DROPDOWN STYLES: Let Bootstrap handle positioning naturally ===== */
+/* Don't override Bootstrap dropdown positioning - let it work naturally */
+.dropdown-menu {
+    z-index: 1000 !important;
+}
+
+/* ===== PROGRESS BAR FIX ===== */
+.progress-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    font-size: 12px;
+}
+
+.table .progress {
+    margin-bottom: 0;
+}

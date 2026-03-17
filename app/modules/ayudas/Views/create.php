@@ -17,6 +17,13 @@ ob_start();
                         echo 'Ocurrió un error inesperado.';
                     }
                 ?>
+                <?php
+                    $config = require BASE_PATH . '/app/config/config.php';
+                    if (($config['debug'] ?? false) && !empty($_SESSION['error_detail'])) {
+                        echo '<div class="small text-muted mt-2"><strong>Detalle:</strong> ' . htmlspecialchars($_SESSION['error_detail']) . '</div>';
+                        unset($_SESSION['error_detail']);
+                    }
+                ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>

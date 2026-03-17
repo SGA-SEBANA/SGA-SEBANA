@@ -154,10 +154,10 @@ ob_start();
                                                 </small>
                                                 </div>
                                             <div class="table-data-feature">
-                                                <a href="/SGA-SEBANA/public/<?= htmlspecialchars($e['ruta_archivo']) ?>" target="_blank" class="item" title="Ver">
+                                                <a href="/SGA-SEBANA/public/ayudas/archivo/<?= $e['id'] ?>" target="_blank" class="item" title="Ver">
                                                     <i class="zmdi zmdi-eye text-info"></i>
                                                 </a>
-                                                <a href="/SGA-SEBANA/public/<?= htmlspecialchars($e['ruta_archivo']) ?>" download class="item text-danger" title="Descargar">
+                                                <a href="/SGA-SEBANA/public/ayudas/archivo/<?= $e['id'] ?>?download=1" class="item text-danger" title="Descargar">
                                                     <i class="zmdi zmdi-download text-danger"></i>
                                                 </a>
                                             </div>

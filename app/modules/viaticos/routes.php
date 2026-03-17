@@ -19,3 +19,9 @@ $router->get('/viaticos/show', [ViaticoController::class, 'show']);
 
 // Generar y descargar el PDF de la boleta
 $router->get('/viaticos/pdf', [ViaticoController::class, 'generarPDF']);
+
+// Ver/descargar archivo de respaldo desde storage
+$router->get('/viaticos/archivo', [ViaticoController::class, 'archivo']);
+
+// Cambiar estado de la solicitud
+$router->post('/viaticos/status', [ViaticoController::class, 'updateStatus']);

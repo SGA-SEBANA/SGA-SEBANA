@@ -104,6 +104,15 @@ class ViaticoController extends ControllerBase {
      */
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+
+            if (!isset($_SESSION['user_id'])) {
+                $this->redirect('/SGA-SEBANA/public/login?error=sesion_expirada');
+                return;
+            }
+            $usuario_id = $_SESSION['user_id'];
             
             $rutaArchivoFinal = null;
 
@@ -121,7 +130,7 @@ class ViaticoController extends ControllerBase {
                 if (in_array($fileExtension, $extensionesPermitidas) && $fileSize <= $maxSize) {
                     
                     $nuevoNombreArchivo = md5(time() . $fileName) . '.' . $fileExtension;
-                    $directorioDestino = $_SERVER['DOCUMENT_ROOT'] . '/SGA-SEBANA/public/uploads/viaticos/';
+                    $directorioDestino = BASE_PATH . '/storage/viaticos/';
                     
                     if (!is_dir($directorioDestino)) {
                         mkdir($directorioDestino, 0777, true);
@@ -130,12 +139,20 @@ class ViaticoController extends ControllerBase {
                     $rutaDestinoFisica = $directorioDestino . $nuevoNombreArchivo;
                     
                     if (move_uploaded_file($fileTmpPath, $rutaDestinoFisica)) {
-                        $rutaArchivoFinal = 'uploads/viaticos/' . $nuevoNombreArchivo;
+                        $rutaArchivoFinal = 'storage/viaticos/' . $nuevoNombreArchivo;
                     }
                 }
             }
 
             $datos = [
+                'empleados' => trim($_POST['empleados'] ?? ''),
+                'fecha_inicio' => $_POST['fecha_inicio'] ?? null,
+                'fecha_fin' => $_POST['fecha_fin'] ?? null,
+                'cantidad_dias' => intval($_POST['cantidad_dias'] ?? 0),
+                'cantidad_desayuno' => intval($_POST['cantidad_desayuno'] ?? 0),
+                'cantidad_almuerzo' => intval($_POST['cantidad_almuerzo'] ?? 0),
+                'cantidad_cena' => intval($_POST['cantidad_cena'] ?? 0),
+                'cantidad_transportes' => intval($_POST['cantidad_transportes'] ?? 0),
                 'aplica_transporte' => isset($_POST['aplica_transporte']) && $_POST['aplica_transporte'] == 1 ? 1 : 0,
                 'tipo_vehiculo' => trim($_POST['v_type'] ?? ''), 
                 'kilometraje' => floatval($_POST['v_km'] ?? 0),
@@ -146,16 +163,90 @@ class ViaticoController extends ControllerBase {
                 'aplica_almuerzo' => isset($_POST['aplica_almuerzo']) ? 1 : 0,
                 'aplica_cena' => isset($_POST['aplica_cena']) ? 1 : 0,
                 'monto_alimentacion' => floatval($_POST['monto_alimentacion_oculto'] ?? 0), 
+                'monto_hospedaje' => floatval($_POST['monto_hospedaje'] ?? 0),
+                'monto_gastos_menores' => floatval($_POST['monto_gastos_menores'] ?? 0),
                 'total_pagar' => floatval($_POST['total_pagar_oculto'] ?? 0),
                 'archivo_comprobante' => $rutaArchivoFinal 
             ];
 
-            $nuevoId = $this->model->crearSolicitud($datos);
+            $datos['total_pagar'] = $datos['monto_alimentacion']
+                + $datos['monto_transporte']
+                + $datos['monto_hospedaje']
+                + $datos['monto_gastos_menores'];
+
+            $nuevoId = $this->model->crearSolicitud($datos, $usuario_id);
 
             if ($nuevoId) {
+                unset($_SESSION['error_detail']);
                 $this->redirect('/SGA-SEBANA/public/viaticos?success=creado');
             } else {
+                $_SESSION['error_detail'] = $this->model->getLastError();
                 $this->redirect('/SGA-SEBANA/public/viaticos/create?error=db');
+            }
+        }
+    }
+
+    public function archivo() {
+        $id = $_GET['id'] ?? null;
+
+        if (!$id) {
+            $this->redirect('/SGA-SEBANA/public/viaticos');
+            return;
+        }
+
+        $viatico = $this->model->obtenerPorId($id);
+
+        if (!$viatico || empty($viatico['archivo_comprobante'])) {
+            $this->redirect('/SGA-SEBANA/public/viaticos/show?id=' . $id);
+            return;
+        }
+
+        $rutaRelativa = ltrim($viatico['archivo_comprobante'], '/\\');
+        $candidato = BASE_PATH . DIRECTORY_SEPARATOR . $rutaRelativa;
+        $rutaFisica = file_exists($candidato) ? $candidato : null;
+
+        if (!$rutaFisica && file_exists(BASE_PATH . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $rutaRelativa)) {
+            $rutaFisica = BASE_PATH . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $rutaRelativa;
+        }
+
+        if (!$rutaFisica || !file_exists($rutaFisica)) {
+            http_response_code(404);
+            echo "Archivo no encontrado.";
+            return;
+        }
+
+        $realBase = realpath(BASE_PATH);
+        $realFile = realpath($rutaFisica);
+        if (!$realBase || !$realFile || strpos($realFile, $realBase) !== 0) {
+            http_response_code(403);
+            echo "Acceso no permitido.";
+            return;
+        }
+
+        $mime = function_exists('mime_content_type') ? mime_content_type($rutaFisica) : 'application/octet-stream';
+        $disposition = isset($_GET['download']) ? 'attachment' : 'inline';
+
+        header('Content-Type: ' . ($mime ?: 'application/octet-stream'));
+        header('Content-Length: ' . filesize($rutaFisica));
+        header('Content-Disposition: ' . $disposition . '; filename="' . basename($rutaFisica) . '"');
+        readfile($rutaFisica);
+        exit;
+    }
+
+    public function updateStatus() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['id'] ?? null;
+            $nuevo_estado = trim($_POST['nuevo_estado'] ?? '');
+            if (!$id || $nuevo_estado === '') {
+                $this->redirect('/SGA-SEBANA/public/viaticos');
+                return;
+            }
+
+            if ($this->model->cambiarEstado($id, $nuevo_estado)) {
+                $this->redirect('/SGA-SEBANA/public/viaticos/show?id=' . $id . '&success=estado_actualizado');
+            } else {
+                $_SESSION['error_detail'] = $this->model->getLastError();
+                $this->redirect('/SGA-SEBANA/public/viaticos/show?id=' . $id . '&error=estado');
             }
         }
     }

@@ -17,11 +17,44 @@ ob_start();
         <?php if (!empty($error)): ?>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="zmdi zmdi-alert-triangle me-2"></i> Hubo un error al procesar la solicitud en la base de datos.
+                <?php
+                    $config = require BASE_PATH . '/app/config/config.php';
+                    if (($config['debug'] ?? false) && !empty($_SESSION['error_detail'])) {
+                        echo '<div class="small text-muted mt-2"><strong>Detalle:</strong> ' . htmlspecialchars($_SESSION['error_detail']) . '</div>';
+                        unset($_SESSION['error_detail']);
+                    }
+                ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
 
         <form action="/SGA-SEBANA/public/viaticos/store" method="POST" id="formViaticos" enctype="multipart/form-data">
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <strong><i class="zmdi zmdi-accounts me-2"></i> 0. Empleados y Fechas</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label>Empleado(s) que corresponden a la solicitud</label>
+                            <textarea name="empleados" class="form-control" rows="2" placeholder="Ej: Juan Pérez (123), María López (456)"></textarea>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Fecha de inicio</label>
+                            <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control viatico-calc">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Fecha de fin</label>
+                            <input type="date" name="fecha_fin" id="fecha_fin" class="form-control viatico-calc">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Cantidad de días</label>
+                            <input type="number" name="cantidad_dias" id="cantidad_dias" class="form-control" value="0" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white">
@@ -34,18 +67,24 @@ ob_start();
                                 <input type="checkbox" name="aplica_desayuno" id="aplica_desayuno" class="form-check-input me-2 viatico-calc" style="width: 20px; height: 20px;">
                                 <span class="ml-2">Desayuno (₡4,200)</span>
                             </label>
+                            <input type="number" min="0" step="1" name="cantidad_desayuno" id="cantidad_desayuno" class="form-control viatico-calc" value="0" disabled>
+                            <small class="text-muted">Cantidad</small>
                         </div>
                         <div class="col-md-4">
                             <label class="d-flex align-items-center mb-3">
                                 <input type="checkbox" name="aplica_almuerzo" id="aplica_almuerzo" class="form-check-input me-2 viatico-calc" style="width: 20px; height: 20px;">
                                 <span class="ml-2">Almuerzo (₡5,600)</span>
                             </label>
+                            <input type="number" min="0" step="1" name="cantidad_almuerzo" id="cantidad_almuerzo" class="form-control viatico-calc" value="0" disabled>
+                            <small class="text-muted">Cantidad</small>
                         </div>
                         <div class="col-md-4">
                             <label class="d-flex align-items-center mb-3">
                                 <input type="checkbox" name="aplica_cena" id="aplica_cena" class="form-check-input me-2 viatico-calc" style="width: 20px; height: 20px;">
                                 <span class="ml-2">Cena (₡5,600)</span>
                             </label>
+                            <input type="number" min="0" step="1" name="cantidad_cena" id="cantidad_cena" class="form-control viatico-calc" value="0" disabled>
+                            <small class="text-muted">Cantidad</small>
                         </div>
                     </div>
                 </div>
@@ -119,6 +158,10 @@ ob_start();
                                 <label class="text-primary font-weight-bold">Kilómetros recorridos</label>
                                 <input type="number" id="v_km" name="v_km" value="0" step="0.01" class="form-control viatico-calc border-primary" style="font-size: 1.2rem;">
                             </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Cantidad de transportes</label>
+                                <input type="number" id="cantidad_transportes" name="cantidad_transportes" value="0" step="1" min="0" class="form-control viatico-calc">
+                            </div>
                             <div class="col-md-12">
                                 <label>Enlace de Google Maps (Respaldo)</label>
                                 <input type="url" name="enlace_maps" class="form-control" placeholder="https://maps.google.com/...">
@@ -130,7 +173,7 @@ ob_start();
 
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white">
-                    <strong><i class="zmdi zmdi-attachment-alt me-2"></i> 3. Respaldos y Comprobantes</strong>
+                    <strong><i class="zmdi zmdi-attachment-alt me-2"></i> 4. Respaldos y Comprobantes</strong>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -143,21 +186,44 @@ ob_start();
                 </div>
             </div>
 
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <strong><i class="zmdi zmdi-hotel me-2"></i> 3. Hospedaje y Gastos Menores</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label>Monto de Hospedaje (₡)</label>
+                            <input type="number" step="0.01" min="0" id="monto_hospedaje" name="monto_hospedaje" class="form-control viatico-calc" value="0">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Gastos Menores (₡)</label>
+                            <input type="number" step="0.01" min="0" id="monto_gastos_menores" name="monto_gastos_menores" class="form-control viatico-calc" value="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="card shadow-sm mb-4 border-info">
                 <div class="card-body bg-light text-center">
                     <div class="row">
                         <div class="col-md-4">
                             <h5 class="text-muted">Subtotal Alimentación</h5>
                             <h3 id="res_monto_alimentacion" class="text-dark">₡0,00</h3>
+                            <small class="text-muted">Desayunos: <span id="res_cant_desayuno">0</span> | Almuerzos: <span id="res_cant_almuerzo">0</span> | Cenas: <span id="res_cant_cena">0</span></small>
                         </div>
                         <div class="col-md-4 border-left border-right">
                             <h5 class="text-muted">Subtotal Transporte</h5>
                             <h3 id="res_monto_transporte" class="text-dark">₡0,00</h3>
                             <small class="text-muted"><span id="res_cat">Vehículo</span> | Tarifa: <span id="res_tarifa">0</span> ₡/km</small>
+                            <div><small class="text-muted">Transportes: <span id="res_cant_transportes">0</span></small></div>
                         </div>
                         <div class="col-md-4">
                             <h5 class="text-info font-weight-bold">TOTAL A PAGAR</h5>
                             <h2 id="res_total_pagar" class="text-info font-weight-bold">₡0,00</h2>
+                        </div>
+                        <div class="col-md-12 mt-3">
+                            <small class="text-muted">Hospedaje: <strong id="res_hospedaje">₡0,00</strong> | Gastos menores: <strong id="res_gastos_menores">₡0,00</strong></small>
                         </div>
                     </div>
                 </div>
@@ -210,11 +276,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 2. Función Maestra de Cálculo
     function calcularTotales() {
-        
-        let totalAlimentacion = 0;
-        if(document.getElementById('aplica_desayuno').checked) totalAlimentacion += 4200;
-        if(document.getElementById('aplica_almuerzo').checked) totalAlimentacion += 5600;
-        if(document.getElementById('aplica_cena').checked) totalAlimentacion += 5600;
+        const cantDesayuno = parseInt(document.getElementById('cantidad_desayuno').value) || 0;
+        const cantAlmuerzo = parseInt(document.getElementById('cantidad_almuerzo').value) || 0;
+        const cantCena = parseInt(document.getElementById('cantidad_cena').value) || 0;
+
+        let totalAlimentacion = (cantDesayuno * 4200) + (cantAlmuerzo * 5600) + (cantCena * 5600);
+
+        document.getElementById('res_cant_desayuno').innerText = cantDesayuno;
+        document.getElementById('res_cant_almuerzo').innerText = cantAlmuerzo;
+        document.getElementById('res_cant_cena').innerText = cantCena;
 
         document.getElementById('res_monto_alimentacion').innerText = "₡" + totalAlimentacion.toLocaleString('es-CR', {minimumFractionDigits: 2});
         document.getElementById('monto_alimentacion_oculto').value = totalAlimentacion;
@@ -270,8 +340,17 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('tarifa_km_oculta').value = tarifaFinal;
         document.getElementById('res_monto_transporte').innerText = "₡" + totalTransporte.toLocaleString('es-CR', {minimumFractionDigits: 2});
         document.getElementById('monto_transporte_oculto').value = totalTransporte;
+        const cantTransportes = parseInt(document.getElementById('cantidad_transportes').value) || 0;
+        document.getElementById('res_cant_transportes').innerText = cantTransportes;
 
         let granTotal = totalAlimentacion + totalTransporte;
+        const hospedaje = parseFloat(document.getElementById('monto_hospedaje').value) || 0;
+        const gastosMenores = parseFloat(document.getElementById('monto_gastos_menores').value) || 0;
+
+        document.getElementById('res_hospedaje').innerText = "₡" + hospedaje.toLocaleString('es-CR', {minimumFractionDigits: 2});
+        document.getElementById('res_gastos_menores').innerText = "₡" + gastosMenores.toLocaleString('es-CR', {minimumFractionDigits: 2});
+
+        granTotal = granTotal + hospedaje + gastosMenores;
         document.getElementById('res_total_pagar').innerText = "₡" + granTotal.toLocaleString('es-CR', {minimumFractionDigits: 2});
         document.getElementById('total_pagar_oculto').value = granTotal;
     }
@@ -282,6 +361,93 @@ document.addEventListener('DOMContentLoaded', function() {
         input.addEventListener('change', calcularTotales);
     });
 
+    function calcularDias() {
+        const inicio = document.getElementById('fecha_inicio').value;
+        const fin = document.getElementById('fecha_fin').value;
+        let dias = 0;
+        if (inicio && fin) {
+            const d1 = new Date(inicio + 'T00:00:00');
+            const d2 = new Date(fin + 'T00:00:00');
+            const diff = Math.floor((d2 - d1) / (1000 * 60 * 60 * 24));
+            if (!isNaN(diff) && diff >= 0) {
+                dias = diff + 1;
+            }
+        }
+        document.getElementById('cantidad_dias').value = dias;
+        return dias;
+    }
+
+    function syncCantidad(checkboxId, inputId) {
+        const cb = document.getElementById(checkboxId);
+        const input = document.getElementById(inputId);
+        if (!cb || !input) return;
+        if (cb.checked) {
+            input.disabled = false;
+            if (!input.value || parseInt(input.value) === 0) {
+                const dias = parseInt(document.getElementById('cantidad_dias').value) || 0;
+                if (dias > 0) {
+                    input.value = dias;
+                } else if (!input.value) {
+                    input.value = 1;
+                }
+            }
+        } else {
+            input.value = 0;
+            input.disabled = true;
+        }
+    }
+
+    function syncTransporteCount() {
+        const aplica = document.getElementById('transporte_si').checked;
+        const input = document.getElementById('cantidad_transportes');
+        if (!input) return;
+        if (aplica) {
+            input.disabled = false;
+        } else {
+            input.value = 0;
+            input.disabled = true;
+        }
+    }
+
+    document.getElementById('fecha_inicio').addEventListener('change', function() {
+        calcularDias();
+        syncCantidad('aplica_desayuno', 'cantidad_desayuno');
+        syncCantidad('aplica_almuerzo', 'cantidad_almuerzo');
+        syncCantidad('aplica_cena', 'cantidad_cena');
+        calcularTotales();
+    });
+    document.getElementById('fecha_fin').addEventListener('change', function() {
+        calcularDias();
+        syncCantidad('aplica_desayuno', 'cantidad_desayuno');
+        syncCantidad('aplica_almuerzo', 'cantidad_almuerzo');
+        syncCantidad('aplica_cena', 'cantidad_cena');
+        calcularTotales();
+    });
+
+    document.getElementById('aplica_desayuno').addEventListener('change', function() {
+        syncCantidad('aplica_desayuno', 'cantidad_desayuno');
+        calcularTotales();
+    });
+    document.getElementById('aplica_almuerzo').addEventListener('change', function() {
+        syncCantidad('aplica_almuerzo', 'cantidad_almuerzo');
+        calcularTotales();
+    });
+    document.getElementById('aplica_cena').addEventListener('change', function() {
+        syncCantidad('aplica_cena', 'cantidad_cena');
+        calcularTotales();
+    });
+
+    document.querySelectorAll('.viatico-toggle').forEach(radio => {
+        radio.addEventListener('change', function() {
+            syncTransporteCount();
+        });
+    });
+
+    calcularDias();
+    syncCantidad('aplica_desayuno', 'cantidad_desayuno');
+    syncCantidad('aplica_almuerzo', 'cantidad_almuerzo');
+    syncCantidad('aplica_cena', 'cantidad_cena');
+    syncTransporteCount();
     calcularTotales();
 });
 </script>
