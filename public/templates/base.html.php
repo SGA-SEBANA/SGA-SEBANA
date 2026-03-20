@@ -159,7 +159,8 @@ if ($userId) {
                                         Viáticos</a></li>
                                 <li><a href="/SGA-SEBANA/public/casos-rrll"><i class="fa-solid fa-people-group"></i>
                                         Casos RRLL</a></li>
-                                <li><a href="/SGA-SEBANA/public/oficinas"><i class="fa-solid fa-building"></i>
+                                <li>
+                                    <a href="/SGA-SEBANA/public/oficinas"><i class="fa-solid fa-building"></i>
                                         Oficinas</a>
                                 </li>
                             </ul>

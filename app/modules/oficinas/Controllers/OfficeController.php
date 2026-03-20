@@ -1,119 +1,104 @@
 <?php
-namespace App\Modules\oficinas\Controllers;
 
-use App\Modules\oficinas\Models\OfficeModel;
-use App\Modules\Usuarios\Models\Bitacora;
+namespace App\Modules\Oficinas\Controllers;
 
-class OfficeController {
+use App\Modules\Oficinas\Models\OfficeModel;
+use App\Modules\Usuarios\Helpers\SecurityHelper;
 
-    protected $officeModel;
+class OfficeController
+{
+    private OfficeModel $officeModel;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->officeModel = new OfficeModel();
     }
 
-
-    public function index() {
-        $offices = $this->officeModel->getOffice();
-        require BASE_PATH . '/app/modules/oficinas/view/index.php';
+    public function index()
+    {
+        SecurityHelper::requireAuth();
+        $offices = $this->officeModel->getAll();
+        $authUser = SecurityHelper::getAuthUser();
+        require BASE_PATH . '/app/modules/Oficinas/View/index.php';
     }
-    
-    // Crear oficina
-    public function create() {
-        session_start();
+
+    public function create()
+    {
+        SecurityHelper::requireAuth();
+        $authUser = SecurityHelper::getAuthUser();
 
         if ($_POST) {
-            $officeId = $this->officeModel->createOffice(
-                $_POST['codigo'],
-                $_POST['nombre'],
-                $_POST['direccion'],
-                $_POST['provincia'],
-                $_POST['canton'],
-                $_POST['distrito'],
-                $_POST['telefono'],
-                $_POST['correo'],
-                $_POST['horario_atencion'],
-                $_POST['responsable'],
-                1, // activo por defecto
-                $_POST['coordenadas_gps'],
-                $_POST['observaciones']
-            );
+            $data = [
+                'codigo' => trim($_POST['codigo'] ?? ''),
+                'nombre' => trim($_POST['nombre'] ?? ''),
+                'direccion' => trim($_POST['direccion'] ?? ''),
+                'provincia' => trim($_POST['provincia'] ?? ''),
+                'canton' => trim($_POST['canton'] ?? ''),
+                'distrito' => trim($_POST['distrito'] ?? ''),
+                'telefono' => trim($_POST['telefono'] ?? ''),
+                'correo' => trim($_POST['correo'] ?? ''),
+                'horario_atencion' => trim($_POST['horario_atencion'] ?? ''),
+                'responsable' => trim($_POST['responsable'] ?? ''),
+                'coordenadas_gps' => trim($_POST['coordenadas_gps'] ?? ''),
+                'observaciones' => trim($_POST['observaciones'] ?? '')
+            ];
 
-            // Log Bitacora
-            $bitacora = new Bitacora();
-            $bitacora->log([
-                'accion' => 'CREATE',
-                'modulo' => 'oficinas',
-                'entidad' => 'oficina',
-                'entidad_id' => $officeId,
-                'descripcion' => "Creación de oficina: {$_POST['nombre']}",
-                'datos_nuevos' => $_POST
-            ]);
-
-            header("Location: /oficinas");
+            $id = $this->officeModel->createOffice($data);
+            header("Location: /SGA-SEBANA/public/oficinas");
             exit;
         }
 
-        require BASE_PATH . '/app/modules/oficinas/View/create.php';
+        require BASE_PATH . '/app/modules/Oficinas/View/form.php';
     }
 
+    public function edit($id)
+    {
+        SecurityHelper::requireAuth();
+        $office = $this->officeModel->find($id);
+        $authUser = SecurityHelper::getAuthUser();
 
-    public function edit($id) {
-        session_start();
-
-        if ($_POST) {
-            $this->officeModel->editOffice(
-                $id,
-                $_POST['codigo'],
-                $_POST['nombre'],
-                $_POST['direccion'],
-                $_POST['provincia'],
-                $_POST['canton'],
-                $_POST['distrito'],
-                $_POST['telefono'],
-                $_POST['correo'],
-                $_POST['horario_atencion'],
-                $_POST['responsable'],
-                $_POST['activo'],
-                $_POST['coordenadas_gps'],
-                $_POST['observaciones']
-            );
-
-
-            $bitacora = new Bitacora();
-            $bitacora->log([
-                'accion' => 'UPDATE',
-                'modulo' => 'oficinas',
-                'entidad' => 'oficina',
-                'entidad_id' => $id,
-                'descripcion' => "Actualización de oficina ID: {$id}",
-                'datos_nuevos' => $_POST
-            ]);
-
-            header("Location: /oficinas");
+        if (!$office) {
+            header("Location: /SGA-SEBANA/public/oficinas");
             exit;
         }
 
+        if ($_POST) {
+            $data = [
+                'codigo' => trim($_POST['codigo'] ?? ''),
+                'nombre' => trim($_POST['nombre'] ?? ''),
+                'direccion' => trim($_POST['direccion'] ?? ''),
+                'provincia' => trim($_POST['provincia'] ?? ''),
+                'canton' => trim($_POST['canton'] ?? ''),
+                'distrito' => trim($_POST['distrito'] ?? ''),
+                'telefono' => trim($_POST['telefono'] ?? ''),
+                'correo' => trim($_POST['correo'] ?? ''),
+                'horario_atencion' => trim($_POST['horario_atencion'] ?? ''),
+                'responsable' => trim($_POST['responsable'] ?? ''),
+                'coordenadas_gps' => trim($_POST['coordenadas_gps'] ?? ''),
+                'observaciones' => trim($_POST['observaciones'] ?? '')
+            ];
 
-        $office = $this->officeModel->getOfficeById($id);
-        require BASE_PATH . '/app/modules/oficinas/View/edit.php';
+            $this->officeModel->updateOffice($id, $data);
+            header("Location: /SGA-SEBANA/public/oficinas");
+            exit;
+        }
+
+        require BASE_PATH . '/app/modules/Oficinas/View/form.php';
     }
 
+    public function toggleStatus($id)
+    {
+        SecurityHelper::requireAuth();
+        $this->officeModel->toggleStatus($id);
+        header("Location: /SGA-SEBANA/public/oficinas");
+        exit;
+    }
 
-    public function delete($id) {
+    public function delete($id)
+    {
+        SecurityHelper::requireAuth();
         $this->officeModel->deleteOffice($id);
-
-
-        $bitacora = new Bitacora();
-        $bitacora->log([
-            'accion' => 'DELETE',
-            'modulo' => 'oficinas',
-            'entidad' => 'oficina',
-            'entidad_id' => $id,
-            'descripcion' => "Eliminación de oficina ID: {$id}"
-        ]);
-
-        header("Location: /oficinas");
+        header("Location: /SGA-SEBANA/public/oficinas");
         exit;
     }
 }

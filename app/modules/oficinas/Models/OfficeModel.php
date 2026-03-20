@@ -1,152 +1,74 @@
 <?php
-namespace App\Modules\oficinas\Models;
+
+namespace App\Modules\Oficinas\Models;
+
 use App\Core\ModelBase;
 
-class OfficeModel extends ModelBase{
+class OfficeModel extends ModelBase
+{
+    protected $table = "oficinas";
 
- protected $table = "oficinas";
+    public function getAll()
+    {
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} ORDER BY nombre ASC");
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
 
+    public function find($id)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE id = :id");
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        return $stmt->fetch(\PDO::FETCH_ASSOC);
+    }
 
- public function getOffice(){
-
-   $sql = "SELECT 
-    id,
-    codigo,
-    nombre,
-    direccion,
-    provincia,
-    canton,
-    distrito,
-    telefono,
-    correo,
-    horario_atencion,
-    responsable,
-    activo,
-    coordenadas_gps,
-    observaciones,
-    fecha_creacion,
-    fecha_actualizacion
-    FROM oficinas
-    WHERE activo = 1";
-
-    $stmt = $this->db->prepare($sql);
-    $stmt->execute();
-    $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-    
-    return $results;
-
- }
-
-
-
-public function createOffice($id, $codigo, $nombre, $direccion, $provincia, $canton, $distrito, $telefono, $correo, $horario_atencion, $responsable, $activo, $coordenadas_gps, $observaciones, $fecha_creacion, $fecha_actualizacion){
-    
+    public function createOffice($data)
+    {
         $sql = "INSERT INTO {$this->table} (
-            codigo,
-            nombre,
-            direccion,
-            provincia,
-            canton,
-            distrito,
-            telefono,
-            correo,
-            horario_atencion,
-            responsable,
-            activo,
-            coordenadas_gps,
-            observaciones,
-            fecha_creacion,
-            fecha_actualizacion
+            codigo, nombre, direccion, provincia, canton, distrito, telefono, correo,
+            horario_atencion, responsable, coordenadas_gps, observaciones, estado
         ) VALUES (
-            :codigo,
-            :nombre,
-            :direccion,
-            :provincia,
-            :canton,
-            :distrito,
-            :telefono,
-            :correo,
-            :horario_atencion,
-            :responsable,
-            :activo,
-            :coordenadas_gps,
-            :observaciones,
-            NOW(),
-            NOW())";
+            :codigo, :nombre, :direccion, :provincia, :canton, :distrito, :telefono, :correo,
+            :horario_atencion, :responsable, :coordenadas_gps, :observaciones, 'activo'
+        )";
 
-            $stmt->bindParam(':codigo', $codigo);
-            $stmt->bindParam(':nombre', $nombre);
-            $stmt->bindParam(':direccion', $direccion);
-            $stmt->bindParam(':provincia', $provincia);
-            $stmt->bindParam(':canton', $canton);
-            $stmt->bindParam(':distrito', $distrito);
-            $stmt->bindParam(':telefono', $telefono);
-            $stmt->bindParam(':correo', $correo);
-            $stmt->bindParam(':horario_atencion', $horario_atencion);
-            $stmt->bindParam(':responsable', $responsable);
-            $stmt->bindParam(':activo', $activo);
-            $stmt->bindParam(':coordenadas_gps', $coordenadas_gps);
-            $stmt->bindParam(':observaciones', $observaciones);
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($data);
+        return $this->db->lastInsertId();
+    }
 
-            $stmt->execute();
+    public function updateOffice($id, $data)
+    {
+        $fields = '';
+        foreach ($data as $key => $value) {
+            $fields .= "{$key} = :{$key}, ";
+        }
+        $fields = rtrim($fields, ', ');
+        $data['id'] = $id;
 
+        $sql = "UPDATE {$this->table} SET {$fields} WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($data);
+    }
+public function toggleStatus($id)
+{
+    // Obtener el valor actual
+    $stmt = $this->db->prepare("SELECT activo FROM {$this->table} WHERE id = :id");
+    $stmt->execute(['id' => $id]);
+    $office = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+    if (!$office) return false;
+
+    // Cambiar 1 <-> 0
+    $newStatus = $office['activo'] == 1 ? 0 : 1;
+
+    $stmt = $this->db->prepare("UPDATE {$this->table} SET activo = :activo WHERE id = :id");
+    return $stmt->execute(['activo' => $newStatus, 'id' => $id]);
 }
-
-
- 
-public function editOffice($id, $codigo, $nombre, $direccion, $provincia, $canton, $distrito, $telefono, $correo, $horario_atencion, $responsable, $activo, $coordenadas_gps, $observaciones){
-    $sql = "UPDATE oficinas SET
-    codigo = :codigo,
-    nombre = :nombre,
-    direccion = :direccion,
-    provincia = :provincia,
-    canton = :canton,
-    distrito = :distrito,
-    telefono = :telefono,
-    correo = :correo,
-    horario_atencion = :horario_atencion,
-    responsable = :responsable,
-    activo = :activo,
-    coordenadas_gps = :coordenadas_gps,
-    observaciones = :observaciones,
-    fecha_actualizacion = NOW()
-    WHERE id = :id";
-
-    $stmt = $pdo->prepare($sql);
-
-
-    $stmt->bindParam(':codigo', $codigo);
-    $stmt->bindParam(':nombre', $nombre);
-    $stmt->bindParam(':direccion', $direccion);
-    $stmt->bindParam(':provincia', $provincia);
-    $stmt->bindParam(':canton', $canton);
-    $stmt->bindParam(':distrito', $distrito);
-    $stmt->bindParam(':telefono', $telefono);
-    $stmt->bindParam(':correo', $correo);
-    $stmt->bindParam(':horario_atencion', $horario_atencion);
-    $stmt->bindParam(':responsable', $responsable);
-    $stmt->bindParam(':activo', $activo);
-    $stmt->bindParam(':coordenadas_gps', $coordenadas_gps);
-    $stmt->bindParam(':observaciones', $observaciones);
-    $stmt->bindParam(':id', $id); 
-
-    $stmt->execute();
-
+    public function deleteOffice($id)
+    {
+        $stmt = $this->db->prepare("DELETE FROM {$this->table} WHERE id = :id");
+        return $stmt->execute(['id' => $id]);
+    }
 }
-
-
-
-public function deleteOffice($id){
-
-    $sql = "UPDATE oficinas SET activo = 0, fecha_actualizacion = NOW() WHERE id = :id";
-    $stmt = $pdo->prepare($sql);
-    $stmt->bindParam(':id', $id);
-    $stmt->execute();
-
-}
-
-
- 
-
-
-} 
