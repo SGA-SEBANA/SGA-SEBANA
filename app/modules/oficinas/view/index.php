@@ -22,13 +22,16 @@ ob_start();
                     <i class="fas fa-clock"></i> Horario: <?= htmlspecialchars($office['horario_atencion'] ?? '') ?>
                 </p>
             </div>
-            <div class="card-footer d-flex me-2">
-                <a href="/oficinas/<?= $office['id'] ?>/edit" class="btn btn-sm btn-warning me-2">Editar</a>
-                <a href="/SGA-SEBANA/public/oficinas/toggle/<?= $office['id'] ?>"
-                    class="btn btn-sm <?= ($office['activo'] ?? 0) == 1 ? 'btn-danger' : 'btn-success' ?>">
-                    <?= ($office['activo'] ?? 0) == 1 ? 'Desactivar' : 'Activar' ?>
-                </a>
-            </div>
+          <div class="card-footer d-flex gap-2">
+            <a href="/SGA-SEBANA/public/oficinas/edit/<?= $office['id'] ?>" 
+            class="btn btn-sm btn-warning w-50">Editar</a>
+
+            <a href="/SGA-SEBANA/public/oficinas/toggle/<?= $office['id'] ?>"
+            class="btn btn-sm <?= ($office['activo'] ?? 0) == 1 ? 'btn-danger' : 'btn-success' ?> w-50">
+            <?= ($office['activo'] ?? 0) == 1 ? 'Desactivar' : 'Activar' ?>
+            </a>
+</div>
+
         </div>
     </div>
     <?php endforeach; ?>

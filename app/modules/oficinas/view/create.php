@@ -1,11 +1,11 @@
 <?php
-$title = $action === 'create' ? 'Nueva Oficina' : 'Editar Oficina';
+$title = 'Nueva Oficina';
 ob_start();
 $old = $old ?? [];
 $office = $office ?? [];
 ?>
 
-<form method="post" action="<?= $action === 'create' ? '/oficinas' : '/oficinas/' . $office['id'] ?>">
+<form method="post" action="/SGA-SEBANA/public/oficinas/create">
     <div class="mb-3">
         <label>Código</label>
         <input type="text" name="codigo" class="form-control"
@@ -70,7 +70,7 @@ $office = $office ?? [];
         <textarea name="observaciones"
             class="form-control"><?= htmlspecialchars($old['observaciones'] ?? $office['observaciones'] ?? '') ?></textarea>
     </div>
-    <button type="submit" class="btn btn-primary"><?= $action === 'create' ? 'Crear' : 'Actualizar' ?></button>
+  <button type="submit" class="btn btn-primary">Crear</button>
 </form>
 
 <?php

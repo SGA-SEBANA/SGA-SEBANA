@@ -23,68 +23,69 @@ class OfficeController
     }
 
     public function create()
-    {
-        SecurityHelper::requireAuth();
-        $authUser = SecurityHelper::getAuthUser();
+{
+    SecurityHelper::requireAuth();
+    $authUser = SecurityHelper::getAuthUser();
 
-        if ($_POST) {
-            $data = [
-                'codigo' => trim($_POST['codigo'] ?? ''),
-                'nombre' => trim($_POST['nombre'] ?? ''),
-                'direccion' => trim($_POST['direccion'] ?? ''),
-                'provincia' => trim($_POST['provincia'] ?? ''),
-                'canton' => trim($_POST['canton'] ?? ''),
-                'distrito' => trim($_POST['distrito'] ?? ''),
-                'telefono' => trim($_POST['telefono'] ?? ''),
-                'correo' => trim($_POST['correo'] ?? ''),
-                'horario_atencion' => trim($_POST['horario_atencion'] ?? ''),
-                'responsable' => trim($_POST['responsable'] ?? ''),
-                'coordenadas_gps' => trim($_POST['coordenadas_gps'] ?? ''),
-                'observaciones' => trim($_POST['observaciones'] ?? '')
-            ];
+    if ($_POST) {
+        $data = [
+            'codigo' => trim($_POST['codigo'] ?? ''),
+            'nombre' => trim($_POST['nombre'] ?? ''),
+            'direccion' => trim($_POST['direccion'] ?? ''),
+            'provincia' => trim($_POST['provincia'] ?? ''),
+            'canton' => trim($_POST['canton'] ?? ''),
+            'distrito' => trim($_POST['distrito'] ?? ''),
+            'telefono' => trim($_POST['telefono'] ?? ''),
+            'correo' => trim($_POST['correo'] ?? ''),
+            'horario_atencion' => trim($_POST['horario_atencion'] ?? ''),
+            'responsable' => trim($_POST['responsable'] ?? ''),
+            'coordenadas_gps' => trim($_POST['coordenadas_gps'] ?? ''),
+            'observaciones' => trim($_POST['observaciones'] ?? '')
+        ];
 
-            $id = $this->officeModel->createOffice($data);
-            header("Location: /SGA-SEBANA/public/oficinas");
-            exit;
-        }
-
-        require BASE_PATH . '/app/modules/Oficinas/View/form.php';
+        $this->officeModel->createOffice($data);
+        header("Location: /SGA-SEBANA/public/oficinas");
+        exit;
     }
+
+    $office = [];
+    require BASE_PATH . '/app/modules/Oficinas/View/create.php';
+}
 
     public function edit($id)
-    {
-        SecurityHelper::requireAuth();
-        $office = $this->officeModel->find($id);
-        $authUser = SecurityHelper::getAuthUser();
+{
+    SecurityHelper::requireAuth();
+    $office = $this->officeModel->find($id);
+    $authUser = SecurityHelper::getAuthUser();
 
-        if (!$office) {
-            header("Location: /SGA-SEBANA/public/oficinas");
-            exit;
-        }
-
-        if ($_POST) {
-            $data = [
-                'codigo' => trim($_POST['codigo'] ?? ''),
-                'nombre' => trim($_POST['nombre'] ?? ''),
-                'direccion' => trim($_POST['direccion'] ?? ''),
-                'provincia' => trim($_POST['provincia'] ?? ''),
-                'canton' => trim($_POST['canton'] ?? ''),
-                'distrito' => trim($_POST['distrito'] ?? ''),
-                'telefono' => trim($_POST['telefono'] ?? ''),
-                'correo' => trim($_POST['correo'] ?? ''),
-                'horario_atencion' => trim($_POST['horario_atencion'] ?? ''),
-                'responsable' => trim($_POST['responsable'] ?? ''),
-                'coordenadas_gps' => trim($_POST['coordenadas_gps'] ?? ''),
-                'observaciones' => trim($_POST['observaciones'] ?? '')
-            ];
-
-            $this->officeModel->updateOffice($id, $data);
-            header("Location: /SGA-SEBANA/public/oficinas");
-            exit;
-        }
-
-        require BASE_PATH . '/app/modules/Oficinas/View/form.php';
+    if (!$office) {
+        header("Location: /SGA-SEBANA/public/oficinas");
+        exit;
     }
+
+    if ($_POST) {
+        $data = [
+            'codigo' => trim($_POST['codigo'] ?? ''),
+            'nombre' => trim($_POST['nombre'] ?? ''),
+            'direccion' => trim($_POST['direccion'] ?? ''),
+            'provincia' => trim($_POST['provincia'] ?? ''),
+            'canton' => trim($_POST['canton'] ?? ''),
+            'distrito' => trim($_POST['distrito'] ?? ''),
+            'telefono' => trim($_POST['telefono'] ?? ''),
+            'correo' => trim($_POST['correo'] ?? ''),
+            'horario_atencion' => trim($_POST['horario_atencion'] ?? ''),
+            'responsable' => trim($_POST['responsable'] ?? ''),
+            'coordenadas_gps' => trim($_POST['coordenadas_gps'] ?? ''),
+            'observaciones' => trim($_POST['observaciones'] ?? '')
+        ];
+
+        $this->officeModel->updateOffice($id, $data);
+        header("Location: /SGA-SEBANA/public/oficinas");
+        exit;
+    }
+
+    require BASE_PATH . '/app/modules/Oficinas/View/edit.php';
+}
 
     public function toggleStatus($id)
     {
@@ -94,6 +95,7 @@ class OfficeController
         exit;
     }
 
+    /*
     public function delete($id)
     {
         SecurityHelper::requireAuth();
@@ -101,4 +103,8 @@ class OfficeController
         header("Location: /SGA-SEBANA/public/oficinas");
         exit;
     }
+        */
+
+
+
 }
