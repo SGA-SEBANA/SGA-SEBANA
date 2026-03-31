@@ -153,7 +153,8 @@ if ($userId) {
                                         Casos RRLL</a></li>
                                 <li><a href="/SGA-SEBANA/public/vacaciones"><i class="fa-solid fa-umbrella-beach"></i>
                                         Vacaciones</a></li>        
-                                <li><a href="/SGA-SEBANA/public/oficinas"><i class="fa-solid fa-building"></i>
+                                <li>
+                                    <a href="/SGA-SEBANA/public/oficinas"><i class="fa-solid fa-building"></i>
                                         Oficinas</a>
                                 </li>
                             </ul>

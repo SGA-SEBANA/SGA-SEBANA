@@ -14912,3 +14912,29 @@ a:hover {
   font-size: 18px;
   color: rgba(255, 255, 255, 0.6);
 }
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px; /* tamaño del “cuadro” */
+  border-radius: 6px; /* esquinas redondeadas */
+  color: #fff; /* texto blanco para contraste */
+  font-weight: 600; /* un poco más grueso */
+  font-size: 0.875rem; /* tamaño un poco más pequeño */
+}
+
+.status-aprobada {
+  background-color: #28a745; /* verde */
+}
+
+.status-pendiente {
+  background-color: #ffc107; /* amarillo / naranja */
+  color: #212529; /* texto oscuro para contraste */
+}
+
+.status-cancelada {
+  background-color: #dc3545; /* rojo */
+}
+
+.status-desconocido {
+  background-color: #6c757d; /* gris por defecto */
+}

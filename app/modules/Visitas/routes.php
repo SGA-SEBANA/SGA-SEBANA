@@ -29,9 +29,7 @@ $router->get('/admin/visit-requests', [AdminVisitRequestController::class, 'inde
 
 $router->get('/admin/visit-requests/accept/{id}', [AdminVisitRequestController::class, 'acceptVisits']);
 
-$router->get('/admin/visit-requests/reject/{id}', [AdminVisitRequestController::class, 'cancelVisits']);
-
-
+$router->get('/admin/visit-requests/reject/{id}', [AdminVisitRequestController::class, 'rejectRequest']);
 
 //calendar
 $router->get('/admin/request-calendar',[AdminVisitRequestController::class, 'calendar']);

@@ -7,31 +7,38 @@ class VisitRequest extends ModelBase{
     
    protected $table = "solicitudes_visitas_oficinas";
    
-   public function getVisits(){
-   $sql = "SELECT s.id, 
-    s.codigo_solicitud, 
-    s.afiliado_id,
-    a.nombre AS afiliado_nombre, 
-    s.oficina_id,
-    o.nombre AS oficina_nombre,
-    s.numero_empleado, s.nombre_empleado, s.fecha_visita, s.hora_visita, s.motivo, s.tipo_visita, s.estado, s.fecha_reprogramada, 
-    s.hora_reprogramada, s.motivo_reprogramacion, s.motivo_cancelacion, s.motivo_rechazo, s.resultado_visita, s.aprobado_por,
-    s.fecha_aprobacion, s.observaciones, s.fecha_creacion, s.fecha_actualizacion	
-    
+  public function getVisits($start = 0, $limit = 10)
+{
+    $sql = "SELECT s.id, 
+        s.codigo_solicitud, 
+        s.afiliado_id,
+        a.nombre AS afiliado_nombre, 
+        s.oficina_id,
+        o.nombre AS oficina_nombre,
+        s.numero_empleado, s.nombre_empleado, s.fecha_visita, s.hora_visita, s.motivo, s.tipo_visita, s.estado, s.fecha_reprogramada, 
+        s.hora_reprogramada, s.motivo_reprogramacion, s.motivo_cancelacion, s.motivo_rechazo, s.resultado_visita, s.aprobado_por,
+        s.fecha_aprobacion, s.observaciones, s.fecha_creacion, s.fecha_actualizacion
     FROM solicitudes_visitas_oficinas s
-
     INNER JOIN afiliados a ON s.afiliado_id = a.id
-
-    INNER JOIN oficinas o  ON s.oficina_id = o.id";
+    INNER JOIN oficinas o  ON s.oficina_id = o.id
+    ORDER BY s.fecha_creacion DESC
+    LIMIT $start, $limit"; 
 
     $stmt = $this->db->prepare($sql);
     $stmt->execute();
-    $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-    return $results;
-   }
+    return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+}
 
    
+   public function getOffices() {
+    $sql = "SELECT id, nombre FROM oficinas ORDER BY nombre ASC";
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute();
+    return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+}
    
+
+
    
 public function createVisits(
     $afiliado_id,
@@ -138,8 +145,9 @@ public function rescheduleVisit($id, $fecha_reprogramada, $hora_reprogramada, $m
     $sql = "UPDATE {$this->table}
             SET fecha_reprogramada = :fecha_reprogramada,
                 hora_reprogramada = :hora_reprogramada,
-                motivo_reprogramacion = :motivo_reprogramacion
-                
+                motivo_reprogramacion = :motivo_reprogramacion,
+                estado = 'pendiente',  
+                fecha_actualizacion = NOW()
             WHERE id = :id";
 
     $stmt = $this->db->prepare($sql);
@@ -149,6 +157,7 @@ public function rescheduleVisit($id, $fecha_reprogramada, $hora_reprogramada, $m
     $stmt->bindParam(':id', $id);
     return $stmt->execute();
 }
+
 
 
    
@@ -176,8 +185,6 @@ public function deleteVisit($id){
 
 
 
-
-// --- METODOS PARA ADMINISTRACION DE SOLICITUDES --- //
 
 public function acceptVisit($id){  
     
@@ -211,8 +218,6 @@ public function updateEstado($id, $estado)
 
 
 
-// METODOS PARA CALENDARIO //
-
 public function getCalendarEvents()
 {
     $sql = "SELECT id, fecha_visita, hora_visita, estado
@@ -242,7 +247,6 @@ public function getApprovedVisits()
 
 
 
-
 public function getUpcomingVisits()
 {
     $sql = "SELECT nombre_empleado, fecha_visita, hora_visita
@@ -258,7 +262,12 @@ public function getUpcomingVisits()
     return $stmt->fetchAll(\PDO::FETCH_ASSOC);
 }
 
-
-
+public function countVisits($filtros = [])
+{
+    $sql = "SELECT COUNT(*) as total FROM {$this->table}";
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute();
+    return (int) $stmt->fetchColumn();
+}
 
 }
