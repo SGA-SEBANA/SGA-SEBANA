@@ -18,7 +18,7 @@ ob_start();
         </a>
     </div>
     <h3 class="text-center mt-3" style="color: #333; font-weight: 700;">SGA-SEBANA</h3>
-    <p class="text-center text-muted small">Sistema de Gestión de Afiliados</p>
+    <p class="text-center text-muted small">Sistema de Gestion de Afiliados</p>
 </div>
 
 <div class="login-form">
@@ -44,25 +44,31 @@ ob_start();
         </div>
 
         <div class="form-group mb-4">
-            <label class="form-label">Contraseña</label>
+            <label class="form-label">Contrasena</label>
             <div class="input-group">
                 <span class="input-group-text bg-white border-end-0">
                     <i class="zmdi zmdi-lock text-primary"></i>
                 </span>
                 <input class="form-control border-start-0 ps-0" type="password" name="password"
-                    placeholder="Ingrese su contraseña" required>
+                    placeholder="Ingrese su contrasena" required>
             </div>
         </div>
 
         <div class="d-grid gap-2 mt-4">
             <button class="au-btn au-btn--block au-btn--blue" type="submit">
-                Iniciar Sesión <i class="zmdi zmdi-long-arrow-right ms-2"></i>
+                Iniciar Sesion <i class="zmdi zmdi-long-arrow-right ms-2"></i>
             </button>
         </div>
     </form>
 
+    <div class="d-grid mt-3">
+        <a href="/SGA-SEBANA/public/afiliarse" class="btn btn-outline-primary">
+            No estas afiliado? Da clic aqui
+        </a>
+    </div>
+
     <div class="text-center mt-4 pt-2 border-top">
-        <p class="text-muted small">© <?= date('Y') ?> SEBANA. Todos los derechos reservados.</p>
+        <p class="text-muted small">&copy; <?= date('Y') ?> SEBANA. Todos los derechos reservados.</p>
     </div>
 </div>
 
