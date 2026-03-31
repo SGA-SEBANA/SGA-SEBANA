@@ -43,11 +43,9 @@ ob_start();
                     <?php foreach ($solicitud as $miembro): ?>
                     <tr class="tr-shadow">
 
-
                         <td>
                             <span class="block-email"><?= htmlspecialchars($miembro['codigo_solicitud']) ?></span>
                         </td>
-
 
                         <td><?= htmlspecialchars($miembro['oficina_nombre']) ?></td>
 
@@ -62,26 +60,36 @@ ob_start();
                         </td>
 
                         <td>
-                            <?php if (strtolower($miembro['estado']) === 'vigente'): ?>
-                            <span class="status--process">Vigente</span>
-                            <?php else: ?>
-                            <span class="status--denied"><?= ucfirst($miembro['estado']) ?></span>
-                            <?php endif; ?>
+                            <?php 
+                                $estado = strtolower($miembro['estado'] ?? '');
+                                switch($estado){
+                                    case 'aprobada':
+                                        $class = 'status-badge status-aprobada';
+                                        break;
+                                    case 'pendiente':
+                                        $class = 'status-badge status-pendiente';
+                                        break;
+                                    case 'cancelada':
+                                        $class = 'status-badge status-cancelada';
+                                        break;
+                                    default:
+                                        $class = 'status-badge status-desconocido';
+                                }
+                                ?>
+                            <span class="<?= $class ?>"><?= ucfirst($miembro['estado'] ?? '—') ?></span>
                         </td>
 
                         <td>
-
                             <div class="table-data-feature">
-
                                 <a href="/SGA-SEBANA/public/visit-requests/<?= $miembro['id'] ?>/reschedule"
                                     class="item" data-toggle="tooltip" title="Re-Programar">
                                     <i class="fa-regular fa-calendar-xmark"></i>
                                 </a>
 
                                 <a href="/SGA-SEBANA/public/visit-requests/<?= $miembro['id'] ?>/cancel" class="item"
-                                    onclick="return confirm('¿Cancelar esta solicitud?')"><i
-                                        class="fa-solid fa-ban"></i></a>
-
+                                    onclick="return confirm('¿Cancelar esta solicitud?')">
+                                    <i class="fa-solid fa-ban"></i>
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -90,6 +98,14 @@ ob_start();
                     <?php endif; ?>
                 </tbody>
             </table>
+            <div class="mt-3 d-flex justify-content-center gap-2">
+                <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
+                <a href="?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>"
+                    class="btn btn-sm <?= $i == $page ? 'btn-primary' : 'btn-secondary' ?>">
+                    <?= $i ?>
+                </a>
+                <?php endfor; ?>
+            </div>
         </div>
     </div>
 </div>
