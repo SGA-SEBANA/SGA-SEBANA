@@ -41,4 +41,6 @@ $router->get('/admin/visit-calendar-events', [AdminVisitRequestController::class
 //Notifications
 $router->get('/notificaciones/read/{id}', [NotificationController::class, 'read']);
 
+$router->get('/notificaciones/archive/{id}', [NotificationController::class, 'archive']);
+
 $router->get('/notificaciones/read-all', [NotificationController::class, 'markAllAsRead']);
