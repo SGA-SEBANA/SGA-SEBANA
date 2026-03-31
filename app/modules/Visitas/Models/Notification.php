@@ -14,9 +14,32 @@ class Notification extends ModelBase {
         $this->table = "notificaciones";
     }
 
+    private function normalizeCategoria($categoria) {
+        $allowed = [
+            'afiliados',
+            'solicitudes',
+            'casos',
+            'vacaciones',
+            'ayuda_economica',
+            'visitas',
+            'sistema',
+            'seguridad',
+            'aprobaciones'
+        ];
+
+        $categoria = strtolower(trim((string)$categoria));
+        return in_array($categoria, $allowed, true) ? $categoria : 'sistema';
+    }
+
+    private function normalizePrioridad($prioridad) {
+        $allowed = ['baja', 'normal', 'alta', 'urgente'];
+        $prioridad = strtolower(trim((string)$prioridad));
+        return in_array($prioridad, $allowed, true) ? $prioridad : 'normal';
+    }
+
     /**
-     * HU-NO-01, 02, 03, 04 - Escenario 1: Generación automática
-     * Crea una notificación con todos los metadatos necesarios.
+     * HU-NO-01, 02, 03, 04 - Escenario 1: GeneraciÃ³n automÃ¡tica
+     * Crea una notificaciÃ³n con todos los metadatos necesarios.
      */
     public function createNotification(
         $usuario_id,
@@ -27,8 +50,11 @@ class Notification extends ModelBase {
         $entidad_tipo,
         $entidad_id,
         $url_accion = null,
-        $prioridad = 'media'
+        $prioridad = 'normal'
     ) {
+        $categoria = $this->normalizeCategoria($categoria);
+        $prioridad = $this->normalizePrioridad($prioridad);
+
         $sql = "INSERT INTO {$this->table} (
             usuario_id, tipo, categoria, titulo, mensaje,
             entidad_tipo, entidad_id, url_accion,
@@ -86,7 +112,7 @@ class Notification extends ModelBase {
     }
 
     /**
-     * Marcar como leída tras revisar (HU-NO-01 E2)
+     * Marcar como leÃ­da tras revisar (HU-NO-01 E2)
      */
     public function markAsRead($id) {
         $sql = "UPDATE {$this->table}
@@ -98,7 +124,7 @@ class Notification extends ModelBase {
     }
 
     /**
-     * Marcar todas como leídas (Limpieza rápida)
+     * Marcar todas como leÃ­das (Limpieza rÃ¡pida)
      */
     public function markAllAsReadByUser($usuario_id) {
         $sql = "UPDATE {$this->table}
@@ -111,8 +137,8 @@ class Notification extends ModelBase {
     }
 
     /**
-     * HU-NO-01, 03, 04 - Escenario 2: Eliminar/Gestionar notificación
-     * Archiva la notificación para que deje de ser visible pero se mantenga el log.
+     * HU-NO-01, 03, 04 - Escenario 2: Eliminar/Gestionar notificaciÃ³n
+     * Archiva la notificaciÃ³n para que deje de ser visible pero se mantenga el log.
      */
     public function archive($id) {
         $sql = "UPDATE {$this->table}

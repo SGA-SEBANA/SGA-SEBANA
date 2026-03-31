@@ -4,7 +4,7 @@ ob_start();
 
 <div class="row mt-3">
     <div class="col-lg-8 offset-lg-2">
-        
+
         <div class="overview-wrap mb-4 px-2">
             <h2 class="title-1">Solicitar Vacaciones</h2>
             <a href="/SGA-SEBANA/public/vacaciones" class="btn btn-secondary shadow-sm">
@@ -15,13 +15,18 @@ ob_start();
         <?php if (isset($error)): ?>
             <div class="alert alert-danger alert-dismissible fade show shadow-sm mt-4 mb-4" role="alert">
                 <i class="zmdi zmdi-alert-triangle me-2"></i>
-                <?php 
+                <?php
                     if ($error === 'db_error') {
-                        echo '<strong>Error:</strong> Ocurrió un problema al guardar la solicitud en la base de datos. Intente nuevamente.';
+                        echo '<strong>Error:</strong> Ocurrio un problema al guardar la solicitud.';
+                    } elseif ($error === 'invalid_dates') {
+                        echo '<strong>Error:</strong> Verifique las fechas ingresadas.';
                     } else {
-                        echo 'Ocurrió un error inesperado.';
+                        echo 'Ocurrio un error inesperado.';
                     }
                 ?>
+                <?php if (!empty($error_detail)): ?>
+                    <div class="mt-2"><small>Detalle: <?= htmlspecialchars($error_detail) ?></small></div>
+                <?php endif; ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
@@ -32,14 +37,14 @@ ob_start();
             </div>
             <div class="card-body card-block px-5 py-4">
                 <form action="/SGA-SEBANA/public/vacaciones/store" method="post" class="form-horizontal">
-                    
+
                     <div class="row form-group mb-4">
                         <div class="col col-md-3">
                             <label for="fecha_inicio" class="form-control-label font-weight-bold">Fecha de Inicio</label>
                         </div>
                         <div class="col-12 col-md-9">
                             <input type="date" id="fecha_inicio" name="fecha_inicio" class="form-control" required>
-                            <small class="form-text text-muted">Primer día de sus vacaciones.</small>
+                            <small class="form-text text-muted">Primer dia de sus vacaciones.</small>
                         </div>
                     </div>
 
@@ -49,7 +54,7 @@ ob_start();
                         </div>
                         <div class="col-12 col-md-9">
                             <input type="date" id="fecha_fin" name="fecha_fin" class="form-control" required>
-                            <small class="form-text text-muted">Último día de sus vacaciones.</small>
+                            <small class="form-text text-muted">Ultimo dia de sus vacaciones.</small>
                         </div>
                     </div>
 
@@ -77,7 +82,6 @@ ob_start();
 </div>
 
 <script>
-    // Pequeño script para evitar que la fecha de fin sea menor a la de inicio
     document.getElementById('fecha_inicio').addEventListener('change', function() {
         document.getElementById('fecha_fin').min = this.value;
     });
