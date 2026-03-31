@@ -28,6 +28,22 @@
 
     <!-- Main CSS-->
     <link href="/SGA-SEBANA/public/assets/css/theme.css" rel="stylesheet" media="all">
+    <style>
+        /* Permite formularios largos (como afiliacion) sin recorte vertical */
+        .page-wrapper {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+        }
+        .page-content--bge5 {
+            min-height: 100vh;
+            height: auto !important;
+            padding: 24px 0;
+        }
+        .login-wrap {
+            padding-top: 2vh;
+            padding-bottom: 2vh;
+        }
+    </style>
 
 </head>
 
