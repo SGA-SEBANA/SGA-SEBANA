@@ -37,6 +37,7 @@ ob_start();
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
+
         <div class="row">
             <div class="col-lg-7">
                 <div class="card shadow-sm mb-4">
@@ -93,37 +94,39 @@ ob_start();
                                 </form>
                             </div>
                         <?php endif; ?>
-                        </div>
+                    </div>
                 </div>
 
-                <div class="card border-primary shadow-sm mb-4">
-                    <div class="card-header bg-dark text-white py-3">
-                        <i class="zmdi zmdi-settings me-2"></i>Acciones de Administración
-                    </div>
-                    <div class="card-body py-4 text-center">
-                        <form action="/SGA-SEBANA/public/ayudas/status/<?= $ayuda['id'] ?>" method="POST" class="d-inline">
-                            <?php if ($ayuda['estado'] === 'Pendiente' || $ayuda['estado'] === 'Cancelación Solicitada'): ?>
-                                <button type="submit" name="nuevo_estado" value="Aprobada" class="btn btn-success px-4 mx-2 shadow-sm">
-                                    <i class="zmdi zmdi-check mr-1"></i> Aprobar
-                                </button>
-                                <button type="submit" name="nuevo_estado" value="Rechazada" class="btn btn-danger px-4 mx-2 shadow-sm">
-                                    <i class="zmdi zmdi-close mr-1"></i> Rechazar
-                                </button>
-                                <?php if ($ayuda['estado'] === 'Cancelación Solicitada'): ?>
-                                    <button type="submit" name="nuevo_estado" value="Cancelada" class="btn btn-warning px-4 mx-2 shadow-sm text-dark">
-                                        <i class="zmdi zmdi-block mr-1"></i> Confirmar Cancelación
+                <?php if (isset($_SESSION['user']['nivel_acceso']) && $_SESSION['user']['nivel_acceso'] >= 50): ?>
+                    <div class="card border-primary shadow-sm mb-4">
+                        <div class="card-header bg-dark text-white py-3">
+                            <i class="zmdi zmdi-settings me-2"></i>Acciones de Administración
+                        </div>
+                        <div class="card-body py-4 text-center">
+                            <form action="/SGA-SEBANA/public/ayudas/status/<?= $ayuda['id'] ?>" method="POST" class="d-inline">
+                                <?php if ($ayuda['estado'] === 'Pendiente' || $ayuda['estado'] === 'Cancelación Solicitada'): ?>
+                                    <button type="submit" name="nuevo_estado" value="Aprobada" class="btn btn-success px-4 mx-2 shadow-sm">
+                                        <i class="zmdi zmdi-check mr-1"></i> Aprobar
                                     </button>
+                                    <button type="submit" name="nuevo_estado" value="Rechazada" class="btn btn-danger px-4 mx-2 shadow-sm">
+                                        <i class="zmdi zmdi-close mr-1"></i> Rechazar
+                                    </button>
+                                    <?php if ($ayuda['estado'] === 'Cancelación Solicitada'): ?>
+                                        <button type="submit" name="nuevo_estado" value="Cancelada" class="btn btn-warning px-4 mx-2 shadow-sm text-dark">
+                                            <i class="zmdi zmdi-block mr-1"></i> Confirmar Cancelación
+                                        </button>
+                                    <?php endif; ?>
+                                <?php elseif ($ayuda['estado'] === 'Aprobada'): ?>
+                                    <button type="submit" name="nuevo_estado" value="Cancelada" class="btn btn-warning px-4 shadow-sm text-dark">
+                                        <i class="zmdi zmdi-refresh-sync mr-1"></i> Reevaluar y Cancelar
+                                    </button>
+                                <?php else: ?>
+                                    <span class="text-muted font-italic font-weight-bold">Solicitud Finalizada</span>
                                 <?php endif; ?>
-                            <?php elseif ($ayuda['estado'] === 'Aprobada'): ?>
-                                <button type="submit" name="nuevo_estado" value="Cancelada" class="btn btn-warning px-4 shadow-sm text-dark">
-                                    <i class="zmdi zmdi-refresh-sync mr-1"></i> Reevaluar y Cancelar
-                                </button>
-                            <?php else: ?>
-                                <span class="text-muted font-italic font-weight-bold">Solicitud Finalizada</span>
-                            <?php endif; ?>
-                        </form>
+                            </form>
+                        </div>
                     </div>
-                </div>
+                <?php endif; ?>
             </div>
 
             <div class="col-lg-5">
@@ -152,7 +155,7 @@ ob_start();
                                                 <small class="badge badge-light border text-dark mt-1 font-weight-normal">
                                                     Estado al subir: <?= htmlspecialchars($e['estado_solicitud_al_subir']) ?>
                                                 </small>
-                                                </div>
+                                            </div>
                                             <div class="table-data-feature">
                                                 <a href="/SGA-SEBANA/public/ayudas/archivo/<?= $e['id'] ?>" target="_blank" class="item" title="Ver">
                                                     <i class="zmdi zmdi-eye text-info"></i>

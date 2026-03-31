@@ -4,25 +4,30 @@ namespace App\Modules\Afiliados\Controllers;
 use App\Core\ControllerBase;
 use App\Modules\Afiliados\Models\Afiliados;
 use App\Modules\Usuarios\Models\Bitacora;
+use App\Modules\Visitas\Models\Notification; // Cargamos el motor de notificaciones
 
 class AfiliadosController extends ControllerBase
 {
+    protected $notiModel;
+
+    public function __construct()
+    {
+        // Instanciamos el modelo de notificaciones para usarlo en todo el controlador
+        $this->notiModel = new Notification();
+    }
 
     public function index()
     {
-        // 1. Capturar filtros de la URL (GET)
         $filtros = [
             'busqueda' => trim($_GET['q'] ?? ''),
             'estado' => $_GET['estado'] ?? '',
             'oficina_id' => $_GET['oficina_id'] ?? ''
         ];
 
-        // 2. Consultar modelo con filtros
         $modelo = new Afiliados();
         $afiliados = $modelo->getAll($filtros);
-        $oficinas = $modelo->getOficinas(); // Para el filtro
+        $oficinas = $modelo->getOficinas();
 
-        // 3. Pasar datos a la vista
         $data = [
             'titulo' => 'Gestión de Afiliados',
             'afiliados' => $afiliados,
@@ -37,7 +42,6 @@ class AfiliadosController extends ControllerBase
     public function create()
     {
         $modelo = new Afiliados();
-
         $data = [
             'titulo' => 'Registrar Nuevo Afiliado',
             'categorias' => $modelo->getCategorias(),
@@ -45,35 +49,52 @@ class AfiliadosController extends ControllerBase
             'success' => isset($_GET['status']) && $_GET['status'] === 'success' ? "¡Afiliado registrado correctamente!" : null,
             'error' => null
         ];
-
         $this->view('create', $data);
     }
 
     public function store()
     {
-        $datos = $this->limpiarDatos($_POST);
-        $modelo = new Afiliados();
+        try {
+            $datos = $this->limpiarDatos($_POST);
+            $modelo = new Afiliados();
 
-        if ($modelo->existeCedula($datos['cedula'])) {
-            echo "<script>alert('Error: Cédula duplicada.'); window.history.back();</script>";
-            return;
-        }
+            if ($modelo->existeCedula($datos['cedula'])) {
+                echo "<script>alert('Error: Cédula duplicada.'); window.history.back();</script>";
+                return;
+            }
 
-        if ($modelo->create($datos)) {
-            // Log Bitacora
-            $bitacora = new Bitacora();
-            $bitacora->log([
-                'accion' => 'CREATE',
-                'modulo' => 'afiliados',
-                'entidad' => 'afiliado',
-                'descripcion' => "Creación de afiliado cédula: {$datos['cedula']}",
-                'datos_nuevos' => $datos
-            ]);
+            $nuevoId = $modelo->create($datos);
+            if ($nuevoId) {
+                // Log Bitacora
+                $bitacora = new Bitacora();
+                $bitacora->log([
+                    'accion' => 'CREATE',
+                    'modulo' => 'afiliados',
+                    'entidad' => 'afiliado',
+                    'descripcion' => "Creación de afiliado cédula: {$datos['cedula']}",
+                    'datos_nuevos' => $datos
+                ]);
 
-            header('Location: /SGA-SEBANA/public/afiliados/create?status=success');
-            exit;
-        } else {
-            echo "Error al guardar.";
+                // HU-NO-01 E1: Notificación automática de nuevo afiliado
+                $this->notiModel->createNotification(
+                    1, 'sistema', 'afiliados', '✅ Nuevo Afiliado',
+                    "Se ha registrado exitosamente a: {$datos['nombre']} {$datos['apellido1']}",
+                    'afiliado', $nuevoId, "/SGA-SEBANA/public/afiliados/edit/{$nuevoId}"
+                );
+
+                header('Location: /SGA-SEBANA/public/afiliados/create?status=success');
+                exit;
+            } else {
+                throw new \Exception("Fallo en la inserción en base de datos.");
+            }
+        } catch (\Exception $e) {
+            // HU-NO-04 E1: Notificación automática de error en sistema
+            $this->notiModel->createNotification(
+                1, 'error', 'critico', '⚠️ Error al Registrar',
+                "Error al procesar alta de afiliado: " . $e->getMessage(),
+                'error_log', 0, null, 'alta'
+            );
+            echo "Error al guardar: " . $e->getMessage();
         }
     }
 
@@ -93,71 +114,119 @@ class AfiliadosController extends ControllerBase
             'categorias' => $modelo->getCategorias(),
             'oficinas' => $modelo->getOficinas()
         ];
-
         $this->view('edit', $data);
     }
 
     public function update($id)
     {
-        $datos = $this->limpiarDatos($_POST);
-        $modelo = new Afiliados();
+        try {
+            $datos = $this->limpiarDatos($_POST);
+            $modelo = new Afiliados();
+            $anterior = $modelo->getById($id);
 
-        // Obtener datos anteriores para log
-        $anterior = $modelo->getById($id);
+            if ($modelo->existeCedula($datos['cedula'], $id)) {
+                echo "<script>alert('Error: Esa cédula ya pertenece a otro afiliado.'); window.history.back();</script>";
+                return;
+            }
 
-        if ($modelo->existeCedula($datos['cedula'], $id)) {
-            echo "<script>alert('Error: Esa cédula ya pertenece a otro afiliado.'); window.history.back();</script>";
-            return;
-        }
+            if ($modelo->update($id, $datos)) {
+                $bitacora = new Bitacora();
+                $bitacora->log([
+                    'accion' => 'UPDATE', 'modulo' => 'afiliados', 'entidad' => 'afiliado',
+                    'entidad_id' => $id, 'descripcion' => "Actualización de afiliado ID: {$id}",
+                    'datos_anteriores' => $anterior, 'datos_nuevos' => $datos
+                ]);
 
-        if ($modelo->update($id, $datos)) {
-            // Log Bitacora
-            $bitacora = new Bitacora();
-            $bitacora->log([
-                'accion' => 'UPDATE',
-                'modulo' => 'afiliados',
-                'entidad' => 'afiliado',
-                'entidad_id' => $id,
-                'descripcion' => "Actualización de afiliado ID: {$id}",
-                'datos_anteriores' => $anterior,
-                'datos_nuevos' => $datos
-            ]);
+                // HU-NO-02 E1 & E3: Notificación de edición con detalles
+                $this->notiModel->createNotification(
+                    1, 'sistema', 'afiliados', '📝 Afiliado Editado',
+                    "Se actualizaron los datos de: {$datos['nombre']} {$datos['apellido1']}. Puesto: {$datos['puesto_actual']}",
+                    'afiliado', $id, "/SGA-SEBANA/public/afiliados/edit/{$id}"
+                );
 
-            header('Location: /SGA-SEBANA/public/afiliados?success=Afiliado actualizado correctamente');
-            exit;
-        } else {
+                header('Location: /SGA-SEBANA/public/afiliados?success=Afiliado actualizado correctamente');
+                exit;
+            } else {
+                throw new \Exception("No se pudo actualizar el registro ID: {$id}");
+            }
+        } catch (\Exception $e) {
+            // HU-NO-04: Error en edición
+            $this->notiModel->createNotification(
+                1, 'error', 'critico', '⚠️ Error al Editar',
+                "Error al actualizar afiliado ID {$id}: " . $e->getMessage(),
+                'error_log', $id, null, 'media'
+            );
             echo "Error al actualizar.";
         }
     }
 
     public function toggle($id)
     {
-        $modelo = new Afiliados();
+        try {
+            $modelo = new Afiliados();
+            $nuevoEstado = $modelo->toggleStatus($id);
 
-        $nuevoEstado = $modelo->toggleStatus($id);
+            if ($nuevoEstado) {
+                $bitacora = new Bitacora();
+                $bitacora->log([
+                    'accion' => 'STATUS_CHANGE', 'modulo' => 'afiliados', 'entidad' => 'afiliado',
+                    'entidad_id' => $id, 'descripcion' => "Cambio de estado a: {$nuevoEstado}", 'resultado' => 'exitoso'
+                ]);
 
-        if ($nuevoEstado) {
-            // Log Bitacora
-            $bitacora = new Bitacora();
-            $bitacora->log([
-                'accion' => 'STATUS_CHANGE',
-                'modulo' => 'afiliados',
-                'entidad' => 'afiliado',
-                'entidad_id' => $id,
-                'descripcion' => "Cambio de estado a: {$nuevoEstado}",
-                'resultado' => 'exitoso'
-            ]);
+                // Notificación de cambio de estado
+                $this->notiModel->createNotification(
+                    1, 'sistema', 'afiliados', '🔄 Estado Cambiado',
+                    "El afiliado ID {$id} ahora está en estado: {$nuevoEstado}",
+                    'afiliado', $id, "/SGA-SEBANA/public/afiliados"
+                );
 
-            header('Location: /SGA-SEBANA/public/afiliados?success=Estado actualizado correctamente');
-            exit;
-        } else {
+                header('Location: /SGA-SEBANA/public/afiliados?success=Estado actualizado correctamente');
+                exit;
+            }
+        } catch (\Exception $e) {
+            $this->notiModel->createNotification(1, 'error', 'critico', '⚠️ Error Status', $e->getMessage(), 'error', $id);
             echo "Error al cambiar el estado.";
         }
     }
 
+    public function procesarBaja($id)
+    {
+        try {
+            $modelo = new Afiliados();
+            $dataBaja = [
+                'fecha_baja' => date('Y-m-d'), 
+                'motivo_baja' => $_POST['motivo_baja'],
+                'tipo_baja' => $_POST['tipo_baja']
+            ];
+
+            if ($modelo->registrarBaja($id, $dataBaja)) {
+                // HU-NO-03 E1 & E3: Notificación de eliminación (Baja técnica)
+                $this->notiModel->createNotification(
+                    1, 'sistema', 'afiliados', '🗑️ Afiliado Desactivado',
+                    "Se procesó la baja del afiliado ID {$id}. Motivo: {$dataBaja['motivo_baja']}",
+                    'afiliado', $id, "/SGA-SEBANA/public/afiliados"
+                );
+
+                header('Location: /SGA-SEBANA/public/afiliados?success=Afiliado desactivado correctamente');
+                exit;
+            }
+        } catch (\Exception $e) {
+            $this->notiModel->createNotification(1, 'error', 'critico', '⚠️ Error en Baja', $e->getMessage(), 'error', $id);
+            header('Location: /SGA-SEBANA/public/afiliados?error=fallo_baja');
+        }
+    }
+
+    public function desactivar($id)
+    {
+        $modelo = new Afiliados();
+        $afiliado = $modelo->getById($id);
+        if (!$afiliado) { header('Location: /SGA-SEBANA/public/afiliados'); exit; }
+        $data = ['titulo' => 'Desactivar Afiliado', 'afiliado' => $afiliado];
+        $this->view('baja', $data);
+    }
+
     private function limpiarDatos($post)
     {
-        // Empaquetar datos de contacto de emergencia en JSON
         $contactoEmergencia = [
             'nombre' => trim($post['emergencia_nombre'] ?? ''),
             'telefono' => trim($post['emergencia_telefono'] ?? ''),
@@ -165,65 +234,21 @@ class AfiliadosController extends ControllerBase
         ];
 
         return [
-            // Básicos
             'nombre' => trim($post['nombre'] ?? ''),
             'apellido1' => trim($post['apellido1'] ?? ''),
             'apellido2' => trim($post['apellido2'] ?? ''),
             'cedula' => trim($post['cedula'] ?? ''),
             'genero' => trim($post['genero'] ?? ''),
             'fecha_nacimiento' => trim($post['fecha_nacimiento'] ?? ''),
-
-            // Contacto
             'correo' => trim($post['correo'] ?? ''),
             'telefono' => trim($post['telefono'] ?? ''),
             'telefono_secundario' => trim($post['telefono_secundario'] ?? ''),
             'direccion' => trim($post['direccion'] ?? ''),
-
-            // Laboral / Ubicación
             'categoria_id' => !empty($post['categoria_id']) ? (int) $post['categoria_id'] : null,
             'oficina_id' => !empty($post['oficina_id']) ? (int) $post['oficina_id'] : null,
             'puesto_actual' => trim($post['puesto_actual'] ?? ''),
-
-            // Extras
-            'datos_contacto_emergencia' => json_encode($contactoEmergencia), // Guardamos como JSON string
+            'datos_contacto_emergencia' => json_encode($contactoEmergencia),
             'observaciones' => trim($post['observaciones'] ?? '')
         ];
     }
-  public function desactivar($id)
-{
-    $modelo = new Afiliados();
-    $afiliado = $modelo->getById($id);
-
-    if (!$afiliado) {
-        header('Location: /SGA-SEBANA/public/afiliados');
-        exit;
-    }
-
-    $data = [
-        'titulo' => 'Desactivar Afiliado',
-        'afiliado' => $afiliado
-    ];
-
-    $this->view('baja', $data);
-}
-
-    public function procesarBaja($id)
-{
-    $modelo = new Afiliados();
-
-    $data = [
-        'fecha_baja' => date('Y-m-d'), 
-        'motivo_baja' => $_POST['motivo_baja'],
-        'tipo_baja' => $_POST['tipo_baja']
-    ];
-
-    $modelo->registrarBaja($id, $data);
-
-    header('Location: /SGA-SEBANA/public/afiliados?success=Afiliado desactivado correctamente');
-    exit;
-}
-
-
-
-
 }

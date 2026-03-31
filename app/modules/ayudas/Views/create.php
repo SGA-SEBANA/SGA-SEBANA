@@ -13,6 +13,8 @@ ob_start();
                         echo '<strong>Error en el archivo:</strong> El archivo adjunto no cumple con los requisitos. Debe ser PDF, JPG, JPEG o PNG y pesar un máximo de 5MB.';
                     } elseif ($error === 'db_error') {
                         echo 'Ocurrió un error al intentar guardar la solicitud. Por favor, intente de nuevo.';
+                    } elseif ($error === 'monto_excedido') {
+                        echo '<strong>Monto excedido:</strong> El monto máximo permitido para una ayuda económica es de ₡100,000.';
                     } else {
                         echo 'Ocurrió un error inesperado.';
                     }
@@ -52,9 +54,10 @@ ob_start();
                                 <div class="input-group-addon">
                                     <i class="zmdi zmdi-money-box"></i>
                                 </div>
-                                <input type="number" step="0.01" id="monto_solicitado" name="monto_solicitado" class="form-control" required>
+                                <input type="number" step="0.01" min="1" max="100000" id="monto_solicitado" name="monto_solicitado" class="form-control" required>
                                 <div class="input-group-addon">₡</div>
                             </div>
+                            <small class="form-text text-muted d-block mt-1">El monto máximo permitido es de ₡100,000.</small>
                         </div>
                     </div>
 

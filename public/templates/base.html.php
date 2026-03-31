@@ -29,46 +29,37 @@ if ($userId) {
 <html lang="en">
 
 <head>
-    <!-- Required meta tags-->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="SGA-SEBANA">
     <meta name="author" content="SGA-SEBANA Team">
     <meta name="keywords" content="sga sebana">
 
-    <!-- Title Page-->
     <title><?= $title ?? 'SGA-SEBANA' ?></title>
 
-    <!-- Fontfaces CSS-->
     <link href="/SGA-SEBANA/public/assets/css/font-face.css" rel="stylesheet" media="all">
     <link href="/SGA-SEBANA/public/assets/vendor/fontawesome-7.1.0/css/all.min.css" rel="stylesheet" media="all">
     <link href="/SGA-SEBANA/public/assets/vendor/mdi-font/css/material-design-iconic-font.min.css" rel="stylesheet"
         media="all">
 
-    <!-- Bootstrap CSS-->
     <link href="/SGA-SEBANA/public/assets/vendor/bootstrap-5.3.8.min.css" rel="stylesheet" media="all">
 
-    <!-- Vendor CSS-->
     <link href="/SGA-SEBANA/public/assets/css/aos.css" rel="stylesheet" media="all">
     <link href="/SGA-SEBANA/public/assets/vendor/css-hamburgers/hamburgers.min.css" rel="stylesheet" media="all">
     <link href="/SGA-SEBANA/public/assets/css/swiper-bundle-12.0.3.min.css" rel="stylesheet" media="all">
     <link href="/SGA-SEBANA/public/assets/vendor/perfect-scrollbar/perfect-scrollbar-1.5.6.css" rel="stylesheet"
         media="all">
 
-    <!-- Main CSS-->
     <link href="/SGA-SEBANA/public/assets/css/theme.css" rel="stylesheet" media="all">
 
-    <!-- Favicon -->
     <link rel="shortcut icon" href="/SGA-SEBANA/public/assets/img/favicon/icono-SEBANA.png" type="image/x-icon">
 
-    <!-- Calendar requests visits-->
     <link rel="stylesheet" href="/SGA-SEBANA/public/assets/css/calendar.css">
 
 </head>
 
 <body>
     <div class="page-wrapper">
-        <!-- HEADER MOBILE-->
         <header class="header-mobile d-block d-lg-none">
             <div class="header-mobile__bar">
                 <div class="container-fluid">
@@ -99,14 +90,15 @@ if ($userId) {
                             <a href="/SGA-SEBANA/public/puestos">
                                 <i class="fas fa-briefcase"></i>Puestos</a>
                         </li>
+                        <li>
+                            <a href="/SGA-SEBANA/public/vacaciones">
+                                <i class="fa-solid fa-umbrella-beach"></i>Vacaciones</a>
+                        </li>
                     </ul>
                 </div>
             </nav>
 
         </header>
-        <!-- END HEADER MOBILE-->
-
-        <!-- MENU SIDEBAR-->
         <aside class="menu-sidebar d-none d-lg-block">
             <div class="logo">
                 <a href="/SGA-SEBANA/public/">
@@ -159,6 +151,8 @@ if ($userId) {
                                         Viáticos</a></li>
                                 <li><a href="/SGA-SEBANA/public/casos-rrll"><i class="fa-solid fa-people-group"></i>
                                         Casos RRLL</a></li>
+                                <li><a href="/SGA-SEBANA/public/vacaciones"><i class="fa-solid fa-umbrella-beach"></i>
+                                        Vacaciones</a></li>        
                                 <li>
                                     <a href="/SGA-SEBANA/public/oficinas"><i class="fa-solid fa-building"></i>
                                         Oficinas</a>
@@ -180,17 +174,12 @@ if ($userId) {
                 </nav>
             </div>
         </aside>
-        <!-- END MENU SIDEBAR-->
-
-        <!-- PAGE CONTAINER-->
         <div class="page-container">
-            <!-- HEADER DESKTOP-->
             <header class="header-desktop">
                 <div class="section__content section__content--p30">
                     <div class="container-fluid">
                         <div class="header-wrap">
 
-                            <!-- Notificaciones -->
                             <div class="header-noti js-item-menu me-4 position-relative">
                                 <i class="fa fa-bell fs-5"></i>
 
@@ -204,16 +193,22 @@ if ($userId) {
                                         <p>No hay notificaciones</p>
                                     </div>
                                     <?php else: ?>
-                                    <div class="notifi__title p-3">
-                                        <p>Tienes <?= $totalNoLeidas ?> notificaciones</p>
+                                    <div class="notifi__title p-3" style="display: flex; justify-content: space-between; align-items: center;">
+                                        <p style="margin: 0;">Tienes <?= $totalNoLeidas ?> notificaciones</p>
+                                        <a href="/SGA-SEBANA/public/notificaciones/read-all" style="font-size: 12px; color: #007bff;">Marcar todas</a>
                                     </div>
 
                                     <?php foreach ($notificaciones as $n): ?>
-                                    <div class="notifi__item">
-                                        <div class="content">
+                                    <div class="notifi__item" style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div class="content" style="width: 100%;">
                                             <a href="/SGA-SEBANA/public/notificaciones/read/<?= $n['id'] ?>">
                                                 <p><strong><?= htmlspecialchars($n['titulo']) ?></strong></p>
                                                 <span><?= htmlspecialchars($n['mensaje']) ?></span>
+                                            </a>
+                                        </div>
+                                        <div style="margin-left: 10px;">
+                                            <a href="/SGA-SEBANA/public/notificaciones/archive/<?= $n['id'] ?>" title="Eliminar" style="color: #dc3545; padding: 5px;">
+                                                <i class="zmdi zmdi-close"></i>
                                             </a>
                                         </div>
                                     </div>
@@ -221,8 +216,6 @@ if ($userId) {
                                     <?php endif; ?>
                                 </div>
                             </div>
-                            <!-- Fin Notificaciones -->
-
                             <div class="header-button">
                                 <div class="account-wrap">
                                     <div class="account-item clearfix js-item-menu">
@@ -273,9 +266,6 @@ if ($userId) {
                     </div>
                 </div>
             </header>
-            <!-- END HEADER DESKTOP-->
-
-            <!-- MAIN CONTENT-->
             <div class="main-content">
                 <div class="section__content section__content--p30">
                     <div class="container-fluid">
@@ -283,22 +273,16 @@ if ($userId) {
                     </div>
                 </div>
             </div>
-            <!-- END MAIN CONTENT-->
-
-        </div>
+            </div>
     </div>
 
-    <!-- Jquery JS-->
     <script src="/SGA-SEBANA/public/assets/js/vanilla-utils.js"></script>
 
-    <!-- Bootstrap JS-->
     <script src="/SGA-SEBANA/public/assets/vendor/bootstrap-5.3.8.bundle.min.js"></script>
 
-    <!-- Vendor JS -->
     <script src="/SGA-SEBANA/public/assets/vendor/perfect-scrollbar/perfect-scrollbar-1.5.6.min.js"></script>
     <script src="/SGA-SEBANA/public/assets/vendor/chartjs/chart.umd.js-4.5.1.min.js"></script>
 
-    <!-- Main JS-->
     <script src="/SGA-SEBANA/public/assets/js/bootstrap5-init.js"></script>
     <script src="/SGA-SEBANA/public/assets/js/main.js"></script>
     <script src="/SGA-SEBANA/public/assets/js/swiper-bundle-12.0.3.min.js"></script>

@@ -51,6 +51,12 @@ class AyudaEconomicaController extends ControllerBase {
             $motivo = trim($_POST['motivo'] ?? '');
             $monto_solicitado = floatval($_POST['monto_solicitado'] ?? 0);
 
+            // NUEVO: Validación estricta del monto máximo (100,000 colones)
+            if ($monto_solicitado > 100000) {
+                $this->redirect('/SGA-SEBANA/public/ayudas/create?error=monto_excedido');
+                return;
+            }
+
             $ayuda_id = $this->model->crearSolicitud($usuario_id, $motivo, $monto_solicitado);
 
             if ($ayuda_id) {
