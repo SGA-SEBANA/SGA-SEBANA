@@ -123,6 +123,18 @@ class Notification extends ModelBase {
         return $stmt->execute(['id' => $id]);
     }
 
+    public function markAsReadForUser($id, $usuario_id) {
+        $sql = "UPDATE {$this->table}
+                SET leida = 1, fecha_lectura = NOW()
+                WHERE id = :id AND usuario_id = :usuario_id";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'id' => $id,
+            'usuario_id' => $usuario_id
+        ]);
+    }
+
     /**
      * Marcar todas como leÃ­das (Limpieza rÃ¡pida)
      */
@@ -147,5 +159,17 @@ class Notification extends ModelBase {
 
         $stmt = $this->db->prepare($sql);
         return $stmt->execute(['id' => $id]);
+    }
+
+    public function archiveForUser($id, $usuario_id) {
+        $sql = "UPDATE {$this->table}
+                SET archivada = 1
+                WHERE id = :id AND usuario_id = :usuario_id";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'id' => $id,
+            'usuario_id' => $usuario_id
+        ]);
     }
 }

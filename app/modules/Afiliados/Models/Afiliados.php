@@ -9,10 +9,49 @@ class Afiliados extends ModelBase
 
     protected $table = 'afiliados';
 
+    public function getByCedula($cedula)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE cedula = :cedula LIMIT 1");
+        $stmt->execute(['cedula' => $cedula]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function getByCorreo($correo)
+    {
+        $correo = strtolower(trim((string) $correo));
+        if ($correo === '') {
+            return null;
+        }
+
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE LOWER(correo) = :correo LIMIT 1");
+        $stmt->execute(['correo' => $correo]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
     public function existeCedula($cedula, $idExcluir = null)
     {
         $sql = "SELECT COUNT(*) FROM {$this->table} WHERE cedula = :cedula";
         $params = ['cedula' => $cedula];
+
+        if ($idExcluir) {
+            $sql .= " AND id != :id";
+            $params['id'] = $idExcluir;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchColumn() > 0;
+    }
+
+    public function existeCorreo($correo, $idExcluir = null)
+    {
+        $correo = strtolower(trim((string) $correo));
+        if ($correo === '') {
+            return false;
+        }
+
+        $sql = "SELECT COUNT(*) FROM {$this->table} WHERE LOWER(correo) = :correo";
+        $params = ['correo' => $correo];
 
         if ($idExcluir) {
             $sql .= " AND id != :id";
@@ -110,25 +149,29 @@ class Afiliados extends ModelBase
                 )";
 
         $params = [
-            'nombre' => $data['nombre'],
-            'apellido1' => $data['apellido1'],
-            'apellido2' => $data['apellido2'],
-            'cedula' => $data['cedula'],
-            'genero' => strtolower($data['genero']),
-            'fecha_nacimiento' => $data['fecha_nacimiento'],
-            'correo' => $data['correo'],
-            'telefono' => $data['telefono'],
+            'nombre' => trim((string) ($data['nombre'] ?? '')),
+            'apellido1' => trim((string) ($data['apellido1'] ?? '')),
+            'apellido2' => trim((string) ($data['apellido2'] ?? '')),
+            'cedula' => trim((string) ($data['cedula'] ?? '')),
+            'genero' => $this->normalizeGenero($data['genero'] ?? null),
+            'fecha_nacimiento' => $data['fecha_nacimiento'] ?: null,
+            'correo' => trim((string) ($data['correo'] ?? '')) ?: null,
+            'telefono' => trim((string) ($data['telefono'] ?? '')) ?: null,
             'telefono_secundario' => $data['telefono_secundario'] ?? null,
             'direccion' => $data['direccion'] ?? null,
             'categoria_id' => !empty($data['categoria_id']) ? $data['categoria_id'] : null,
             'oficina_id' => !empty($data['oficina_id']) ? $data['oficina_id'] : null,
             'puesto_actual' => $data['puesto_actual'] ?? null,
-            'datos_contacto_emergencia' => $data['datos_contacto_emergencia'], // JSON string
+            'datos_contacto_emergencia' => $data['datos_contacto_emergencia'] ?? '{}', // JSON string
             'observaciones' => $data['observaciones'] ?? null
         ];
 
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute($params);
+        if (!$stmt->execute($params)) {
+            return false;
+        }
+
+        return (int) $this->db->lastInsertId();
     }
 
     public function update($id, $data)
@@ -154,20 +197,20 @@ class Afiliados extends ModelBase
 
         $params = [
             'id' => $id,
-            'nombre' => $data['nombre'],
-            'apellido1' => $data['apellido1'],
-            'apellido2' => $data['apellido2'],
-            'cedula' => $data['cedula'],
-            'genero' => strtolower($data['genero']),
-            'fecha_nacimiento' => $data['fecha_nacimiento'],
-            'correo' => $data['correo'],
-            'telefono' => $data['telefono'],
+            'nombre' => trim((string) ($data['nombre'] ?? '')),
+            'apellido1' => trim((string) ($data['apellido1'] ?? '')),
+            'apellido2' => trim((string) ($data['apellido2'] ?? '')),
+            'cedula' => trim((string) ($data['cedula'] ?? '')),
+            'genero' => $this->normalizeGenero($data['genero'] ?? null),
+            'fecha_nacimiento' => $data['fecha_nacimiento'] ?: null,
+            'correo' => trim((string) ($data['correo'] ?? '')) ?: null,
+            'telefono' => trim((string) ($data['telefono'] ?? '')) ?: null,
             'telefono_secundario' => $data['telefono_secundario'] ?? null,
             'direccion' => $data['direccion'] ?? null,
             'categoria_id' => !empty($data['categoria_id']) ? $data['categoria_id'] : null,
             'oficina_id' => !empty($data['oficina_id']) ? $data['oficina_id'] : null,
             'puesto_actual' => $data['puesto_actual'] ?? null,
-            'datos_contacto_emergencia' => $data['datos_contacto_emergencia'], // JSON string
+            'datos_contacto_emergencia' => $data['datos_contacto_emergencia'] ?? '{}', // JSON string
             'observaciones' => $data['observaciones'] ?? null
         ];
 
@@ -206,5 +249,17 @@ class Afiliados extends ModelBase
         'id' => $id
     ]);
 }
+
+    private function normalizeGenero($value)
+    {
+        $genero = strtolower(trim((string) $value));
+        $permitidos = ['masculino', 'femenino', 'otro', 'prefiero_no_decir'];
+
+        if (!in_array($genero, $permitidos, true)) {
+            return 'prefiero_no_decir';
+        }
+
+        return $genero;
+    }
 
 }

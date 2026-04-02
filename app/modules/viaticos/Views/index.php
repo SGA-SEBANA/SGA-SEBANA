@@ -1,14 +1,15 @@
 <?php
 /**
- * Vista: Listado de Viáticos (Data Table 2 con Espaciado Profesional y PDF Conectado)
+ * Vista: Listado de Viaticos
  */
 ob_start();
+$esJefatura = $es_jefatura ?? false;
 ?>
 
 <div class="row">
     <div class="col-md-12">
         <div class="overview-wrap mb-4">
-            <h2 class="title-1">Gestión de Viáticos</h2>
+            <h2 class="title-1">Gestion de Viaticos</h2>
             <a href="/SGA-SEBANA/public/viaticos/create" class="btn btn-primary">
                 <i class="zmdi zmdi-plus me-2"></i>Nueva Solicitud
             </a>
@@ -16,7 +17,7 @@ ob_start();
 
         <?php if (isset($success) && $success === 'creado'): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="zmdi zmdi-check-circle me-2"></i>¡Solicitud de viáticos creada con éxito!
+                <i class="zmdi zmdi-check-circle me-2"></i>Solicitud de viaticos creada con exito.
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
@@ -30,7 +31,7 @@ ob_start();
                         <th>Rango</th>
                         <th>Fecha</th>
                         <th>Estado</th>
-                        <th>Alimentación</th>
+                        <th>Alimentacion</th>
                         <th>Transporte</th>
                         <th>Total a Pagar</th>
                         <th>Acciones</th>
@@ -49,16 +50,16 @@ ob_start();
                                 </td>
                                 <td><?= date('d/m/Y h:i A', strtotime($v['creado_en'])) ?></td>
                                 <td>
-                                    <?php if($v['estado'] === 'Borrador'): ?>
+                                    <?php if ($v['estado'] === 'Borrador'): ?>
                                         <span class="status--process">Borrador</span>
                                     <?php else: ?>
                                         <span class="status--denied"><?= htmlspecialchars($v['estado']) ?></span>
                                     <?php endif; ?>
                                 </td>
-                                <td>₡<?= number_format($v['monto_alimentacion'], 2) ?></td>
-                                <td>₡<?= number_format($v['monto_transporte'], 2) ?></td>
+                                <td>C<?= number_format($v['monto_alimentacion'], 2) ?></td>
+                                <td>C<?= number_format($v['monto_transporte'], 2) ?></td>
                                 <td class="desc" style="color: #001B71; font-weight: bold;">
-                                    ₡<?= number_format($v['total_pagar'], 2) ?>
+                                    C<?= number_format($v['total_pagar'], 2) ?>
                                 </td>
                                 <td>
                                     <div class="table-data-feature">
@@ -75,7 +76,7 @@ ob_start();
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="9" class="text-center">No hay solicitudes de viáticos registradas aún.</td>
+                            <td colspan="9" class="text-center">No hay solicitudes de viaticos registradas aun.</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>

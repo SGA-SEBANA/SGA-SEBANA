@@ -1,8 +1,11 @@
 <?php
 /**
- * Vista: Detalle de Solicitud (SGA-SEBANA)
+ * Vista: Detalle de Solicitud
  */
 ob_start();
+
+$esJefatura = $es_jefatura ?? false;
+$esPropietario = $es_propietario ?? false;
 ?>
 
 <div class="row mt-3">
@@ -17,10 +20,10 @@ ob_start();
         <?php if (isset($_GET['success'])): ?>
             <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                 <i class="zmdi zmdi-check-circle me-2"></i>
-                <?php 
-                    if ($_GET['success'] === 'estado_actualizado') echo '¡Estado actualizado correctamente!';
-                    if ($_GET['success'] === 'evidencia_agregada') echo '¡Evidencia adjuntada con éxito!';
-                    if ($_GET['success'] === 'cancelacion_enviada') echo '¡Solicitud de cancelación enviada correctamente!';
+                <?php
+                    if ($_GET['success'] === 'estado_actualizado') echo 'Estado actualizado correctamente.';
+                    if ($_GET['success'] === 'evidencia_agregada') echo 'Evidencia adjuntada con exito.';
+                    if ($_GET['success'] === 'cancelacion_enviada') echo 'Solicitud de cancelacion enviada.';
                 ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
@@ -29,10 +32,11 @@ ob_start();
         <?php if (isset($_GET['error'])): ?>
             <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
                 <i class="zmdi zmdi-alert-triangle me-2"></i>
-                <?php 
-                    if ($_GET['error'] === 'invalid_file') echo '<strong>Error:</strong> El archivo adjunto debe ser PDF, JPG, JPEG o PNG y pesar un máximo de 5MB.';
-                    if ($_GET['error'] === 'cancel_error') echo 'Error al procesar la cancelación. Intente nuevamente.';
-                    if ($_GET['error'] === 'upload_failed') echo 'Ocurrió un error al subir el archivo. Intente nuevamente.';
+                <?php
+                    if ($_GET['error'] === 'invalid_file') echo '<strong>Error:</strong> El archivo debe ser PDF, JPG, JPEG o PNG y pesar maximo 5MB.';
+                    if ($_GET['error'] === 'cancel_error') echo 'Error al procesar la cancelacion. Intente nuevamente.';
+                    if ($_GET['error'] === 'upload_failed') echo 'Ocurrio un error al subir el archivo.';
+                    if ($_GET['error'] === 'estado') echo 'No se pudo actualizar el estado.';
                 ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
@@ -42,7 +46,7 @@ ob_start();
             <div class="col-lg-7">
                 <div class="card shadow-sm mb-4">
                     <div class="card-header py-3">
-                        <strong class="card-title">Información</strong> de la Solicitud
+                        <strong class="card-title">Informacion</strong> de la Solicitud
                     </div>
                     <div class="card-body card-block px-4 py-4">
                         <div class="mb-4">
@@ -56,7 +60,7 @@ ob_start();
                         <div class="mb-4">
                             <label class="font-weight-bold text-muted small text-uppercase">Monto Solicitado:</label>
                             <p class="desc mt-1" style="color: #001B71; font-weight: 800; font-size: 1.4rem;">
-                                ₡<?= number_format($ayuda['monto_solicitado'], 2) ?>
+                                C<?= number_format($ayuda['monto_solicitado'], 2) ?>
                             </p>
                         </div>
                         <div class="mb-4">
@@ -66,7 +70,7 @@ ob_start();
                                     $badgeClass = 'status--denied';
                                     if ($ayuda['estado'] === 'Pendiente') $badgeClass = 'status--process';
                                     elseif ($ayuda['estado'] === 'Aprobada') $badgeClass = 'status--green" style="color: #00ad5f;';
-                                    elseif ($ayuda['estado'] === 'Cancelación Solicitada') $badgeClass = 'status--process" style="color: #ff9800; background: #fff3e0;';
+                                    elseif ($ayuda['estado'] === 'Cancelacion Solicitada' || $ayuda['estado'] === 'Cancelación Solicitada') $badgeClass = 'status--process" style="color: #ff9800; background: #fff3e0;';
                                 ?>
                                 <span class="<?= $badgeClass ?> px-3 py-1 rounded" style="font-size: 0.9rem;"><?= htmlspecialchars($ayuda['estado']) ?></span>
                             </div>
@@ -79,16 +83,16 @@ ob_start();
                             </p>
                         </div>
 
-                        <?php if ($ayuda['estado'] === 'Pendiente' && isset($_SESSION['user_id']) && $_SESSION['user_id'] == $ayuda['usuario_id']): ?>
+                        <?php if ($esPropietario && $ayuda['estado'] === 'Pendiente'): ?>
                             <div class="mt-4 p-4 border rounded bg-light border-danger shadow-sm">
-                                <h6 class="text-danger font-weight-bold mb-3">Solicitar Cancelación de Ayuda</h6>
+                                <h6 class="text-danger font-weight-bold mb-3">Solicitar Cancelacion de Ayuda</h6>
                                 <form action="/SGA-SEBANA/public/ayudas/cancel/<?= $ayuda['id'] ?>" method="POST">
                                     <div class="form-group mb-3">
-                                        <textarea name="motivo_cancelacion" class="form-control" rows="3" placeholder="Indique el motivo de la cancelación..." required></textarea>
+                                        <textarea name="motivo_cancelacion" class="form-control" rows="3" placeholder="Indique el motivo de la cancelacion..." required></textarea>
                                     </div>
                                     <div class="text-right">
                                         <button type="submit" class="btn btn-outline-danger btn-sm px-4">
-                                            Enviar Solicitud de Cancelación
+                                            Enviar Solicitud de Cancelacion
                                         </button>
                                     </div>
                                 </form>
@@ -97,23 +101,23 @@ ob_start();
                     </div>
                 </div>
 
-                <?php if (isset($_SESSION['user']['nivel_acceso']) && $_SESSION['user']['nivel_acceso'] >= 50): ?>
+                <?php if ($esJefatura): ?>
                     <div class="card border-primary shadow-sm mb-4">
                         <div class="card-header bg-dark text-white py-3">
-                            <i class="zmdi zmdi-settings me-2"></i>Acciones de Administración
+                            <i class="zmdi zmdi-settings me-2"></i>Acciones de Administracion
                         </div>
                         <div class="card-body py-4 text-center">
                             <form action="/SGA-SEBANA/public/ayudas/status/<?= $ayuda['id'] ?>" method="POST" class="d-inline">
-                                <?php if ($ayuda['estado'] === 'Pendiente' || $ayuda['estado'] === 'Cancelación Solicitada'): ?>
+                                <?php if ($ayuda['estado'] === 'Pendiente' || $ayuda['estado'] === 'Cancelacion Solicitada' || $ayuda['estado'] === 'Cancelación Solicitada'): ?>
                                     <button type="submit" name="nuevo_estado" value="Aprobada" class="btn btn-success px-4 mx-2 shadow-sm">
                                         <i class="zmdi zmdi-check mr-1"></i> Aprobar
                                     </button>
                                     <button type="submit" name="nuevo_estado" value="Rechazada" class="btn btn-danger px-4 mx-2 shadow-sm">
                                         <i class="zmdi zmdi-close mr-1"></i> Rechazar
                                     </button>
-                                    <?php if ($ayuda['estado'] === 'Cancelación Solicitada'): ?>
+                                    <?php if ($ayuda['estado'] === 'Cancelacion Solicitada' || $ayuda['estado'] === 'Cancelación Solicitada'): ?>
                                         <button type="submit" name="nuevo_estado" value="Cancelada" class="btn btn-warning px-4 mx-2 shadow-sm text-dark">
-                                            <i class="zmdi zmdi-block mr-1"></i> Confirmar Cancelación
+                                            <i class="zmdi zmdi-block mr-1"></i> Confirmar Cancelacion
                                         </button>
                                     <?php endif; ?>
                                 <?php elseif ($ayuda['estado'] === 'Aprobada'): ?>
@@ -145,7 +149,7 @@ ob_start();
                                                     <i class="zmdi zmdi-file-text me-2"></i>
                                                     <?= htmlspecialchars($e['nombre_archivo']) ?>
                                                 </h6>
-                                                
+
                                                 <small class="text-muted d-block mt-1">
                                                     Subido por: <strong><?= htmlspecialchars($e['nombre_completo']) ?></strong>
                                                 </small>
@@ -175,9 +179,9 @@ ob_start();
                             </div>
                         <?php endif; ?>
 
-                        <?php if ($ayuda['estado'] === 'Pendiente'): ?>
+                        <?php if ($esPropietario && $ayuda['estado'] === 'Pendiente'): ?>
                             <div class="p-4 bg-light border rounded shadow-sm" style="overflow: hidden;">
-                                <h6 class="mb-3 font-weight-bold"><i class="zmdi zmdi-plus-circle-o mr-2"></i>Añadir Nueva Evidencia</h6>
+                                <h6 class="mb-3 font-weight-bold"><i class="zmdi zmdi-plus-circle-o mr-2"></i>Anadir Nueva Evidencia</h6>
                                 <form action="/SGA-SEBANA/public/ayudas/evidence/<?= $ayuda['id'] ?>" method="POST" enctype="multipart/form-data">
                                     <div class="form-group mb-3" style="max-width: 100%; overflow: hidden;">
                                         <input type="file" name="nueva_evidencia" class="form-control-file text-truncate shadow-none" style="max-width: 100%; font-size: 0.85rem;" required>

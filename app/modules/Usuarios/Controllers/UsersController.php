@@ -7,6 +7,7 @@ use App\Modules\Usuarios\Models\User;
 use App\Modules\Usuarios\Models\Role;
 use App\Modules\Usuarios\Models\Bitacora;
 use App\Modules\Usuarios\Helpers\SecurityHelper;
+use App\Modules\Usuarios\Helpers\AccessControl;
 
 /**
  * UsersController - CRUD for users management
@@ -24,6 +25,11 @@ class UsersController extends ControllerBase
         $this->bitacora = new Bitacora();
     }
 
+    private function canManageUsers(): bool
+    {
+        return AccessControl::hasLevel('total');
+    }
+
     /**
      * List all users
      */
@@ -35,7 +41,7 @@ class UsersController extends ControllerBase
         $authUser = SecurityHelper::getAuthUser();
 
         $this->view('users/list', [
-            'title' => 'Gestión de Usuarios - SGA-SEBANA',
+            'title' => 'Gestion de Usuarios - SGA-SEBANA',
             'users' => $users,
             'authUser' => $authUser,
             'success' => $_SESSION['success_message'] ?? null,
@@ -61,6 +67,7 @@ class UsersController extends ControllerBase
             'user' => null,
             'roles' => $roles,
             'authUser' => $authUser,
+            'canManageUsers' => true,
             'csrf_token' => SecurityHelper::getCsrfToken(),
             'errors' => $_SESSION['form_errors'] ?? [],
             'old' => $_SESSION['form_old'] ?? [],
@@ -77,7 +84,7 @@ class UsersController extends ControllerBase
         SecurityHelper::requireAuth();
 
         if (!SecurityHelper::validateCsrfToken($_POST['_csrf_token'] ?? '')) {
-            $_SESSION['error_message'] = 'Token de seguridad inválido.';
+            $_SESSION['error_message'] = 'Token de seguridad invalido.';
             $this->redirect('/SGA-SEBANA/public/users/create');
             return;
         }
@@ -163,7 +170,17 @@ class UsersController extends ControllerBase
     {
         SecurityHelper::requireAuth();
 
-        $user = $this->userModel->find((int) $id);
+        $targetUserId = (int) $id;
+        $authUser = SecurityHelper::getAuthUser();
+        $authUserId = (int) ($authUser['id'] ?? 0);
+        $canManageUsers = $this->canManageUsers();
+
+        if (!$canManageUsers && $authUserId !== $targetUserId) {
+            $this->redirect('/SGA-SEBANA/public/home?error=no_autorizado');
+            return;
+        }
+
+        $user = $this->userModel->find($targetUserId);
 
         if (!$user) {
             $_SESSION['error_message'] = 'Usuario no encontrado.';
@@ -172,14 +189,14 @@ class UsersController extends ControllerBase
         }
 
         $roles = $this->roleModel->getActive();
-        $authUser = SecurityHelper::getAuthUser();
 
         $this->view('users/form', [
-            'title' => 'Editar Usuario - SGA-SEBANA',
+            'title' => $canManageUsers ? 'Editar Usuario - SGA-SEBANA' : 'Actualizar Perfil - SGA-SEBANA',
             'action' => 'edit',
             'user' => $user,
             'roles' => $roles,
             'authUser' => $authUser,
+            'canManageUsers' => $canManageUsers,
             'csrf_token' => SecurityHelper::getCsrfToken(),
             'errors' => $_SESSION['form_errors'] ?? [],
             'old' => $_SESSION['form_old'] ?? [],
@@ -197,9 +214,12 @@ class UsersController extends ControllerBase
         SecurityHelper::requireAuth();
 
         $userId = (int) $id;
+        $authUser = SecurityHelper::getAuthUser();
+        $authUserId = (int) ($authUser['id'] ?? 0);
+        $canManageUsers = $this->canManageUsers();
 
         if (!SecurityHelper::validateCsrfToken($_POST['_csrf_token'] ?? '')) {
-            $_SESSION['error_message'] = 'Token de seguridad inválido.';
+            $_SESSION['error_message'] = 'Token de seguridad invalido.';
             $this->redirect("/SGA-SEBANA/public/users/{$userId}/edit");
             return;
         }
@@ -208,6 +228,11 @@ class UsersController extends ControllerBase
         if (!$existingUser) {
             $_SESSION['error_message'] = 'Usuario no encontrado.';
             $this->redirect('/SGA-SEBANA/public/users');
+            return;
+        }
+
+        if (!$canManageUsers && $authUserId !== $userId) {
+            $this->redirect('/SGA-SEBANA/public/home?error=no_autorizado');
             return;
         }
 
@@ -220,6 +245,12 @@ class UsersController extends ControllerBase
             'telefono' => trim($_POST['telefono'] ?? ''),
             'rol_id' => (int) ($_POST['rol_id'] ?? 0),
         ];
+
+        if (!$canManageUsers) {
+            $data['username'] = $existingUser['username'];
+            $data['correo'] = $existingUser['correo'];
+            $data['rol_id'] = (int) $existingUser['rol_id'];
+        }
 
         $errors = $this->validateUserData($data, $userId);
 
@@ -271,7 +302,12 @@ class UsersController extends ControllerBase
         unset($_SESSION['must_change_password']);
 
         $_SESSION['success_message'] = 'Usuario actualizado exitosamente.';
-        $this->redirect('/SGA-SEBANA/public/users');
+        if ($canManageUsers) {
+            $this->redirect('/SGA-SEBANA/public/users');
+            return;
+        }
+
+        $this->redirect('/SGA-SEBANA/public/home?success=perfil_actualizado');
     }
 
     /**
@@ -330,7 +366,7 @@ class UsersController extends ControllerBase
         $authUser = SecurityHelper::getAuthUser();
 
         $this->view('bitacora/list', [
-            'title' => 'Bitácora de Auditoría - SGA-SEBANA',
+            'title' => 'Bitacora de Auditoria - SGA-SEBANA',
             'logs' => $logs,
             'authUser' => $authUser,
         ]);
@@ -348,20 +384,20 @@ class UsersController extends ControllerBase
         } elseif (strlen($data['username']) < 3) {
             $errors['username'] = 'El nombre de usuario debe tener al menos 3 caracteres.';
         } elseif ($this->userModel->existsUsername($data['username'], $excludeId)) {
-            $errors['username'] = 'Este nombre de usuario ya está en uso.';
+            $errors['username'] = 'Este nombre de usuario ya esta en uso.';
         }
 
         if (empty($data['correo'])) {
-            $errors['correo'] = 'El correo electrónico es requerido.';
+            $errors['correo'] = 'El correo electronico es requerido.';
         } elseif (!filter_var($data['correo'], FILTER_VALIDATE_EMAIL)) {
-            $errors['correo'] = 'El correo electrónico no es válido.';
+            $errors['correo'] = 'El correo electronico no es valido.';
         } elseif ($this->userModel->existsEmail($data['correo'], $excludeId)) {
-            $errors['correo'] = 'Este correo electrónico ya está en uso.';
+            $errors['correo'] = 'Este correo electronico ya esta en uso.';
         }
 
         if ($excludeId === null || !empty($data['password'])) {
             if (empty($data['password'])) {
-                $errors['password'] = 'La contraseña es requerida.';
+                $errors['password'] = 'La contrasena es requerida.';
             } else {
                 $passwordValidation = SecurityHelper::validatePasswordStrength($data['password']);
                 if (!$passwordValidation['valid']) {
@@ -369,7 +405,7 @@ class UsersController extends ControllerBase
                 }
 
                 if ($data['password'] !== $data['password_confirm']) {
-                    $errors['password_confirm'] = 'Las contraseñas no coinciden.';
+                    $errors['password_confirm'] = 'Las contrasenas no coinciden.';
                 }
             }
         }

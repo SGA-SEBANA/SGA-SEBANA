@@ -6,12 +6,13 @@ ob_start();
 
 // Decodificar contacto de emergencia si existe
 $contactoEmergencia = json_decode($afiliado['datos_contacto_emergencia'] ?? '{}', true);
+$generoActual = strtolower((string) ($afiliado['genero'] ?? ''));
 ?>
 
 <div class="row">
     <div class="col-lg-12">
         <div class="overview-wrap mb-4">
-            <h2 class="title-1">Editar Afiliado: <?= htmlspecialchars($afiliado['nombre']) ?></h2>
+            <h2 class="title-1">Editar Afiliado: <?= htmlspecialchars($afiliado['nombre'] ?? '') ?></h2>
             <a href="/SGA-SEBANA/public/afiliados" class="au-btn au-btn-icon au-btn--blue">
                 <i class="zmdi zmdi-arrow-left"></i> Volver a la lista
             </a>
@@ -31,17 +32,17 @@ $contactoEmergencia = json_decode($afiliado['datos_contacto_emergencia'] ?? '{}'
                         <div class="col-md-4">
                             <label for="nombre" class="form-control-label">Nombre</label>
                             <input type="text" id="nombre" name="nombre" class="form-control"
-                                value="<?= htmlspecialchars($afiliado['nombre']) ?>" required>
+                                value="<?= htmlspecialchars($afiliado['nombre'] ?? '') ?>" required>
                         </div>
                         <div class="col-md-4">
                             <label for="apellido1" class="form-control-label">Primer Apellido</label>
                             <input type="text" id="apellido1" name="apellido1" class="form-control"
-                                value="<?= htmlspecialchars($afiliado['apellido1']) ?>" required>
+                                value="<?= htmlspecialchars($afiliado['apellido1'] ?? '') ?>" required>
                         </div>
                         <div class="col-md-4">
                             <label for="apellido2" class="form-control-label">Segundo Apellido</label>
                             <input type="text" id="apellido2" name="apellido2" class="form-control"
-                                value="<?= htmlspecialchars($afiliado['apellido2']) ?>">
+                                value="<?= htmlspecialchars($afiliado['apellido2'] ?? '') ?>">
                         </div>
                     </div>
 
@@ -49,19 +50,19 @@ $contactoEmergencia = json_decode($afiliado['datos_contacto_emergencia'] ?? '{}'
                         <div class="col-md-4">
                             <label for="cedula" class="form-control-label">Cédula</label>
                             <input type="text" id="cedula" name="cedula" class="form-control" pattern="\d{9,12}"
-                                value="<?= htmlspecialchars($afiliado['cedula']) ?>" required>
+                                value="<?= htmlspecialchars($afiliado['cedula'] ?? '') ?>" required>
                         </div>
                         <div class="col-md-4">
                             <label for="fecha_nac" class="form-control-label">Fecha Nacimiento</label>
                             <input type="date" id="fecha_nac" name="fecha_nacimiento" class="form-control"
-                                value="<?= htmlspecialchars($afiliado['fecha_nacimiento']) ?>" required>
+                                value="<?= htmlspecialchars($afiliado['fecha_nacimiento'] ?? '') ?>" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-control-label">Género</label>
                             <select name="genero" class="form-control">
-                                <option value="Masculino" <?= strtolower($afiliado['genero']) == 'masculino' ? 'selected' : '' ?>>Masculino</option>
-                                <option value="Femenino" <?= strtolower($afiliado['genero']) == 'femenino' ? 'selected' : '' ?>>Femenino</option>
-                                <option value="Otro" <?= strtolower($afiliado['genero']) == 'otro' ? 'selected' : '' ?>>
+                                <option value="Masculino" <?= $generoActual == 'masculino' ? 'selected' : '' ?>>Masculino</option>
+                                <option value="Femenino" <?= $generoActual == 'femenino' ? 'selected' : '' ?>>Femenino</option>
+                                <option value="Otro" <?= $generoActual == 'otro' ? 'selected' : '' ?>>
                                     Otro</option>
                             </select>
                         </div>
@@ -81,13 +82,13 @@ $contactoEmergencia = json_decode($afiliado['datos_contacto_emergencia'] ?? '{}'
                             <div class="input-group">
                                 <span class="input-group-text"><i class="zmdi zmdi-email"></i></span>
                                 <input type="email" id="correo" name="correo" class="form-control"
-                                    value="<?= htmlspecialchars($afiliado['correo']) ?>">
+                                    value="<?= htmlspecialchars($afiliado['correo'] ?? '') ?>">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <label for="telefono" class="form-control-label">Teléfono Principal</label>
                             <input type="text" id="telefono" name="telefono" class="form-control"
-                                value="<?= htmlspecialchars($afiliado['telefono']) ?>">
+                                value="<?= htmlspecialchars($afiliado['telefono'] ?? '') ?>">
                         </div>
                         <div class="col-md-3">
                             <label for="telefono_secundario" class="form-control-label">Teléfono Secundario</label>

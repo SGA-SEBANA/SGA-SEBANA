@@ -2,8 +2,12 @@
 namespace App\Modules\AsistenteAfiliacion\Controllers;
 
 use App\Core\ControllerBase;
+use App\Modules\Afiliados\Models\Afiliados;
 use App\Modules\AsistenteAfiliacion\Models\AsistenteAfiliacionModel;
+use App\Modules\Usuarios\Helpers\AccessControl;
+use App\Modules\Usuarios\Helpers\AffiliateAccountProvisioner;
 use App\Modules\Usuarios\Helpers\SecurityHelper;
+use App\Modules\Usuarios\Models\Bitacora;
 use App\Modules\Usuarios\Models\User;
 use App\Modules\Visitas\Models\Notification;
 use Dompdf\Dompdf;
@@ -41,14 +45,7 @@ class AsistenteAfiliacionController extends ControllerBase
             return false;
         }
 
-        $nivel = $_SESSION['user']['nivel_acceso'] ?? null;
-
-        if (is_numeric($nivel)) {
-            return ((int) $nivel) >= 50;
-        }
-
-        $nivel = strtolower(trim((string) $nivel));
-        return in_array($nivel, ['alto', 'total'], true);
+        return AccessControl::hasLevel('alto');
     }
 
     private function requireManager()
@@ -68,6 +65,15 @@ class AsistenteAfiliacionController extends ControllerBase
 
     private function collectFormData()
     {
+        $oficinaId = (int) ($_POST['oficina_id'] ?? 0);
+        $oficinaNombre = trim((string) ($_POST['oficina_bncr'] ?? ''));
+        if ($oficinaId > 0) {
+            $nombreDb = $this->model->getNombreOficinaById($oficinaId);
+            if (!empty($nombreDb)) {
+                $oficinaNombre = trim((string) $nombreDb);
+            }
+        }
+
         return [
             'tipo_usuario' => strtolower(trim((string) ($_POST['tipo_usuario'] ?? ''))),
             'cedula' => trim((string) ($_POST['cedula'] ?? '')),
@@ -77,7 +83,9 @@ class AsistenteAfiliacionController extends ControllerBase
             'correo' => trim((string) ($_POST['correo'] ?? '')),
             'fecha_nacimiento' => trim((string) ($_POST['fecha_nacimiento'] ?? '')),
             'numero_empleado' => trim((string) ($_POST['numero_empleado'] ?? '')),
-            'oficina_bncr' => trim((string) ($_POST['oficina_bncr'] ?? '')),
+            'oficina_bncr' => $oficinaNombre,
+            'oficina_id' => $oficinaId > 0 ? $oficinaId : null,
+            'categoria_id' => !empty($_POST['categoria_id']) ? (int) $_POST['categoria_id'] : null,
             'departamento' => trim((string) ($_POST['departamento'] ?? '')),
             'puesto' => trim((string) ($_POST['puesto'] ?? '')),
             'fecha_ingreso_bncr' => trim((string) ($_POST['fecha_ingreso_bncr'] ?? '')),
@@ -124,6 +132,10 @@ class AsistenteAfiliacionController extends ControllerBase
             $errors[] = 'Debe completar la informacion laboral del BNCR.';
         }
 
+        if (empty($data['oficina_id'])) {
+            $errors[] = 'Debe seleccionar una oficina BNCR valida.';
+        }
+
         if ($data['fecha_ingreso_bncr'] === '') {
             $errors[] = 'La fecha de ingreso al BNCR es obligatoria.';
         }
@@ -146,6 +158,10 @@ class AsistenteAfiliacionController extends ControllerBase
 
         if ($data['cedula'] !== '' && $this->model->cedulaDuplicada($data['cedula'], $excludeDuplicateId)) {
             $errors[] = 'Ya existe una afiliacion registrada o en tramite con esta cedula.';
+        }
+
+        if ($data['correo'] !== '' && $this->model->correoDuplicado($data['correo'], $excludeDuplicateId)) {
+            $errors[] = 'Ya existe una afiliacion registrada o en tramite con este correo.';
         }
 
         if ($requireSignedFile) {
@@ -267,6 +283,188 @@ class AsistenteAfiliacionController extends ControllerBase
         return ($draftId !== null && $draftId !== '') ? (string) $draftId : null;
     }
 
+    private function normalizeLookup($value)
+    {
+        $value = strtolower(trim((string) $value));
+        return preg_replace('/\s+/', ' ', $value) ?? '';
+    }
+
+    private function logBitacora(array $data): void
+    {
+        try {
+            $bitacora = new Bitacora();
+            $bitacora->log($data);
+        } catch (\Throwable $e) {
+            // Bitacora no debe detener procesos de afiliacion.
+        }
+    }
+
+    private function resolveOficinaId(string $oficinaTexto, Afiliados $afiliadosModel): ?int
+    {
+        $needle = $this->normalizeLookup($oficinaTexto);
+        if ($needle === '') {
+            return null;
+        }
+
+        foreach ($afiliadosModel->getOficinas() as $oficina) {
+            $codigo = $this->normalizeLookup((string) ($oficina['codigo'] ?? ''));
+            $nombre = $this->normalizeLookup((string) ($oficina['nombre'] ?? ''));
+
+            if ($needle === $codigo || $needle === $nombre) {
+                return (int) ($oficina['id'] ?? 0);
+            }
+
+            if (($codigo !== '' && str_contains($needle, $codigo)) || ($nombre !== '' && str_contains($needle, $nombre))) {
+                return (int) ($oficina['id'] ?? 0);
+            }
+        }
+
+        return null;
+    }
+
+    private function resolveCategoriaId($categoriaId, Afiliados $afiliadosModel): ?int
+    {
+        $categoriaId = (int) $categoriaId;
+        $categorias = $afiliadosModel->getCategorias();
+        if (empty($categorias)) {
+            return null;
+        }
+
+        if ($categoriaId > 0) {
+            foreach ($categorias as $categoria) {
+                if ((int) ($categoria['id'] ?? 0) === $categoriaId) {
+                    return $categoriaId;
+                }
+            }
+        }
+
+        return (int) ($categorias[0]['id'] ?? 0) ?: null;
+    }
+
+    private function ensureAffiliateAndUserForApproval(array $solicitud): array
+    {
+        $afiliadosModel = new Afiliados();
+        $cedula = trim((string) ($solicitud['cedula'] ?? ''));
+
+        if ($cedula === '') {
+            return [
+                'success' => false,
+                'error' => 'La solicitud no tiene cedula para crear afiliado/usuario.'
+            ];
+        }
+
+        $afiliado = $afiliadosModel->getByCedula($cedula);
+        $afiliadoId = (int) ($afiliado['id'] ?? 0);
+        $afiliadoCreado = false;
+
+        if ($afiliadoId <= 0) {
+            $oficinaId = !empty($solicitud['oficina_id']) ? (int) $solicitud['oficina_id'] : null;
+            if (!empty($oficinaId)) {
+                $oficinaValida = false;
+                foreach ($afiliadosModel->getOficinas() as $oficina) {
+                    if ((int) ($oficina['id'] ?? 0) === (int) $oficinaId) {
+                        $oficinaValida = true;
+                        break;
+                    }
+                }
+                if (!$oficinaValida) {
+                    $oficinaId = null;
+                }
+            }
+
+            if (empty($oficinaId)) {
+                $oficinaId = $this->resolveOficinaId((string) ($solicitud['oficina_bncr'] ?? ''), $afiliadosModel);
+            }
+
+            $categoriaId = $this->resolveCategoriaId($solicitud['categoria_id'] ?? null, $afiliadosModel);
+            $observaciones = trim((string) ($solicitud['observaciones'] ?? ''));
+            $observaciones = $observaciones !== ''
+                ? ('Solicitud asistente: ' . $observaciones)
+                : 'Afiliado creado automaticamente desde solicitud aprobada.';
+
+            $correoSolicitud = trim((string) ($solicitud['correo'] ?? ''));
+            if ($correoSolicitud !== '') {
+                $afiliadoPorCorreo = $afiliadosModel->getByCorreo($correoSolicitud);
+                if ($afiliadoPorCorreo && (int) ($afiliadoPorCorreo['id'] ?? 0) > 0) {
+                    return [
+                        'success' => false,
+                        'error' => 'El correo de la solicitud ya pertenece a otro afiliado. Actualice el correo antes de aprobar.'
+                    ];
+                }
+            }
+
+            $nuevoId = (int) $afiliadosModel->create([
+                'nombre' => trim((string) ($solicitud['nombre'] ?? '')),
+                'apellido1' => trim((string) ($solicitud['apellido1'] ?? '')),
+                'apellido2' => trim((string) ($solicitud['apellido2'] ?? '')),
+                'cedula' => $cedula,
+                'genero' => 'prefiero_no_decir',
+                'fecha_nacimiento' => trim((string) ($solicitud['fecha_nacimiento'] ?? '')),
+                'correo' => trim((string) ($solicitud['correo'] ?? '')),
+                'telefono' => trim((string) ($solicitud['celular'] ?? '')),
+                'telefono_secundario' => null,
+                'direccion' => null,
+                'categoria_id' => $categoriaId,
+                'oficina_id' => $oficinaId,
+                'puesto_actual' => trim((string) ($solicitud['puesto'] ?? '')),
+                'datos_contacto_emergencia' => '{}',
+                'observaciones' => $observaciones
+            ]);
+
+            if ($nuevoId <= 0) {
+                return [
+                    'success' => false,
+                    'error' => 'No se pudo crear el afiliado en base de datos durante la aprobacion.'
+                ];
+            }
+
+            $afiliadoId = $nuevoId;
+            $afiliadoCreado = true;
+        }
+
+        $provisioner = new AffiliateAccountProvisioner();
+        $userProvision = $provisioner->provision([
+            'cedula' => $cedula,
+            'correo' => trim((string) ($solicitud['correo'] ?? '')),
+            'nombre' => trim((string) ($solicitud['nombre'] ?? '')),
+            'apellido1' => trim((string) ($solicitud['apellido1'] ?? '')),
+            'apellido2' => trim((string) ($solicitud['apellido2'] ?? '')),
+            'telefono' => trim((string) ($solicitud['celular'] ?? ''))
+        ]);
+
+        if (!($userProvision['success'] ?? false)) {
+            return [
+                'success' => false,
+                'error' => 'Se creo/valido el afiliado, pero no se pudo crear el usuario: ' . ($userProvision['error'] ?? 'Error no especificado.')
+            ];
+        }
+
+        return [
+            'success' => true,
+            'afiliado_id' => $afiliadoId,
+            'afiliado_created' => $afiliadoCreado,
+            'user_provision' => $userProvision
+        ];
+    }
+
+    private function buildApprovalProvisionMessage(array $sync): string
+    {
+        $parts = [];
+        $parts[] = ($sync['afiliado_created'] ?? false)
+            ? 'Afiliado creado automaticamente.'
+            : 'Afiliado ya existente en base de datos.';
+
+        $userProvision = $sync['user_provision'] ?? [];
+        if (($userProvision['created'] ?? false) === true) {
+            $parts[] = 'Usuario creado: ' . ($userProvision['username'] ?? 'N/D');
+            $parts[] = 'Contrasena temporal: ' . ($userProvision['temp_password'] ?? 'N/D');
+        } else {
+            $parts[] = 'El usuario ya existia, no se creo uno nuevo.';
+        }
+
+        return implode(' ', $parts);
+    }
+
     public function create()
     {
         $draftId = $_GET['draft'] ?? ($_SESSION['afiliacion_draft_id'] ?? null);
@@ -278,6 +476,8 @@ class AsistenteAfiliacionController extends ControllerBase
 
         $formData = $draft ?: ($_SESSION['afiliacion_form_data'] ?? []);
         $errors = $this->getFlash('afiliacion_errors') ?? [];
+        $oficinas = $this->model->getOficinasDisponibles();
+        $categorias = $this->model->getCategoriasAfiliacion();
 
         $this->view('create', [
             'title' => 'Asistente de Afiliacion a SEBANA',
@@ -285,7 +485,9 @@ class AsistenteAfiliacionController extends ControllerBase
             'draft_id' => $draft['id'] ?? ($draftId ?: ''),
             'errors' => $errors,
             'success' => $_GET['success'] ?? null,
-            'status' => $draft['estado'] ?? null
+            'status' => $draft['estado'] ?? null,
+            'oficinas' => $oficinas,
+            'categorias' => $categorias
         ]);
     }
 
@@ -400,12 +602,33 @@ class AsistenteAfiliacionController extends ControllerBase
 
         if (!$this->model->submitForApproval($draftId, $data, $signedPath)) {
             $_SESSION['afiliacion_errors'] = ['No se pudo enviar la solicitud: ' . $this->model->getLastError()];
+            $this->logBitacora([
+                'accion' => 'SUBMIT',
+                'modulo' => 'asistente_afiliacion',
+                'entidad' => 'solicitud_afiliacion',
+                'entidad_id' => (int) $draftId,
+                'descripcion' => 'Error al enviar solicitud de afiliacion',
+                'resultado' => 'fallido',
+                'mensaje_error' => $this->model->getLastError()
+            ]);
             $this->redirect('/SGA-SEBANA/public/afiliarse?error=envio');
             return;
         }
 
         $submitted = $this->model->read($draftId);
         if ($submitted) {
+            $this->logBitacora([
+                'accion' => 'SUBMIT',
+                'modulo' => 'asistente_afiliacion',
+                'entidad' => 'solicitud_afiliacion',
+                'entidad_id' => (int) $draftId,
+                'descripcion' => 'Envio de solicitud de afiliacion por formulario publico',
+                'datos_nuevos' => [
+                    'cedula' => $submitted['cedula'] ?? null,
+                    'correo' => $submitted['correo'] ?? null
+                ],
+                'resultado' => 'exitoso'
+            ]);
             $this->notifySebana($submitted);
         }
 
@@ -443,7 +666,9 @@ class AsistenteAfiliacionController extends ControllerBase
             'title' => 'Detalle Solicitud de Afiliacion',
             'solicitud' => $solicitud,
             'success' => $_GET['success'] ?? null,
-            'error' => $_GET['error'] ?? null
+            'error' => $_GET['error'] ?? null,
+            'flash_success' => $this->getFlash('afiliacion_admin_success'),
+            'flash_error' => $this->getFlash('afiliacion_admin_error')
         ]);
     }
 
@@ -461,12 +686,52 @@ class AsistenteAfiliacionController extends ControllerBase
         $estado = $_POST['nuevo_estado'] ?? '';
         $observaciones = trim((string) ($_POST['observaciones_admin'] ?? ''));
         $userId = $this->getCurrentUserId();
+        $solicitud = $this->model->read($id);
+
+        if (!$solicitud) {
+            $this->redirect('/SGA-SEBANA/public/asistente-afiliacion/solicitudes?error=not_found');
+            return;
+        }
+
+        $estadoNormalizado = strtolower(trim((string) $estado));
+        $approvalSync = null;
+
+        if ($estadoNormalizado === 'aprobada') {
+            $approvalSync = $this->ensureAffiliateAndUserForApproval($solicitud);
+            if (!($approvalSync['success'] ?? false)) {
+                $_SESSION['afiliacion_admin_error'] = $approvalSync['error'] ?? 'No se pudo completar la aprobacion automatica.';
+                $this->redirect('/SGA-SEBANA/public/asistente-afiliacion/solicitudes/' . $id . '?error=estado');
+                return;
+            }
+        }
 
         if ($this->model->updateStatus($id, $estado, $observaciones, $userId)) {
+            $this->logBitacora([
+                'accion' => 'STATUS_CHANGE',
+                'modulo' => 'asistente_afiliacion',
+                'entidad' => 'solicitud_afiliacion',
+                'entidad_id' => (int) $id,
+                'descripcion' => "Cambio de estado de solicitud de afiliacion a {$estado}",
+                'datos_nuevos' => ['estado' => $estado, 'observaciones_admin' => $observaciones],
+                'resultado' => 'exitoso'
+            ]);
+            if ($approvalSync !== null) {
+                $_SESSION['afiliacion_admin_success'] = $this->buildApprovalProvisionMessage($approvalSync);
+            }
             $this->redirect('/SGA-SEBANA/public/asistente-afiliacion/solicitudes/' . $id . '?success=estado');
             return;
         }
 
+        $this->logBitacora([
+            'accion' => 'STATUS_CHANGE',
+            'modulo' => 'asistente_afiliacion',
+            'entidad' => 'solicitud_afiliacion',
+            'entidad_id' => (int) $id,
+            'descripcion' => 'Error al actualizar estado de solicitud de afiliacion',
+            'resultado' => 'fallido',
+            'mensaje_error' => $this->model->getLastError()
+        ]);
+        $_SESSION['afiliacion_admin_error'] = 'No se pudo actualizar el estado de la solicitud.';
         $this->redirect('/SGA-SEBANA/public/asistente-afiliacion/solicitudes/' . $id . '?error=estado');
     }
 

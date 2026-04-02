@@ -2,6 +2,8 @@
 
 namespace App\Core;
 
+use App\Modules\Usuarios\Helpers\AccessControl;
+
 class Router
 {
     protected $routes = [];
@@ -28,6 +30,18 @@ class Router
     public function dispatch($uri)
     {
         $method = $_SERVER['REQUEST_METHOD'];
+        $auth = AccessControl::authorize($uri, $method);
+
+        if (empty($auth['allowed'])) {
+            if (!empty($auth['redirect'])) {
+                header('Location: ' . $auth['redirect']);
+                return;
+            }
+
+            http_response_code(403);
+            echo '403 Forbidden';
+            return;
+        }
 
         foreach ($this->routes as $route) {
             if ($route['method'] === $method && $this->match($route['uri'], $uri, $params)) {

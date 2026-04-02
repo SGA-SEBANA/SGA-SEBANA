@@ -7,6 +7,12 @@ class JuntaDirectivaModel extends ModelBase
 {
 
     protected $table = "junta_directiva";
+    private $lastError = '';
+
+    public function getLastError(): string
+    {
+        return $this->lastError;
+    }
 
     public function getJuntaDirectiva()
     {
@@ -101,40 +107,56 @@ class JuntaDirectivaModel extends ModelBase
 
     public function createMiembroJunta($afiliado_id, $cargo, $estado, $fecha_inicio, $fecha_fin, $periodo, $responsabilidades, $observaciones, $fecha_actualizacion)
     {
+        $this->lastError = '';
 
         $sql = "INSERT INTO {$this->table}(
-            afiliado_id,
-            cargo,
-            fecha_inicio,
-            fecha_fin,
-            periodo,
-            estado,
-            responsabilidades,
-            observaciones,
-            fecha_actualizacion,
-            documentos
+                    afiliado_id,
+                    cargo,
+                    fecha_inicio,
+                    fecha_fin,
+                    periodo,
+                    estado,
+                    responsabilidades,
+                    observaciones,
+                    fecha_actualizacion,
+                    documentos
+                ) VALUES (
+                    :afiliado_id, :cargo, :fecha_inicio, :fecha_fin, :periodo, :estado, :responsabilidades,
+                    :observaciones, :fecha_actualizacion, :documentos
+                )";
 
-            )VALUES(
-            :afiliado_id, :cargo, :fecha_inicio, :fecha_fin,:periodo,:estado,:responsabilidades,
-            :observaciones, :fecha_actualizacion, :documentos)";
+        $allowedStates = ['vigente', 'suspendido', 'finalizado'];
+        $estado = strtolower(trim((string) $estado));
+        if (!in_array($estado, $allowedStates, true)) {
+            $estado = 'vigente';
+        }
 
-        $emptyDocs = json_encode([]);
-        $estado = strtolower($estado);
+        $fecha_fin = trim((string) $fecha_fin);
+        $periodo = trim((string) $periodo);
+        $responsabilidades = trim((string) $responsabilidades);
+        $observaciones = trim((string) $observaciones);
 
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':afiliado_id', $afiliado_id);
-        $stmt->bindParam(':cargo', $cargo);
-        $stmt->bindParam(':fecha_inicio', $fecha_inicio);
-        $stmt->bindParam(':fecha_fin', $fecha_fin);
-        $stmt->bindParam(':periodo', $periodo);
-        $stmt->bindParam(':estado', $estado);
-        $stmt->bindParam(':responsabilidades', $responsabilidades);
-        $stmt->bindParam(':observaciones', $observaciones);
-        $stmt->bindParam(':fecha_actualizacion', $fecha_actualizacion);
-        $stmt->bindParam(':documentos', $emptyDocs);
+        $params = [
+            ':afiliado_id' => (int) $afiliado_id,
+            ':cargo' => trim((string) $cargo),
+            ':fecha_inicio' => trim((string) $fecha_inicio),
+            ':fecha_fin' => $fecha_fin !== '' ? $fecha_fin : null,
+            ':periodo' => $periodo !== '' ? $periodo : null,
+            ':estado' => $estado,
+            ':responsabilidades' => $responsabilidades !== '' ? $responsabilidades : null,
+            ':observaciones' => $observaciones !== '' ? $observaciones : null,
+            ':fecha_actualizacion' => $fecha_actualizacion,
+            ':documentos' => json_encode([])
+        ];
 
-        $stmt->execute();
-        return $this->db->lastInsertId();
+        try {
+            $stmt = $this->db->prepare($sql);
+            $ok = $stmt->execute($params);
+            return $ok ? $this->db->lastInsertId() : false;
+        } catch (\PDOException $e) {
+            $this->lastError = $e->getMessage();
+            return false;
+        }
     }
 
 
@@ -149,29 +171,47 @@ class JuntaDirectivaModel extends ModelBase
 
     public function updateMiembroJunta($id, $cargo, $fecha_inicio, $fecha_fin, $periodo, $estado, $responsabilidades, $observaciones)
     {
-        
-    $sql = "UPDATE {$this->table}
-    set cargo = :cargo,
-    fecha_inicio = :fecha_inicio,
-    fecha_fin = :fecha_fin,
-    periodo = :periodo,
-    estado = :estado,
-    responsabilidades = :responsabilidades,
-    observaciones = :observaciones 
-    WHERE id = :id";
+        $this->lastError = '';
 
-        $estado = strtolower($estado); // Normalize
+        $sql = "UPDATE {$this->table}
+                SET cargo = :cargo,
+                    fecha_inicio = :fecha_inicio,
+                    fecha_fin = :fecha_fin,
+                    periodo = :periodo,
+                    estado = :estado,
+                    responsabilidades = :responsabilidades,
+                    observaciones = :observaciones
+                WHERE id = :id";
 
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':id', $id);
-        $stmt->bindParam(':cargo', $cargo);
-        $stmt->bindParam(':fecha_inicio', $fecha_inicio);
-        $stmt->bindParam(':fecha_fin', $fecha_fin);
-        $stmt->bindParam(':periodo', $periodo);
-        $stmt->bindParam(':estado', $estado);
-        $stmt->bindParam(':responsabilidades', $responsabilidades);
-        $stmt->bindParam(':observaciones', $observaciones);
-        return $stmt->execute();
+        $allowedStates = ['vigente', 'suspendido', 'finalizado'];
+        $estado = strtolower(trim((string) $estado));
+        if (!in_array($estado, $allowedStates, true)) {
+            $estado = 'vigente';
+        }
+
+        $fecha_fin = trim((string) $fecha_fin);
+        $periodo = trim((string) $periodo);
+        $responsabilidades = trim((string) $responsabilidades);
+        $observaciones = trim((string) $observaciones);
+
+        $params = [
+            ':id' => (int) $id,
+            ':cargo' => trim((string) $cargo),
+            ':fecha_inicio' => trim((string) $fecha_inicio),
+            ':fecha_fin' => $fecha_fin !== '' ? $fecha_fin : null,
+            ':periodo' => $periodo !== '' ? $periodo : null,
+            ':estado' => $estado,
+            ':responsabilidades' => $responsabilidades !== '' ? $responsabilidades : null,
+            ':observaciones' => $observaciones !== '' ? $observaciones : null,
+        ];
+
+        try {
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute($params);
+        } catch (\PDOException $e) {
+            $this->lastError = $e->getMessage();
+            return false;
+        }
     }
 
 

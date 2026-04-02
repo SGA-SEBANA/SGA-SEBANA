@@ -25,6 +25,9 @@ ob_start();
                 <thead>
                     <tr>
                         <th>Codigo</th>
+                        <?php if (!empty($es_jefatura)): ?>
+                        <th>Afiliado</th>
+                        <?php endif; ?>
                         <th>Oficina</th>
                         <th>Fecha</th>
                         <th>Estado</th>
@@ -46,6 +49,10 @@ ob_start();
                         <td>
                             <span class="block-email"><?= htmlspecialchars($miembro['codigo_solicitud']) ?></span>
                         </td>
+
+                        <?php if (!empty($es_jefatura)): ?>
+                        <td><?= htmlspecialchars((string) ($miembro['afiliado_nombre'] ?? '')) ?></td>
+                        <?php endif; ?>
 
                         <td><?= htmlspecialchars($miembro['oficina_nombre']) ?></td>
 
@@ -81,15 +88,19 @@ ob_start();
 
                         <td>
                             <div class="table-data-feature">
-                                <a href="/SGA-SEBANA/public/visit-requests/<?= $miembro['id'] ?>/reschedule"
-                                    class="item" data-toggle="tooltip" title="Re-Programar">
-                                    <i class="fa-regular fa-calendar-xmark"></i>
-                                </a>
+                                <?php if (empty($es_jefatura)): ?>
+                                    <a href="/SGA-SEBANA/public/visit-requests/<?= $miembro['id'] ?>/reschedule"
+                                        class="item" data-toggle="tooltip" title="Re-Programar">
+                                        <i class="fa-regular fa-calendar-xmark"></i>
+                                    </a>
 
-                                <a href="/SGA-SEBANA/public/visit-requests/<?= $miembro['id'] ?>/cancel" class="item"
-                                    onclick="return confirm('¿Cancelar esta solicitud?')">
-                                    <i class="fa-solid fa-ban"></i>
-                                </a>
+                                    <a href="/SGA-SEBANA/public/visit-requests/<?= $miembro['id'] ?>/cancel" class="item"
+                                        onclick="return confirm('¿Cancelar esta solicitud?')">
+                                        <i class="fa-solid fa-ban"></i>
+                                    </a>
+                                <?php else: ?>
+                                    <span class="text-muted small">Gestion en Admin Visitas</span>
+                                <?php endif; ?>
                             </div>
                         </td>
                     </tr>

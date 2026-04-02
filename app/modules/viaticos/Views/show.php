@@ -1,8 +1,9 @@
 <?php
 /**
- * Vista: Detalles de la Solicitud (Espaciado Profesional Aplicado y PDF Conectado)
+ * Vista: Detalles de la Solicitud
  */
 ob_start();
+$esJefatura = $es_jefatura ?? false;
 ?>
 
 <div class="row">
@@ -21,7 +22,7 @@ ob_start();
 
         <?php if (isset($_GET['success']) && $_GET['success'] === 'estado_actualizado'): ?>
             <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-                <i class="zmdi zmdi-check-circle me-2"></i>¡Estado actualizado correctamente!
+                <i class="zmdi zmdi-check-circle me-2"></i>Estado actualizado correctamente.
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
@@ -44,7 +45,7 @@ ob_start();
             <div class="col-md-8">
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-white">
-                        <strong><i class="zmdi zmdi-info me-2"></i>Información General</strong>
+                        <strong><i class="zmdi zmdi-info me-2"></i>Informacion General</strong>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -55,13 +56,13 @@ ob_start();
                                 </span>
                             </div>
                             <div class="col-md-4 mb-2">
-                                <small class="text-muted d-block">Fecha de Creación</small>
+                                <small class="text-muted d-block">Fecha de Creacion</small>
                                 <strong><?= date('d/m/Y h:i A', strtotime($viatico['creado_en'])) ?></strong>
                             </div>
                             <?php if (!empty($viatico['cantidad_dias'])): ?>
                                 <div class="col-md-4 mb-2">
-                                    <small class="text-muted d-block">Cantidad de Días</small>
-                                    <strong><?= (int)$viatico['cantidad_dias'] ?></strong>
+                                    <small class="text-muted d-block">Cantidad de Dias</small>
+                                    <strong><?= (int) $viatico['cantidad_dias'] ?></strong>
                                 </div>
                             <?php endif; ?>
                             <?php if (!empty($viatico['fecha_inicio']) || !empty($viatico['fecha_fin'])): ?>
@@ -92,7 +93,7 @@ ob_start();
                         <?php if ($viatico['aplica_transporte']): ?>
                             <div class="row">
                                 <div class="col-md-4 mb-3">
-                                    <small class="text-muted d-block">Tipo de Vehículo</small>
+                                    <small class="text-muted d-block">Tipo de Vehiculo</small>
                                     <strong><?= ucfirst(htmlspecialchars($viatico['tipo_vehiculo'])) ?></strong>
                                 </div>
                                 <div class="col-md-4 mb-3">
@@ -101,12 +102,12 @@ ob_start();
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <small class="text-muted d-block">Tarifa por km (CGR)</small>
-                                    <strong>₡<?= number_format($viatico['tarifa_km'], 2) ?></strong>
+                                    <strong>C<?= number_format($viatico['tarifa_km'], 2) ?></strong>
                                 </div>
                                 <?php if (!empty($viatico['cantidad_transportes'])): ?>
                                     <div class="col-md-4 mb-3">
                                         <small class="text-muted d-block">Cantidad de Transportes</small>
-                                        <strong><?= (int)$viatico['cantidad_transportes'] ?></strong>
+                                        <strong><?= (int) $viatico['cantidad_transportes'] ?></strong>
                                     </div>
                                 <?php endif; ?>
                                 <?php if (!empty($viatico['enlace_maps'])): ?>
@@ -119,7 +120,7 @@ ob_start();
                                 <?php endif; ?>
                             </div>
                         <?php else: ?>
-                            <p class="text-muted mb-0">No se solicitó cobro por kilometraje.</p>
+                            <p class="text-muted mb-0">No se solicito cobro por kilometraje.</p>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -133,7 +134,7 @@ ob_start();
                             <div class="d-flex align-items-center">
                                 <i class="zmdi zmdi-file-text zmdi-hc-3x text-primary mr-3"></i>
                                 <div>
-                                    <p class="mb-1">El usuario adjuntó un comprobante para esta solicitud.</p>
+                                    <p class="mb-1">El usuario adjunto un comprobante para esta solicitud.</p>
                                     <a href="/SGA-SEBANA/public/viaticos/archivo?id=<?= htmlspecialchars($viatico['id']) ?>" target="_blank" class="btn btn-outline-primary btn-sm">
                                         <i class="zmdi zmdi-download me-2"></i>Ver / Descargar Archivo
                                     </a>
@@ -145,34 +146,36 @@ ob_start();
                     </div>
                 </div>
 
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-white">
-                        <strong><i class="zmdi zmdi-swap me-2"></i>Cambiar Estado</strong>
-                    </div>
-                    <div class="card-body">
-                        <form action="/SGA-SEBANA/public/viaticos/status" method="POST">
-                            <input type="hidden" name="id" value="<?= htmlspecialchars($viatico['id']) ?>">
-                            <div class="row align-items-center">
-                                <div class="col-md-6 mb-2">
-                                    <select name="nuevo_estado" class="form-control" required>
-                                        <?php
-                                            $estados = ['Borrador','Pendiente','En Revisión','Aprobado','Rechazado','Cancelado','Pagado'];
-                                            foreach ($estados as $estado) {
-                                                $selected = ($viatico['estado'] === $estado) ? 'selected' : '';
-                                                echo "<option value=\"{$estado}\" {$selected}>{$estado}</option>";
-                                            }
-                                        ?>
-                                    </select>
+                <?php if ($esJefatura): ?>
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-white">
+                            <strong><i class="zmdi zmdi-swap me-2"></i>Cambiar Estado</strong>
+                        </div>
+                        <div class="card-body">
+                            <form action="/SGA-SEBANA/public/viaticos/status" method="POST">
+                                <input type="hidden" name="id" value="<?= htmlspecialchars($viatico['id']) ?>">
+                                <div class="row align-items-center">
+                                    <div class="col-md-6 mb-2">
+                                        <select name="nuevo_estado" class="form-control" required>
+                                            <?php
+                                                $estados = ['Borrador', 'Pendiente', 'En Revision', 'Aprobado', 'Rechazado', 'Cancelado', 'Pagado'];
+                                                foreach ($estados as $estado) {
+                                                    $selected = ($viatico['estado'] === $estado) ? 'selected' : '';
+                                                    echo '<option value="' . htmlspecialchars($estado) . '" ' . $selected . '>' . htmlspecialchars($estado) . '</option>';
+                                                }
+                                            ?>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="zmdi zmdi-check me-2"></i>Actualizar Estado
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="col-md-6 mb-2">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="zmdi zmdi-check me-2"></i>Actualizar Estado
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
-                </div>
+                <?php endif; ?>
             </div>
 
             <div class="col-md-4">
@@ -182,56 +185,56 @@ ob_start();
                     </div>
                     <div class="card-body">
                         <?php
-                            $desayunoCount = (int)($viatico['cantidad_desayuno'] ?? 0);
-                            $almuerzoCount = (int)($viatico['cantidad_almuerzo'] ?? 0);
-                            $cenaCount = (int)($viatico['cantidad_cena'] ?? 0);
+                            $desayunoCount = (int) ($viatico['cantidad_desayuno'] ?? 0);
+                            $almuerzoCount = (int) ($viatico['cantidad_almuerzo'] ?? 0);
+                            $cenaCount = (int) ($viatico['cantidad_cena'] ?? 0);
                             $desayunoTotal = $desayunoCount * 4200;
                             $almuerzoTotal = $almuerzoCount * 5600;
                             $cenaTotal = $cenaCount * 5600;
                         ?>
-                        <h6 class="text-muted mb-3 border-bottom pb-2">Alimentación</h6>
+                        <h6 class="text-muted mb-3 border-bottom pb-2">Alimentacion</h6>
                         <ul class="list-unstyled mb-4">
                             <li class="d-flex justify-content-between mb-2">
                                 <span><i class="zmdi <?= $desayunoCount > 0 ? 'zmdi-check text-success' : 'zmdi-close text-danger' ?>"></i> Desayuno (x<?= $desayunoCount ?>)</span>
-                                <strong>₡<?= number_format($desayunoTotal, 2) ?></strong>
+                                <strong>C<?= number_format($desayunoTotal, 2) ?></strong>
                             </li>
                             <li class="d-flex justify-content-between mb-2">
                                 <span><i class="zmdi <?= $almuerzoCount > 0 ? 'zmdi-check text-success' : 'zmdi-close text-danger' ?>"></i> Almuerzo (x<?= $almuerzoCount ?>)</span>
-                                <strong>₡<?= number_format($almuerzoTotal, 2) ?></strong>
+                                <strong>C<?= number_format($almuerzoTotal, 2) ?></strong>
                             </li>
                             <li class="d-flex justify-content-between mb-2">
                                 <span><i class="zmdi <?= $cenaCount > 0 ? 'zmdi-check text-success' : 'zmdi-close text-danger' ?>"></i> Cena (x<?= $cenaCount ?>)</span>
-                                <strong>₡<?= number_format($cenaTotal, 2) ?></strong>
+                                <strong>C<?= number_format($cenaTotal, 2) ?></strong>
                             </li>
                             <li class="d-flex justify-content-between border-top pt-2 mt-2">
-                                <span class="text-muted">Subtotal Alimentación</span>
-                                <strong>₡<?= number_format($viatico['monto_alimentacion'], 2) ?></strong>
+                                <span class="text-muted">Subtotal Alimentacion</span>
+                                <strong>C<?= number_format($viatico['monto_alimentacion'], 2) ?></strong>
                             </li>
                         </ul>
 
                         <h6 class="text-muted mb-3 border-bottom pb-2">Transporte</h6>
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">Cantidad</span>
-                            <strong><?= (int)($viatico['cantidad_transportes'] ?? 0) ?></strong>
+                            <strong><?= (int) ($viatico['cantidad_transportes'] ?? 0) ?></strong>
                         </div>
                         <div class="d-flex justify-content-between mb-4">
                             <span class="text-muted">Subtotal Transporte</span>
-                            <strong>₡<?= number_format($viatico['monto_transporte'], 2) ?></strong>
+                            <strong>C<?= number_format($viatico['monto_transporte'], 2) ?></strong>
                         </div>
 
                         <h6 class="text-muted mb-3 border-bottom pb-2">Otros</h6>
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">Hospedaje</span>
-                            <strong>₡<?= number_format($viatico['monto_hospedaje'] ?? 0, 2) ?></strong>
+                            <strong>C<?= number_format($viatico['monto_hospedaje'] ?? 0, 2) ?></strong>
                         </div>
                         <div class="d-flex justify-content-between mb-4">
                             <span class="text-muted">Gastos Menores</span>
-                            <strong>₡<?= number_format($viatico['monto_gastos_menores'] ?? 0, 2) ?></strong>
+                            <strong>C<?= number_format($viatico['monto_gastos_menores'] ?? 0, 2) ?></strong>
                         </div>
 
                         <div class="bg-light p-3 text-center rounded border border-info">
                             <h5 class="text-info font-weight-bold mb-1">GRAN TOTAL</h5>
-                            <h2 class="text-info font-weight-bold mb-0">₡<?= number_format($viatico['total_pagar'], 2) ?></h2>
+                            <h2 class="text-info font-weight-bold mb-0">C<?= number_format($viatico['total_pagar'], 2) ?></h2>
                         </div>
                     </div>
                 </div>

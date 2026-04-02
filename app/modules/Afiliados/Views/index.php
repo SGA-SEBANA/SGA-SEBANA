@@ -115,11 +115,18 @@ ob_start();
                     <?php else: ?>
 
                         <?php foreach ($afiliados as $afiliado): ?>
+                            <?php
+                            $nombreCompleto = trim((string) ($afiliado['nombre_completo'] ?? ''));
+                            $correo = trim((string) ($afiliado['correo'] ?? ''));
+                            $oficinaNombre = trim((string) ($afiliado['oficina_nombre'] ?? ''));
+                            $categoriaNombre = trim((string) ($afiliado['categoria_nombre'] ?? ''));
+                            $telefono = trim((string) ($afiliado['telefono'] ?? ''));
+                            ?>
                             <tr class="tr-shadow">
                                 <td>
-                                    <?= htmlspecialchars($afiliado['nombre_completo']) ?>
+                                    <?= htmlspecialchars($nombreCompleto !== '' ? $nombreCompleto : 'Sin nombre') ?>
                                     <div class="small text-muted">
-                                        <?= htmlspecialchars($afiliado['correo']) ?>
+                                        <?= htmlspecialchars($correo !== '' ? $correo : '-') ?>
                                     </div>
                                 </td>
 
@@ -129,15 +136,13 @@ ob_start();
                                     </span>
                                 </td>
 
-                                <td><?= htmlspecialchars($afiliado['oficina_nombre'] ?? '-') ?></td>
+                                <td><?= htmlspecialchars($oficinaNombre !== '' ? $oficinaNombre : 'Sin asignar') ?></td>
 
                                 <td>
-                                    <?= !empty($afiliado['categoria_nombre'])
-                                        ? htmlspecialchars($afiliado['categoria_nombre'])
-                                        : '-' ?>
+                                    <?= $categoriaNombre !== '' ? htmlspecialchars($categoriaNombre) : 'Sin asignar' ?>
                                 </td>
 
-                                <td><?= htmlspecialchars($afiliado['telefono']) ?></td>
+                                <td><?= htmlspecialchars($telefono !== '' ? $telefono : '-') ?></td>
 
                                 <td>
                                     <?php if ($afiliado['estado'] === 'activo'): ?>

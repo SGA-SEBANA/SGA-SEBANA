@@ -274,7 +274,7 @@ class VacacionesModel extends ModelBase
         ];
     }
 
-    public function crearSolicitud($usuarioId, $fechaInicio, $fechaFin, $motivo)
+    public function crearSolicitud($usuarioId, $fechaInicio, $fechaFin, $motivo, $afiliadoIdOverride = null)
     {
         $this->lastError = '';
 
@@ -285,10 +285,12 @@ class VacacionesModel extends ModelBase
         }
 
         if ($this->storageMode) {
-            return $this->crearSolicitudStorage($usuarioId, $fechaInicio, $fechaFin, $motivo, $cantidadDias);
+            return $this->crearSolicitudStorage($usuarioId, $fechaInicio, $fechaFin, $motivo, $cantidadDias, $afiliadoIdOverride);
         }
 
-        $afiliadoId = $this->obtenerAfiliadoIdPorUsuario($usuarioId);
+        $afiliadoId = !empty($afiliadoIdOverride)
+            ? (int) $afiliadoIdOverride
+            : $this->obtenerAfiliadoIdPorUsuario($usuarioId);
         if (!$afiliadoId) {
             $this->lastError = 'No se pudo asociar el usuario a un afiliado.';
             return false;
@@ -315,10 +317,12 @@ class VacacionesModel extends ModelBase
         }
     }
 
-    private function crearSolicitudStorage($usuarioId, $fechaInicio, $fechaFin, $motivo, $cantidadDias)
+    private function crearSolicitudStorage($usuarioId, $fechaInicio, $fechaFin, $motivo, $cantidadDias, $afiliadoIdOverride = null)
     {
         $usuario = $this->obtenerUsuario($usuarioId);
-        $afiliadoId = $this->obtenerAfiliadoIdPorUsuario($usuarioId);
+        $afiliadoId = !empty($afiliadoIdOverride)
+            ? (int) $afiliadoIdOverride
+            : $this->obtenerAfiliadoIdPorUsuario($usuarioId);
         [$nombreAfiliado, $correoAfiliado] = $this->obtenerNombreCorreoAfiliado($afiliadoId);
         $now = date('Y-m-d H:i:s');
 

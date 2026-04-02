@@ -2,45 +2,111 @@
 namespace App\Modules\Ayudas\Controllers;
 
 use App\Core\ControllerBase;
+use App\Modules\Afiliados\Models\Afiliados;
 use App\Modules\Ayudas\Models\AyudaEconomicaModel;
+use App\Modules\Usuarios\Helpers\AccessControl;
+use App\Modules\Usuarios\Models\Bitacora;
 
 class AyudaEconomicaController extends ControllerBase {
-    
+
     protected $model;
 
     public function __construct() {
         $this->model = new AyudaEconomicaModel();
-        
+
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
     }
 
+    private function getCurrentUserId() {
+        return isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
+    }
+
+    private function isManager(): bool {
+        return AccessControl::hasLevel('alto');
+    }
+
+    private function isOwner(array $ayuda, int $usuarioId): bool {
+        if (!empty($ayuda['usuario_id']) && (int) $ayuda['usuario_id'] === $usuarioId) {
+            return true;
+        }
+
+        if (!empty($ayuda['afiliado_id'])) {
+            $miAfiliado = $this->model->obtenerAfiliadoIdPorUsuario($usuarioId);
+            return $miAfiliado && ((int) $ayuda['afiliado_id'] === (int) $miAfiliado);
+        }
+
+        return false;
+    }
+
+    private function getSelectableAfiliados(): array
+    {
+        $afiliadosModel = new Afiliados();
+        $rows = $afiliadosModel->getAll(['estado' => 'activo']);
+
+        usort($rows, function ($a, $b) {
+            return strcmp((string) ($a['nombre_completo'] ?? ''), (string) ($b['nombre_completo'] ?? ''));
+        });
+
+        return $rows;
+    }
+
+    private function logBitacora(array $data): void
+    {
+        try {
+            $bitacora = new Bitacora();
+            $bitacora->log($data);
+        } catch (\Throwable $e) {
+            // No interrumpir el flujo funcional.
+        }
+    }
+
     public function index() {
-        $ayudas = $this->model->obtenerTodas();
-        
+        $usuarioId = $this->getCurrentUserId();
+        if (!$usuarioId) {
+            $this->redirect('/SGA-SEBANA/public/login?error=sesion_expirada');
+            return;
+        }
+
+        $esJefatura = $this->isManager();
+        $ayudas = $esJefatura
+            ? $this->model->obtenerTodas()
+            : $this->model->obtenerPorUsuario($usuarioId);
+
         $this->view('index', [
-            'ayudas' => $ayudas
+            'ayudas' => $ayudas,
+            'es_jefatura' => $esJefatura
         ]);
     }
 
     public function create() {
+        $esJefatura = $this->isManager();
         $this->view('create', [
-            'titulo' => 'Solicitar Ayuda Económica',
-            'error' => $_GET['error'] ?? null
+            'titulo' => 'Solicitar Ayuda Economica',
+            'error' => $_GET['error'] ?? null,
+            'es_jefatura' => $esJefatura,
+            'afiliados' => $esJefatura ? $this->getSelectableAfiliados() : []
         ]);
     }
 
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // CORTE 1 CORREGIDO: Usamos 'user_id' que es la llave real de tu sistema
             if (!isset($_SESSION['user_id'])) {
                 $this->redirect('/SGA-SEBANA/public/login?error=sesion_expirada');
                 return;
             }
-            $usuario_id = $_SESSION['user_id']; 
-            
-            // CORTE 2: HU-SAEC-3 E2 - Validar archivo ANTES de crear el registro en BD
+            $usuario_id = $_SESSION['user_id'];
+            $afiliado_id = null;
+
+            if ($this->isManager()) {
+                $afiliado_id = !empty($_POST['afiliado_id']) ? (int) $_POST['afiliado_id'] : null;
+                if (empty($afiliado_id)) {
+                    $this->redirect('/SGA-SEBANA/public/ayudas/create?error=invalid_afiliado');
+                    return;
+                }
+            }
+
             if (isset($_FILES['evidencia']) && $_FILES['evidencia']['error'] === UPLOAD_ERR_OK) {
                 if (!$this->validarArchivo($_FILES['evidencia'])) {
                     $this->redirect('/SGA-SEBANA/public/ayudas/create?error=invalid_file');
@@ -49,25 +115,43 @@ class AyudaEconomicaController extends ControllerBase {
             }
 
             $motivo = trim($_POST['motivo'] ?? '');
-            $monto_solicitado = floatval($_POST['monto_solicitado'] ?? 0);
+            $monto_solicitado = (float) ($_POST['monto_solicitado'] ?? 0);
 
-            // NUEVO: Validación estricta del monto máximo (100,000 colones)
             if ($monto_solicitado > 100000) {
                 $this->redirect('/SGA-SEBANA/public/ayudas/create?error=monto_excedido');
                 return;
             }
 
-            $ayuda_id = $this->model->crearSolicitud($usuario_id, $motivo, $monto_solicitado);
+            $ayuda_id = $this->model->crearSolicitud($usuario_id, $motivo, $monto_solicitado, $afiliado_id);
 
             if ($ayuda_id) {
                 unset($_SESSION['error_detail']);
-                // HU-SAEC-3: Adjuntar evidencia inicial
+                $this->logBitacora([
+                    'accion' => 'CREATE',
+                    'modulo' => 'ayudas',
+                    'entidad' => 'solicitud_ayuda',
+                    'entidad_id' => (int) $ayuda_id,
+                    'descripcion' => 'Creacion de solicitud de ayuda economica',
+                    'datos_nuevos' => [
+                        'afiliado_id' => $afiliado_id,
+                        'monto_solicitado' => $monto_solicitado
+                    ],
+                    'resultado' => 'exitoso'
+                ]);
                 if (isset($_FILES['evidencia']) && $_FILES['evidencia']['error'] === UPLOAD_ERR_OK) {
                     $this->procesarArchivo($ayuda_id, $usuario_id, $_FILES['evidencia'], 'Pendiente');
                 }
                 $this->redirect('/SGA-SEBANA/public/ayudas?success=creado');
             } else {
                 $_SESSION['error_detail'] = $this->model->getLastError();
+                $this->logBitacora([
+                    'accion' => 'CREATE',
+                    'modulo' => 'ayudas',
+                    'entidad' => 'solicitud_ayuda',
+                    'descripcion' => 'Error al crear solicitud de ayuda economica',
+                    'resultado' => 'fallido',
+                    'mensaje_error' => $this->model->getLastError()
+                ]);
                 $this->redirect('/SGA-SEBANA/public/ayudas/create?error=db_error');
             }
         }
@@ -75,12 +159,38 @@ class AyudaEconomicaController extends ControllerBase {
 
     public function requestCancellation($id) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $usuarioId = $this->getCurrentUserId();
+            $ayuda = $this->model->obtenerPorId($id);
+
+            if (!$usuarioId || !$ayuda || !$this->isOwner($ayuda, $usuarioId)) {
+                $this->redirect('/SGA-SEBANA/public/ayudas?error=no_autorizado');
+                return;
+            }
+
             $motivo_cancelacion = trim($_POST['motivo_cancelacion'] ?? '');
-            
+
             if ($this->model->registrarCancelacionUsuario($id, $motivo_cancelacion)) {
-                $this->enviarNotificacionAdmin($id, "Un usuario ha solicitado la cancelación de su ayuda económica.");
+                $this->logBitacora([
+                    'accion' => 'CANCEL',
+                    'modulo' => 'ayudas',
+                    'entidad' => 'solicitud_ayuda',
+                    'entidad_id' => (int) $id,
+                    'descripcion' => 'Solicitud de cancelacion registrada por el afiliado',
+                    'datos_nuevos' => ['motivo_cancelacion' => $motivo_cancelacion],
+                    'resultado' => 'exitoso'
+                ]);
+                $this->enviarNotificacionAdmin($id, 'Un usuario ha solicitado la cancelacion de su ayuda economica.');
                 $this->redirect('/SGA-SEBANA/public/ayudas/show/' . $id . '?success=cancelacion_enviada');
             } else {
+                $this->logBitacora([
+                    'accion' => 'CANCEL',
+                    'modulo' => 'ayudas',
+                    'entidad' => 'solicitud_ayuda',
+                    'entidad_id' => (int) $id,
+                    'descripcion' => 'Error al registrar solicitud de cancelacion',
+                    'resultado' => 'fallido',
+                    'mensaje_error' => $this->model->getLastError()
+                ]);
                 $this->redirect('/SGA-SEBANA/public/ayudas/show/' . $id . '?error=cancel_error');
             }
         }
@@ -88,9 +198,18 @@ class AyudaEconomicaController extends ControllerBase {
 
     public function show($id) {
         $ayuda = $this->model->obtenerPorId($id);
-        
+
         if (!$ayuda) {
             $this->redirect('/SGA-SEBANA/public/ayudas?error=not_found');
+            return;
+        }
+
+        $usuarioId = $this->getCurrentUserId();
+        $esJefatura = $this->isManager();
+        $esPropietario = $usuarioId ? $this->isOwner($ayuda, $usuarioId) : false;
+
+        if (!$esJefatura && !$esPropietario) {
+            $this->redirect('/SGA-SEBANA/public/ayudas?error=no_autorizado');
             return;
         }
 
@@ -98,43 +217,84 @@ class AyudaEconomicaController extends ControllerBase {
 
         $this->view('show', [
             'ayuda' => $ayuda,
-            'evidencias' => $evidencias
+            'evidencias' => $evidencias,
+            'es_jefatura' => $esJefatura,
+            'es_propietario' => $esPropietario
         ]);
     }
 
     public function updateStatus($id) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $nuevo_estado = $_POST['nuevo_estado'];
-            
+            if (!$this->isManager()) {
+                $this->redirect('/SGA-SEBANA/public/ayudas?error=no_autorizado');
+                return;
+            }
+
+            $nuevo_estado = $_POST['nuevo_estado'] ?? '';
+            if ($nuevo_estado === '') {
+                $this->redirect('/SGA-SEBANA/public/ayudas/show/' . $id . '?error=estado');
+                return;
+            }
+
             if ($this->model->cambiarEstado($id, $nuevo_estado)) {
                 $ayuda = $this->model->obtenerPorId($id);
-                $this->notificarCambioEstado($ayuda['correo'], $nuevo_estado, $id);
+                $this->logBitacora([
+                    'accion' => 'STATUS_CHANGE',
+                    'modulo' => 'ayudas',
+                    'entidad' => 'solicitud_ayuda',
+                    'entidad_id' => (int) $id,
+                    'descripcion' => "Cambio de estado de ayuda economica a {$nuevo_estado}",
+                    'datos_nuevos' => ['estado' => $nuevo_estado],
+                    'resultado' => 'exitoso'
+                ]);
+                $this->notificarCambioEstado($ayuda['correo'] ?? '', $nuevo_estado, $id);
                 $this->redirect('/SGA-SEBANA/public/ayudas/show/' . $id . '?success=estado_actualizado');
+            } else {
+                $this->logBitacora([
+                    'accion' => 'STATUS_CHANGE',
+                    'modulo' => 'ayudas',
+                    'entidad' => 'solicitud_ayuda',
+                    'entidad_id' => (int) $id,
+                    'descripcion' => 'Error al actualizar estado de ayuda economica',
+                    'resultado' => 'fallido',
+                    'mensaje_error' => $this->model->getLastError()
+                ]);
+                $this->redirect('/SGA-SEBANA/public/ayudas/show/' . $id . '?error=estado');
             }
         }
     }
 
     public function addEvidence($id) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // CORTE 3 CORREGIDO: Sesión estricta usando 'user_id'
             if (!isset($_SESSION['user_id'])) {
                 $this->redirect('/SGA-SEBANA/public/login?error=sesion_expirada');
                 return;
             }
-            $usuario_id = $_SESSION['user_id'];
-            
-            $ayuda = $this->model->obtenerPorId($id);
+            $usuario_id = (int) $_SESSION['user_id'];
 
-            if ($ayuda && $ayuda['estado'] === 'Pendiente') {
+            $ayuda = $this->model->obtenerPorId($id);
+            if (!$ayuda || !$this->isOwner($ayuda, $usuario_id)) {
+                $this->redirect('/SGA-SEBANA/public/ayudas?error=no_autorizado');
+                return;
+            }
+
+            if (($ayuda['estado'] ?? '') === 'Pendiente') {
                 if (isset($_FILES['nueva_evidencia']) && $_FILES['nueva_evidencia']['error'] === UPLOAD_ERR_OK) {
-                    
                     if (!$this->validarArchivo($_FILES['nueva_evidencia'])) {
                         $this->redirect('/SGA-SEBANA/public/ayudas/show/' . $id . '?error=invalid_file');
                         return;
                     }
 
                     if ($this->procesarArchivo($id, $usuario_id, $_FILES['nueva_evidencia'], $ayuda['estado'])) {
-                        $this->enviarNotificacionAdmin($id, "Se ha adjuntado nueva evidencia a la solicitud.");
+                        $this->logBitacora([
+                            'accion' => 'UPLOAD_FILE',
+                            'modulo' => 'ayudas',
+                            'entidad' => 'solicitud_ayuda',
+                            'entidad_id' => (int) $id,
+                            'descripcion' => 'Carga de evidencia en solicitud de ayuda economica',
+                            'resultado' => 'exitoso'
+                        ]);
+                        $this->enviarNotificacionAdmin($id, 'Se ha adjuntado nueva evidencia a la solicitud.');
                         $this->redirect('/SGA-SEBANA/public/ayudas/show/' . $id . '?success=evidencia_agregada');
                         return;
                     }
@@ -146,30 +306,30 @@ class AyudaEconomicaController extends ControllerBase {
 
     private function validarArchivo($file) {
         $fileSize = $file['size'];
-        $fileNameCmps = explode(".", $file['name']);
+        $fileNameCmps = explode('.', $file['name']);
         $fileExtension = strtolower(end($fileNameCmps));
-        
-        $extensionesPermitidas = ['jpg', 'jpeg', 'png', 'pdf'];
-        $maxSize = 5 * 1024 * 1024; // 5MB
 
-        return in_array($fileExtension, $extensionesPermitidas) && $fileSize <= $maxSize;
+        $extensionesPermitidas = ['jpg', 'jpeg', 'png', 'pdf'];
+        $maxSize = 5 * 1024 * 1024;
+
+        return in_array($fileExtension, $extensionesPermitidas, true) && $fileSize <= $maxSize;
     }
 
     private function procesarArchivo($ayuda_id, $usuario_id, $file, $estado_actual) {
         $fileTmpPath = $file['tmp_name'];
         $fileName = $file['name'];
-        $fileNameCmps = explode(".", $fileName);
+        $fileNameCmps = explode('.', $fileName);
         $fileExtension = strtolower(end($fileNameCmps));
 
         $nuevoNombreArchivo = md5(time() . $fileName) . '.' . $fileExtension;
         $directorioDestino = BASE_PATH . '/storage/ayudas/';
-        
+
         if (!is_dir($directorioDestino)) {
             mkdir($directorioDestino, 0777, true);
         }
 
         $rutaDestinoFisica = $directorioDestino . $nuevoNombreArchivo;
-        
+
         if (move_uploaded_file($fileTmpPath, $rutaDestinoFisica)) {
             $rutaArchivoFinal = 'storage/ayudas/' . $nuevoNombreArchivo;
             $this->model->guardarEvidencia($ayuda_id, $usuario_id, $fileName, $rutaArchivoFinal, $estado_actual);
@@ -181,13 +341,41 @@ class AyudaEconomicaController extends ControllerBase {
     public function archivo($evidencia_id) {
         $evidencia = $this->model->obtenerEvidenciaPorId($evidencia_id);
 
+        if (!$evidencia) {
+            http_response_code(404);
+            echo 'Archivo no encontrado.';
+            return;
+        }
+
+        $usuarioId = $this->getCurrentUserId();
+        if (!$usuarioId) {
+            $this->redirect('/SGA-SEBANA/public/login?error=sesion_expirada');
+            return;
+        }
+
+        if (!$this->isManager()) {
+            $ayudaId = (int) ($evidencia['ayuda_id'] ?? 0);
+            if ($ayudaId <= 0) {
+                http_response_code(403);
+                echo 'Acceso no permitido.';
+                return;
+            }
+
+            $ayuda = $this->model->obtenerPorId($ayudaId);
+            if (!$ayuda || !$this->isOwner($ayuda, $usuarioId)) {
+                http_response_code(403);
+                echo 'Acceso no permitido.';
+                return;
+            }
+        }
+
         $rutaDb = $evidencia['path'] ?? null;
         $rutaStorage = $evidencia['ruta_archivo'] ?? null;
         $rutaBase = $rutaDb ?: $rutaStorage;
 
-        if (!$evidencia || empty($rutaBase)) {
+        if (empty($rutaBase)) {
             http_response_code(404);
-            echo "Archivo no encontrado.";
+            echo 'Archivo no encontrado.';
             return;
         }
 
@@ -201,7 +389,7 @@ class AyudaEconomicaController extends ControllerBase {
 
         if (!$rutaFisica || !file_exists($rutaFisica)) {
             http_response_code(404);
-            echo "Archivo no encontrado.";
+            echo 'Archivo no encontrado.';
             return;
         }
 
@@ -209,7 +397,7 @@ class AyudaEconomicaController extends ControllerBase {
         $realFile = realpath($rutaFisica);
         if (!$realBase || !$realFile || strpos($realFile, $realBase) !== 0) {
             http_response_code(403);
-            echo "Acceso no permitido.";
+            echo 'Acceso no permitido.';
             return;
         }
 
@@ -224,14 +412,14 @@ class AyudaEconomicaController extends ControllerBase {
     }
 
     private function notificarCambioEstado($correo, $estado, $id) {
-        $asunto = "Actualización de Solicitud SEBANA #$id";
-        $mensaje = "Hola, le informamos que su solicitud de ayuda económica ha sido actualizada al estado: $estado.";
+        $asunto = "Actualizacion de Solicitud SEBANA #$id";
+        $mensaje = "Hola, le informamos que su solicitud de ayuda economica ha sido actualizada al estado: $estado.";
     }
 
     private function enviarNotificacionAdmin($id, $accion) {
         $admins = $this->model->obtenerCorreosAdministradores();
         foreach ($admins as $email) {
-            // Notificar al admin sobre nueva evidencia o cancelación
+            // Pendiente: integrar envio de correo o canal interno.
         }
     }
 }

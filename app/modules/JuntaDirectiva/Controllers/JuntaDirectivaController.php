@@ -35,38 +35,75 @@ class JuntaDirectivaController
 
    public function create()
    {
-      session_start();
+      if (session_status() === PHP_SESSION_NONE) {
+         session_start();
+      }
       $model = new JuntaDirectivaModel();
 
       if ($_POST) {
+         $afiliadoId = (int) ($_POST['afiliado_id'] ?? 0);
+         $cargo = trim((string) ($_POST['cargo'] ?? ''));
+         $estado = strtolower(trim((string) ($_POST['estado'] ?? 'vigente')));
+         $fechaInicio = trim((string) ($_POST['fecha_inicio'] ?? ''));
+         $fechaFin = trim((string) ($_POST['fecha_fin'] ?? ''));
+         $periodo = trim((string) ($_POST['periodo'] ?? ''));
+         $responsabilidades = trim((string) ($_POST['responsabilidades'] ?? ''));
+         $observaciones = trim((string) ($_POST['observaciones'] ?? ''));
 
-         if (!empty($_POST['fecha_fin']) && $_POST['fecha_fin'] < $_POST['fecha_inicio']) {
+         if ($afiliadoId <= 0) {
+            $_SESSION['error'] = "Debe seleccionar un afiliado valido.";
+            header("Location: /SGA-SEBANA/public/junta/create");
+            exit;
+         }
+
+         if ($cargo === '') {
+            $_SESSION['error'] = "El campo cargo es obligatorio.";
+            header("Location: /SGA-SEBANA/public/junta/create");
+            exit;
+         }
+
+         if ($fechaInicio === '') {
+            $_SESSION['error'] = "La fecha de inicio es obligatoria.";
+            header("Location: /SGA-SEBANA/public/junta/create");
+            exit;
+         }
+
+         if ($fechaFin !== '' && $fechaFin < $fechaInicio) {
             $_SESSION['error'] = "Error: La fecha de fin no puede ser anterior a la fecha de inicio.";
             header("Location: /SGA-SEBANA/public/junta/create");
             exit;
          }
 
-          if ($this->validarCargo($_POST['cargo'])) {
+         if ($estado === 'finalizado' && $fechaFin === '') {
+            $_SESSION['error'] = "Si el estado es Finalizado, debe indicar la fecha de fin.";
+            header("Location: /SGA-SEBANA/public/junta/create");
+            exit;
+         }
+
+         if ($this->validarCargo($cargo)) {
             $_SESSION['error'] = "Ya existe un miembro con este cargo!";
             header("Location: /SGA-SEBANA/public/junta/create");
             exit;
-            
          }
-  
 
          $juntaId = $model->createMiembroJunta(
-            $_POST['afiliado_id'],
-            $_POST['cargo'],
-            $_POST['estado'],
-            $_POST['fecha_inicio'],
-            $_POST['fecha_fin'],
-            $_POST['periodo'],
-            $_POST['responsabilidades'],
-            $_POST['observaciones'],
+            $afiliadoId,
+            $cargo,
+            $estado,
+            $fechaInicio,
+            $fechaFin === '' ? null : $fechaFin,
+            $periodo === '' ? null : $periodo,
+            $responsabilidades === '' ? null : $responsabilidades,
+            $observaciones === '' ? null : $observaciones,
             date('Y-m-d H:i:s')
-
-
          );
+
+         if (!$juntaId) {
+            $detalle = trim((string) $model->getLastError());
+            $_SESSION['error'] = 'No se pudo registrar el miembro de junta.' . ($detalle !== '' ? (' Detalle: ' . $detalle) : '');
+            header("Location: /SGA-SEBANA/public/junta/create");
+            exit;
+         }
 
          // Log Bitacora
          $bitacora = new Bitacora();
@@ -75,8 +112,15 @@ class JuntaDirectivaController
             'modulo' => 'junta_directiva',
             'entidad' => 'miembro_junta',
             'entidad_id' => $juntaId,
-            'descripcion' => "Registro de nuevo miembro de junta: {$_POST['cargo']}",
-            'datos_nuevos' => $_POST
+            'descripcion' => "Registro de nuevo miembro de junta: {$cargo}",
+            'datos_nuevos' => [
+               'afiliado_id' => $afiliadoId,
+               'cargo' => $cargo,
+               'estado' => $estado,
+               'fecha_inicio' => $fechaInicio,
+               'fecha_fin' => $fechaFin,
+               'periodo' => $periodo
+            ]
          ]);
 
 
@@ -135,20 +179,40 @@ class JuntaDirectivaController
       $model = new JuntaDirectivaModel();
 
       if ($_POST) {
-         if (!empty($_POST['fecha_fin']) && $_POST['fecha_fin'] < $_POST['fecha_inicio']) {
+         $cargo = trim((string) ($_POST['cargo'] ?? ''));
+         $fechaInicio = trim((string) ($_POST['fecha_inicio'] ?? ''));
+         $fechaFin = trim((string) ($_POST['fecha_fin'] ?? ''));
+         $periodo = trim((string) ($_POST['periodo'] ?? ''));
+         $estado = strtolower(trim((string) ($_POST['estado'] ?? 'vigente')));
+         $responsabilidades = trim((string) ($_POST['responsabilidades'] ?? ''));
+         $observaciones = trim((string) ($_POST['observaciones'] ?? ''));
+
+         if ($fechaInicio === '') {
+            die("Error: La fecha de inicio es obligatoria.");
+         }
+
+         if ($fechaFin !== '' && $fechaFin < $fechaInicio) {
             die("Error: La fecha de fin no puede ser anterior a la fecha de inicio.");
          }
 
-         $model->updateMiembroJunta(
+         if ($estado === 'finalizado' && $fechaFin === '') {
+            die("Error: Si el estado es finalizado, debe indicar fecha de fin.");
+         }
+
+         $updated = $model->updateMiembroJunta(
             $id,
-            $_POST['cargo'],
-            $_POST['fecha_inicio'],
-            $_POST['fecha_fin'],
-            $_POST['periodo'],
-            $_POST['estado'],
-            $_POST['responsabilidades'],
-            $_POST['observaciones']
+            $cargo,
+            $fechaInicio,
+            $fechaFin === '' ? null : $fechaFin,
+            $periodo === '' ? null : $periodo,
+            $estado,
+            $responsabilidades === '' ? null : $responsabilidades,
+            $observaciones === '' ? null : $observaciones
          );
+
+         if (!$updated) {
+            die("Error al actualizar el miembro de junta: " . $model->getLastError());
+         }
 
          // Log Bitacora
          $bitacora = new Bitacora();

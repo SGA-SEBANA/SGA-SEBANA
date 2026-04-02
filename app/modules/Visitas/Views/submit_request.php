@@ -19,6 +19,12 @@ ob_start();
         </div>
 
 
+        <?php if (!empty($error)): ?>
+            <div class="alert alert-danger mb-3">
+                <?= htmlspecialchars((string) $error) ?>
+            </div>
+        <?php endif; ?>
+
 
         <!-- FORMULARIO CREAR SOLICITUD -->
         <div class="card mb-4">
@@ -31,6 +37,20 @@ ob_start();
                 <form method="POST" action="/SGA-SEBANA/public/visit-requests/create">
 
                     <div class="row">
+                        <?php if (!empty($es_jefatura)): ?>
+                        <div class="col-md-8 mb-3">
+                            <label>Afiliado</label>
+                            <select name="afiliado_id" class="form-control" required>
+                                <option value="">-- Seleccione un afiliado --</option>
+                                <?php foreach(($afiliados ?? []) as $afiliado): ?>
+                                <option value="<?= (int) ($afiliado['id'] ?? 0) ?>">
+                                    <?= htmlspecialchars((string) ($afiliado['nombre_completo'] ?? '')) ?>
+                                    (<?= htmlspecialchars((string) ($afiliado['cedula'] ?? '')) ?>)
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <?php endif; ?>
 
                         <div class="col-md-4 mb-3">
                             <label>Oficina</label>
