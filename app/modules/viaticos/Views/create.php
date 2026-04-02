@@ -16,7 +16,12 @@ ob_start();
 
         <?php if (!empty($error)): ?>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="zmdi zmdi-alert-triangle me-2"></i> Hubo un error al procesar la solicitud en la base de datos.
+                <i class="zmdi zmdi-alert-triangle me-2"></i>
+                <?php if ($error === 'invalid_afiliado'): ?>
+                    Debe seleccionar un afiliado valido para registrar la solicitud.
+                <?php else: ?>
+                    Hubo un error al procesar la solicitud en la base de datos.
+                <?php endif; ?>
                 <?php
                     $config = require BASE_PATH . '/app/config/config.php';
                     if (($config['debug'] ?? false) && !empty($_SESSION['error_detail'])) {
@@ -36,6 +41,20 @@ ob_start();
                 </div>
                 <div class="card-body">
                     <div class="row">
+                        <?php if (!empty($es_jefatura)): ?>
+                            <div class="col-md-12 mb-3">
+                                <label>Afiliado</label>
+                                <select name="afiliado_id" class="form-control" required>
+                                    <option value="">Seleccione un afiliado...</option>
+                                    <?php foreach (($afiliados ?? []) as $afiliado): ?>
+                                        <option value="<?= (int) ($afiliado['id'] ?? 0) ?>">
+                                            <?= htmlspecialchars((string) ($afiliado['nombre_completo'] ?? '')) ?>
+                                            (<?= htmlspecialchars((string) ($afiliado['cedula'] ?? '')) ?>)
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        <?php endif; ?>
                         <div class="col-md-12 mb-3">
                             <label>Empleado(s) que corresponden a la solicitud</label>
                             <textarea name="empleados" class="form-control" rows="2" placeholder="Ej: Juan Pérez (123), María López (456)"></textarea>

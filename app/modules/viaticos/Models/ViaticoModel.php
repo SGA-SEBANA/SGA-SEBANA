@@ -160,6 +160,10 @@ class ViaticoModel extends ModelBase {
         }
     }
 
+    public function obtenerAfiliadoIdPorUsuario($usuario_id) {
+        return $this->resolverAfiliadoId($usuario_id);
+    }
+
     private function crearAfiliadoBasicoDesdeUsuario($usuario_id) {
         try {
             $stmt = $this->db->prepare("SELECT id, username, correo, nombre_completo FROM usuarios WHERE id = :id LIMIT 1");
@@ -239,6 +243,8 @@ class ViaticoModel extends ModelBase {
 
         return [
             'id' => (int)($row['id'] ?? 0),
+            'usuario_id' => isset($row['usuario_id']) ? (int) $row['usuario_id'] : null,
+            'afiliado_id' => isset($row['afiliado_id']) ? (int) $row['afiliado_id'] : null,
             'consecutivo' => $payload['consecutivo'] ?? ($row['codigo_solicitud'] ?? ''),
             'estado' => $estado,
             'empleados' => $payload['empleados'] ?? null,
@@ -456,10 +462,13 @@ class ViaticoModel extends ModelBase {
 
         $resultado = array_values($storageById);
 
-        $sql = "SELECT id, codigo_solicitud, descripcion_detallada, documentos_respaldo, estado, fecha_creacion, monto_solicitado 
-                FROM {$this->table}
-                WHERE descripcion_detallada LIKE :marker
-                ORDER BY id DESC";
+        $sql = "SELECT s.id, s.afiliado_id, s.codigo_solicitud, s.descripcion_detallada, s.documentos_respaldo, s.estado, s.fecha_creacion, s.monto_solicitado,
+                       u.id AS usuario_id
+                FROM {$this->table} s
+                INNER JOIN afiliados a ON s.afiliado_id = a.id
+                LEFT JOIN usuarios u ON (u.correo = a.correo OR u.username = a.cedula)
+                WHERE s.descripcion_detallada LIKE :marker
+                ORDER BY s.id DESC";
         try {
             $stmt = $this->db->prepare($sql);
             $stmt->execute([':marker' => '%' . self::VIATICO_MARK . '%']);
@@ -492,10 +501,13 @@ class ViaticoModel extends ModelBase {
             return $record;
         }
 
-        $sql = "SELECT id, codigo_solicitud, descripcion_detallada, documentos_respaldo, estado, fecha_creacion, monto_solicitado 
-                FROM {$this->table} 
-                WHERE id = :id 
-                AND descripcion_detallada LIKE :marker
+        $sql = "SELECT s.id, s.afiliado_id, s.codigo_solicitud, s.descripcion_detallada, s.documentos_respaldo, s.estado, s.fecha_creacion, s.monto_solicitado,
+                       u.id AS usuario_id
+                FROM {$this->table} s
+                INNER JOIN afiliados a ON s.afiliado_id = a.id
+                LEFT JOIN usuarios u ON (u.correo = a.correo OR u.username = a.cedula)
+                WHERE s.id = :id
+                AND s.descripcion_detallada LIKE :marker
                 LIMIT 1";
         try {
             $stmt = $this->db->prepare($sql);
@@ -512,6 +524,53 @@ class ViaticoModel extends ModelBase {
             error_log("Error obteniendo viático por ID: " . $e->getMessage());
             return false;
         }
+    }
+
+    public function obtenerPorUsuario($usuario_id) {
+        $storage = $this->listStorage();
+        $storageById = [];
+        foreach ($storage as $record) {
+            if (!empty($record['id']) && (int) ($record['usuario_id'] ?? 0) === (int) $usuario_id) {
+                $storageById[$record['id']] = $record;
+            }
+        }
+
+        $resultado = array_values($storageById);
+        $afiliado_id = $this->resolverAfiliadoId($usuario_id);
+
+        $sql = "SELECT s.id, s.afiliado_id, s.codigo_solicitud, s.descripcion_detallada, s.documentos_respaldo, s.estado, s.fecha_creacion, s.monto_solicitado,
+                       u.id AS usuario_id
+                FROM {$this->table} s
+                INNER JOIN afiliados a ON s.afiliado_id = a.id
+                LEFT JOIN usuarios u ON (u.correo = a.correo OR u.username = a.cedula)
+                WHERE s.descripcion_detallada LIKE :marker
+                  AND (u.id = :usuario_id OR s.afiliado_id = :afiliado_id)
+                ORDER BY s.id DESC";
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':marker' => '%' . self::VIATICO_MARK . '%',
+                ':usuario_id' => $usuario_id,
+                ':afiliado_id' => $afiliado_id ?: 0
+            ]);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($rows as $row) {
+                if (isset($storageById[$row['id']])) {
+                    continue;
+                }
+                $resultado[] = $this->mapRowToViatico($row);
+            }
+        } catch (PDOException $e) {
+            error_log("Error obteniendo viaticos por usuario: " . $e->getMessage());
+        }
+
+        usort($resultado, function ($a, $b) {
+            $fa = strtotime($a['creado_en'] ?? '1970-01-01');
+            $fb = strtotime($b['creado_en'] ?? '1970-01-01');
+            return $fb <=> $fa;
+        });
+
+        return $resultado;
     }
 
     public function cambiarEstado($id, $nuevo_estado) {

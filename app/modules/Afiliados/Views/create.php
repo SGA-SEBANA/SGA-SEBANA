@@ -28,6 +28,34 @@ ob_start();
             </div>
         <?php endif; ?>
 
+        <?php if (!empty($auto_user_notice) && is_array($auto_user_notice)): ?>
+            <?php
+            $noticeType = htmlspecialchars((string) ($auto_user_notice['type'] ?? 'info'));
+            $noticeMessage = htmlspecialchars((string) ($auto_user_notice['message'] ?? ''));
+            $noticeDetail = htmlspecialchars((string) ($auto_user_notice['detail'] ?? ''));
+            $noticeUser = htmlspecialchars((string) ($auto_user_notice['username'] ?? ''));
+            $noticeMail = htmlspecialchars((string) ($auto_user_notice['correo'] ?? ''));
+            $noticeTempPass = htmlspecialchars((string) ($auto_user_notice['temp_password'] ?? ''));
+            ?>
+            <div class="alert alert-<?= $noticeType ?> alert-dismissible fade show" role="alert">
+                <strong><?= $noticeMessage ?></strong>
+                <?php if ($noticeUser !== ''): ?>
+                    <div class="mt-2"><strong>Usuario:</strong> <code><?= $noticeUser ?></code></div>
+                <?php endif; ?>
+                <?php if ($noticeMail !== ''): ?>
+                    <div><strong>Correo:</strong> <code><?= $noticeMail ?></code></div>
+                <?php endif; ?>
+                <?php if ($noticeTempPass !== ''): ?>
+                    <div><strong>Contrasena temporal:</strong> <code><?= $noticeTempPass ?></code></div>
+                    <div class="small text-muted">El afiliado debe cambiar esta contrasena en su primer ingreso.</div>
+                <?php endif; ?>
+                <?php if ($noticeDetail !== ''): ?>
+                    <div class="small text-muted mt-1"><?= $noticeDetail ?></div>
+                <?php endif; ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+
         <form action="/SGA-SEBANA/public/afiliados/store" method="post" enctype="multipart/form-data"
             class="form-horizontal">
             <input type="hidden" name="_csrf_token" value="<?= $_SESSION['_csrf_token'] ?? '' ?>">

@@ -21,6 +21,27 @@ class AuthController extends ControllerBase
         $this->bitacora = new Bitacora();
     }
 
+    private function resolvePostLoginRedirect(array $user): string
+    {
+        $roleName = strtolower(trim((string) ($user['rol_nombre'] ?? '')));
+
+        switch ($roleName) {
+            case 'administrador general':
+                return '/SGA-SEBANA/public/home';
+            case 'administrador de rrll':
+                return '/SGA-SEBANA/public/casos-rrll';
+            case 'administrador de solicitudes':
+                return '/SGA-SEBANA/public/admin/visit-requests';
+            case 'operador':
+                return '/SGA-SEBANA/public/afiliados';
+            case 'auditor':
+                return '/SGA-SEBANA/public/bitacora';
+            case 'consulta':
+            default:
+                return '/SGA-SEBANA/public/visit-requests';
+        }
+    }
+
     /**
      * Show login form
      */
@@ -106,6 +127,14 @@ class AuthController extends ControllerBase
         $this->userModel->updateLastAccess($user['id']);
 
         $userWithRole = $this->userModel->findWithRole($user['id']);
+        $permisos = $userWithRole['permisos'] ?? null;
+
+        if (is_string($permisos)) {
+            $decoded = json_decode($permisos, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $permisos = $decoded;
+            }
+        }
 
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_authenticated'] = true;
@@ -117,6 +146,7 @@ class AuthController extends ControllerBase
             'rol_id' => $user['rol_id'],
             'rol_nombre' => $userWithRole['rol_nombre'] ?? 'Sin rol',
             'nivel_acceso' => $userWithRole['nivel_acceso'] ?? 'basico',
+            'permisos' => $permisos,
         ];
 
         $this->bitacora->logLogin($user['id'], $user['username']);
@@ -127,7 +157,7 @@ class AuthController extends ControllerBase
             return;
         }
 
-        $this->redirect('/SGA-SEBANA/public/home');
+        $this->redirect($this->resolvePostLoginRedirect($_SESSION['user']));
     }
 
     /**

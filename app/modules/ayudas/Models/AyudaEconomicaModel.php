@@ -208,6 +208,10 @@ class AyudaEconomicaModel extends ModelBase {
         }
     }
 
+    public function obtenerAfiliadoIdPorUsuario($usuario_id) {
+        return $this->resolverAfiliadoId($usuario_id);
+    }
+
     private function obtenerUsuario($usuario_id) {
         try {
             $stmt = $this->db->prepare("SELECT id, username, correo, nombre_completo FROM usuarios WHERE id = :id LIMIT 1");
@@ -271,13 +275,15 @@ class AyudaEconomicaModel extends ModelBase {
         return $record;
     }
 
-    public function crearSolicitud($usuario_id, $motivo, $monto_solicitado) {
+    public function crearSolicitud($usuario_id, $motivo, $monto_solicitado, $afiliado_id_override = null) {
         $this->lastError = null;
         if ($this->storageMode) {
-            return $this->crearSolicitudStorage($usuario_id, $motivo, $monto_solicitado);
+            return $this->crearSolicitudStorage($usuario_id, $motivo, $monto_solicitado, $afiliado_id_override);
         }
 
-        $afiliado_id = $this->resolverAfiliadoId($usuario_id);
+        $afiliado_id = !empty($afiliado_id_override)
+            ? (int) $afiliado_id_override
+            : $this->resolverAfiliadoId($usuario_id);
         if (!$afiliado_id) {
             $this->lastError = "No se pudo resolver afiliado_id para usuario_id: " . $usuario_id;
             return false;
@@ -314,8 +320,10 @@ class AyudaEconomicaModel extends ModelBase {
         }
     }
 
-    private function crearSolicitudStorage($usuario_id, $motivo, $monto_solicitado) {
-        $afiliado_id = $this->resolverAfiliadoId($usuario_id);
+    private function crearSolicitudStorage($usuario_id, $motivo, $monto_solicitado, $afiliado_id_override = null) {
+        $afiliado_id = !empty($afiliado_id_override)
+            ? (int) $afiliado_id_override
+            : $this->resolverAfiliadoId($usuario_id);
         $usuario = $this->obtenerUsuario($usuario_id);
 
         $motivo = trim((string)$motivo);
@@ -383,6 +391,7 @@ class AyudaEconomicaModel extends ModelBase {
         $evidenciaId = (int)round(microtime(true) * 1000);
         $record['evidencias'][] = [
             'id' => $evidenciaId,
+            'ayuda_id' => (int) $ayuda_id,
             'nombre_archivo' => $nombre_archivo,
             'ruta_archivo' => $ruta_archivo,
             'estado_solicitud_al_subir' => $estado_solicitud,
@@ -480,6 +489,54 @@ class AyudaEconomicaModel extends ModelBase {
         return $rows;
     }
 
+    public function obtenerPorUsuario($usuario_id) {
+        $storage = $this->listStorage();
+        $storageById = [];
+        foreach ($storage as $record) {
+            if (!empty($record['id']) && (int) ($record['usuario_id'] ?? 0) === (int) $usuario_id) {
+                $storageById[$record['id']] = $record;
+            }
+        }
+
+        $rows = array_values($storageById);
+        $afiliado_id = $this->resolverAfiliadoId($usuario_id);
+
+        $sql = "SELECT s.*, a.nombre_completo, a.correo, u.id AS usuario_id
+                FROM {$this->table} s
+                INNER JOIN afiliados a ON s.afiliado_id = a.id
+                LEFT JOIN usuarios u ON u.correo = a.correo
+                WHERE s.descripcion_detallada NOT LIKE :marker
+                  AND (u.id = :usuario_id OR s.afiliado_id = :afiliado_id)
+                ORDER BY s.fecha_creacion DESC";
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':marker' => '%' . self::VIATICO_MARK . '%',
+                ':usuario_id' => $usuario_id,
+                ':afiliado_id' => $afiliado_id ?: 0
+            ]);
+            $dbRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($dbRows as $row) {
+                if (isset($storageById[$row['id']])) {
+                    continue;
+                }
+                $row['fecha_solicitud'] = $row['fecha_creacion'] ?? null;
+                $row['estado'] = $this->mapEstadoFromDb($row);
+                $rows[] = $row;
+            }
+        } catch (PDOException $e) {
+            error_log("Error obteniendo ayudas por usuario: " . $e->getMessage());
+        }
+
+        usort($rows, function ($a, $b) {
+            $fa = strtotime($a['fecha_solicitud'] ?? $a['fecha_creacion'] ?? '1970-01-01');
+            $fb = strtotime($b['fecha_solicitud'] ?? $b['fecha_creacion'] ?? '1970-01-01');
+            return $fb <=> $fa;
+        });
+
+        return $rows;
+    }
+
     public function obtenerEvidenciaPorId($evidencia_id) {
         $storage = $this->listStorage();
         foreach ($storage as $record) {
@@ -488,6 +545,9 @@ class AyudaEconomicaModel extends ModelBase {
             }
             foreach ($record['evidencias'] as $evidencia) {
                 if (isset($evidencia['id']) && (string)$evidencia['id'] === (string)$evidencia_id) {
+                    if (!isset($evidencia['ayuda_id'])) {
+                        $evidencia['ayuda_id'] = (int) ($record['id'] ?? 0);
+                    }
                     if (!isset($evidencia['path']) && isset($evidencia['ruta_archivo'])) {
                         $evidencia['path'] = $evidencia['ruta_archivo'];
                     }
@@ -496,7 +556,7 @@ class AyudaEconomicaModel extends ModelBase {
             }
         }
 
-        $sql = "SELECT e.* 
+        $sql = "SELECT e.*, e.entidad_id AS ayuda_id
                 FROM {$this->table_evidencias} e
                 WHERE e.id = :id
                 AND e.entidad_tipo = 'solicitud_ayuda'

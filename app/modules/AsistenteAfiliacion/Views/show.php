@@ -20,6 +20,14 @@ $estado = strtolower(trim((string) ($solicitud['estado'] ?? '')));
             <div class="alert alert-danger">No se pudo actualizar el estado.</div>
         <?php endif; ?>
 
+        <?php if (!empty($flash_success)): ?>
+            <div class="alert alert-info"><?= htmlspecialchars((string) $flash_success) ?></div>
+        <?php endif; ?>
+
+        <?php if (!empty($flash_error)): ?>
+            <div class="alert alert-warning"><?= htmlspecialchars((string) $flash_error) ?></div>
+        <?php endif; ?>
+
         <div class="row">
             <div class="col-lg-7">
                 <div class="card shadow-sm mb-4">

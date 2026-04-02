@@ -2,6 +2,7 @@
 
 // Force login check - redirect to login if not authenticated
 use App\Modules\Usuarios\Helpers\SecurityHelper;
+use App\Modules\Usuarios\Helpers\AccessControl;
 
 if (!SecurityHelper::isAuthenticated()) {
     header('Location: /SGA-SEBANA/public/login');
@@ -22,6 +23,35 @@ $totalNoLeidas = 0;
 if ($userId) {
     $notificaciones = $notiModel->getUnreadByUser($userId);
     $totalNoLeidas = $notiModel->countUnread($userId);
+}
+
+$accessRank = AccessControl::levelRank($authUser['nivel_acceso'] ?? 'basico');
+$can = static function (string $required) use ($accessRank): bool {
+    return $accessRank >= AccessControl::levelRank($required);
+};
+
+$roleKey = AccessControl::currentRoleKey();
+$isAffiliateRole = AccessControl::isAffiliateRole();
+$isAuditorRole = ($roleKey === 'auditor');
+$canAdminUsers = $can('total');
+$canAdminRrll = in_array($roleKey, ['admin_general', 'admin_rrll'], true);
+$canAdminSolicitudes = in_array($roleKey, ['admin_general', 'admin_solicitudes'], true);
+$canHighAccess = $can('alto') && !$isAuditorRole;
+$canOperational = $can('medio') && !$isAuditorRole;
+$canReports = $can('medio');
+$isAdminPanelRole = in_array($roleKey, ['admin_general', 'admin_rrll', 'admin_solicitudes'], true);
+
+$panelUrl = '/SGA-SEBANA/public/home';
+if ($isAffiliateRole) {
+    $panelUrl = '/SGA-SEBANA/public/visit-requests';
+} elseif ($roleKey === 'operador') {
+    $panelUrl = '/SGA-SEBANA/public/afiliados';
+} elseif ($roleKey === 'auditor') {
+    $panelUrl = '/SGA-SEBANA/public/bitacora';
+} elseif ($roleKey === 'admin_rrll') {
+    $panelUrl = '/SGA-SEBANA/public/casos-rrll';
+} elseif ($roleKey === 'admin_solicitudes') {
+    $panelUrl = '/SGA-SEBANA/public/admin/visit-requests';
 }
 
 ?>
@@ -79,21 +109,71 @@ if ($userId) {
                 <div class="container-fluid">
                     <ul class="navbar-mobile__list list-unstyled">
                         <li>
-                            <a href="/SGA-SEBANA/public/home">
-                                <i class="fas fa-tachometer-alt"></i>Panel</a>
+                            <a href="<?= $panelUrl ?>">
+                                <i class="fas fa-tachometer-alt"></i><?= $isAdminPanelRole ? 'Panel' : 'Inicio' ?></a>
                         </li>
-                        <li>
-                            <a href="/SGA-SEBANA/public/afiliados">
-                                <i class="fas fa-users"></i>Afiliados</a>
-                        </li>
-                        <li>
-                            <a href="/SGA-SEBANA/public/puestos">
-                                <i class="fas fa-briefcase"></i>Puestos</a>
-                        </li>
-                        <li>
-                            <a href="/SGA-SEBANA/public/vacaciones">
-                                <i class="fa-solid fa-umbrella-beach"></i>Vacaciones</a>
-                        </li>
+                        <?php if ($canOperational): ?>
+                            <li>
+                                <a href="/SGA-SEBANA/public/afiliados">
+                                    <i class="fas fa-users"></i>Afiliados</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/puestos">
+                                    <i class="fas fa-briefcase"></i>Puestos</a>
+                            </li>
+                        <?php endif; ?>
+                        <?php if ($isAffiliateRole): ?>
+                            <li>
+                                <a href="/SGA-SEBANA/public/vacaciones">
+                                    <i class="fa-solid fa-umbrella-beach"></i>Vacaciones</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ayudas">
+                                    <i class="fa-solid fa-hand-holding-dollar"></i>Ayudas</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/viaticos">
+                                    <i class="fa-solid fa-receipt"></i>Viaticos</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/visit-requests">
+                                    <i class="fa-solid fa-building-user"></i>Visitas</a>
+                            </li>
+                        <?php endif; ?>
+                        <?php if ($canHighAccess): ?>
+                            <li>
+                                <a href="/SGA-SEBANA/public/vacaciones">
+                                    <i class="fa-solid fa-umbrella-beach"></i>Solicitudes Vacaciones</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/ayudas">
+                                    <i class="fa-solid fa-hand-holding-dollar"></i>Solicitudes Ayudas</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/viaticos">
+                                    <i class="fa-solid fa-receipt"></i>Solicitudes Viaticos</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/visit-requests">
+                                    <i class="fa-solid fa-building-user"></i>Solicitudes Visitas</a>
+                            </li>
+                        <?php endif; ?>
+                        <?php if ($canAdminSolicitudes): ?>
+                            <li>
+                                <a href="/SGA-SEBANA/public/admin/visit-requests">
+                                    <i class="fa-solid fa-envelopes-bulk"></i>Admin Visitas</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/asistente-afiliacion/solicitudes">
+                                    <i class="fa-solid fa-file-signature"></i>Afiliacion</a>
+                            </li>
+                        <?php endif; ?>
+                        <?php if ($canAdminRrll): ?>
+                            <li>
+                                <a href="/SGA-SEBANA/public/casos-rrll">
+                                    <i class="fa-solid fa-people-group"></i>Casos RRLL</a>
+                            </li>
+                        <?php endif; ?>
                     </ul>
                 </div>
             </nav>
@@ -109,69 +189,80 @@ if ($userId) {
                 <nav class="navbar-sidebar">
                     <ul class="list-unstyled navbar__list">
                         <li class="active">
-                            <a href="/SGA-SEBANA/public/home">
-                                <i class="fas fa-tachometer-alt"></i>Panel de Control</a>
+                            <a href="<?= $panelUrl ?>">
+                                <i class="fas fa-tachometer-alt"></i><?= $isAdminPanelRole ? 'Panel de Control' : 'Inicio' ?></a>
                         </li>
 
-                        <li class="has-sub">
-                            <a class="js-arrow" href="#">
-                                <i class="fas fa-users"></i>Gestión de Afiliados</a>
-                            <ul class="list-unstyled navbar__sub-list js-sub-list">
-                                <li><a href="/SGA-SEBANA/public/afiliados"><i class="fas fa-user-friends"></i> Lista de
-                                        Afiliados</a></li>
-                                <li><a href="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado"><i
-                                            class="fas fa-user-times"></i> Exclusiones</a></li>
-                                <li><a href="/SGA-SEBANA/public/Categorias"><i class="fas fa-tags"></i> Categorías</a>
-                                </li>
-                            </ul>
-                        </li>
+                        <?php if ($canOperational): ?>
+                            <li class="has-sub">
+                                <a class="js-arrow" href="#">
+                                    <i class="fas fa-users"></i>Gestion de Afiliados</a>
+                                <ul class="list-unstyled navbar__sub-list js-sub-list">
+                                    <li><a href="/SGA-SEBANA/public/afiliados"><i class="fas fa-user-friends"></i> Lista de Afiliados</a></li>
+                                    <li><a href="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado"><i class="fas fa-user-times"></i> Exclusiones</a></li>
+                                    <li><a href="/SGA-SEBANA/public/Categorias"><i class="fas fa-tags"></i> Categorias</a></li>
+                                </ul>
+                            </li>
 
-                        <li class="has-sub">
-                            <a class="js-arrow" href="#">
-                                <i class="fas fa-sitemap"></i>Estructura Orgánica</a>
-                            <ul class="list-unstyled navbar__sub-list js-sub-list">
-                                <li><a href="/SGA-SEBANA/public/junta"><i class="fas fa-user-tie"></i> Junta
-                                        Directiva</a></li>
-                                <li><a href="/SGA-SEBANA/public/puestos"><i class="fas fa-briefcase"></i> Puestos</a>
-                                </li>
-                            </ul>
-                        </li>
+                            <li class="has-sub">
+                                <a class="js-arrow" href="#">
+                                    <i class="fas fa-sitemap"></i>Estructura Organica</a>
+                                <ul class="list-unstyled navbar__sub-list js-sub-list">
+                                    <li><a href="/SGA-SEBANA/public/junta"><i class="fas fa-user-tie"></i> Junta Directiva</a></li>
+                                    <li><a href="/SGA-SEBANA/public/puestos"><i class="fas fa-briefcase"></i> Puestos</a></li>
+                                </ul>
+                            </li>
+                        <?php endif; ?>
 
-                        <li class="has-sub">
-                            <a class="js-arrow" href="#">
-                                <i class="fas fa-file-invoice-dollar"></i>Trámites y Solicitudes</a>
-                            <ul class="list-unstyled navbar__sub-list js-sub-list">
-                                <li><a href="/SGA-SEBANA/public/visit-requests"><i
-                                            class="fa-solid fa-building-user"></i> Solicitar Visita</a></li>
-                                <li><a href="/SGA-SEBANA/public/admin/visit-requests"><i
-                                            class="fa-solid fa-envelopes-bulk"></i> Admin. Visitas</a></li>
-                                <li><a href="/SGA-SEBANA/public/ayudas"><i class="fa-solid fa-hand-holding-dollar"></i>
-                                        Ayudas </a></li>
-                                <li><a href="/SGA-SEBANA/public/viaticos"><i class="fa-solid fa-receipt"></i>
-                                        Viáticos</a></li>
-                                <li><a href="/SGA-SEBANA/public/casos-rrll"><i class="fa-solid fa-people-group"></i>
-                                        Casos RRLL</a></li>
-                                <li><a href="/SGA-SEBANA/public/vacaciones"><i class="fa-solid fa-umbrella-beach"></i>
-                                        Vacaciones</a></li>        
-                                <li><a href="/SGA-SEBANA/public/asistente-afiliacion/solicitudes"><i class="fa-solid fa-file-signature"></i>
-                                        Afiliacion SEBANA</a></li>
-                                <li>
-                                    <a href="/SGA-SEBANA/public/oficinas"><i class="fa-solid fa-building"></i>
-                                        Oficinas</a>
-                                </li>
-                            </ul>
-                        </li>
+                        <?php if ($isAffiliateRole || $canAdminSolicitudes || $canAdminRrll || $canOperational || $canHighAccess): ?>
+                            <li class="has-sub">
+                                <a class="js-arrow" href="#">
+                                    <i class="fas fa-file-invoice-dollar"></i>Tramites y Solicitudes</a>
+                                <ul class="list-unstyled navbar__sub-list js-sub-list">
+                                    <?php if ($isAffiliateRole): ?>
+                                        <li><a href="/SGA-SEBANA/public/visit-requests"><i class="fa-solid fa-building-user"></i> Solicitar Visita</a></li>
+                                        <li><a href="/SGA-SEBANA/public/ayudas"><i class="fa-solid fa-hand-holding-dollar"></i> Ayudas</a></li>
+                                        <li><a href="/SGA-SEBANA/public/viaticos"><i class="fa-solid fa-receipt"></i> Viaticos</a></li>
+                                        <li><a href="/SGA-SEBANA/public/vacaciones"><i class="fa-solid fa-umbrella-beach"></i> Vacaciones</a></li>
+                                    <?php endif; ?>
 
-                        <li class="has-sub">
-                            <a class="js-arrow" href="#">
-                                <i class="fas fa-cogs"></i>Configuración</a>
-                            <ul class="list-unstyled navbar__sub-list js-sub-list">
-                                <li><a href="/SGA-SEBANA/public/users"><i class="fas fa-user-shield"></i> Usuarios</a>
-                                </li>
-                                <li><a href="/SGA-SEBANA/public/bitacora"><i class="fas fa-history"></i> Bitácora de
-                                        Sistema</a></li>
-                            </ul>
-                        </li>
+                                    <?php if ($canHighAccess): ?>
+                                        <li><a href="/SGA-SEBANA/public/visit-requests"><i class="fa-solid fa-building-user"></i> Visitas</a></li>
+                                        <li><a href="/SGA-SEBANA/public/ayudas"><i class="fa-solid fa-hand-holding-dollar"></i> Ayudas</a></li>
+                                        <li><a href="/SGA-SEBANA/public/viaticos"><i class="fa-solid fa-receipt"></i> Viaticos</a></li>
+                                        <li><a href="/SGA-SEBANA/public/vacaciones"><i class="fa-solid fa-umbrella-beach"></i> Vacaciones</a></li>
+                                    <?php endif; ?>
+
+                                    <?php if ($canAdminSolicitudes): ?>
+                                        <li><a href="/SGA-SEBANA/public/admin/visit-requests"><i class="fa-solid fa-envelopes-bulk"></i> Admin. Visitas</a></li>
+                                        <li><a href="/SGA-SEBANA/public/asistente-afiliacion/solicitudes"><i class="fa-solid fa-file-signature"></i> Afiliacion SEBANA</a></li>
+                                    <?php endif; ?>
+
+                                    <?php if ($canAdminRrll): ?>
+                                        <li><a href="/SGA-SEBANA/public/casos-rrll"><i class="fa-solid fa-people-group"></i> Casos RRLL</a></li>
+                                    <?php endif; ?>
+
+                                    <?php if ($canOperational): ?>
+                                        <li><a href="/SGA-SEBANA/public/oficinas"><i class="fa-solid fa-building"></i> Oficinas</a></li>
+                                    <?php endif; ?>
+                                </ul>
+                            </li>
+                        <?php endif; ?>
+
+                        <?php if ($canReports || $canAdminUsers): ?>
+                            <li class="has-sub">
+                                <a class="js-arrow" href="#">
+                                    <i class="fas fa-cogs"></i>Configuracion</a>
+                                <ul class="list-unstyled navbar__sub-list js-sub-list">
+                                    <?php if ($canAdminUsers): ?>
+                                        <li><a href="/SGA-SEBANA/public/users"><i class="fas fa-user-shield"></i> Usuarios</a></li>
+                                    <?php endif; ?>
+                                    <?php if ($canReports): ?>
+                                        <li><a href="/SGA-SEBANA/public/bitacora"><i class="fas fa-history"></i> Bitacora de Sistema</a></li>
+                                    <?php endif; ?>
+                                </ul>
+                            </li>
+                        <?php endif; ?>
                     </ul>
                 </nav>
             </div>
@@ -271,6 +362,11 @@ if ($userId) {
             <div class="main-content">
                 <div class="section__content section__content--p30">
                     <div class="container-fluid">
+                        <?php if (isset($_GET['error']) && $_GET['error'] === 'no_autorizado'): ?>
+                            <div class="alert alert-danger mt-3">
+                                No tiene permisos para acceder a esta seccion segun su rol.
+                            </div>
+                        <?php endif; ?>
                         <?= $content ?? '' ?>
                     </div>
                 </div>

@@ -100,7 +100,20 @@ $status = $status ?? null;
             </div>
             <div class="col-md-6 form-group mb-3">
                 <label>Oficina BNCR *</label>
-                <input type="text" class="form-control" name="oficina_bncr" value="<?= $get('oficina_bncr') ?>" required>
+                <select class="form-control" name="oficina_id" required>
+                    <option value="">Seleccione una oficina</option>
+                    <?php foreach (($oficinas ?? []) as $oficina): ?>
+                        <?php
+                        $oficinaId = (string) ($oficina['id'] ?? '');
+                        $selectedId = (string) ($form['oficina_id'] ?? '');
+                        $selected = ($selectedId !== '' && $selectedId === $oficinaId)
+                            || ($selectedId === '' && $get('oficina_bncr') === (string) ($oficina['nombre'] ?? ''));
+                        ?>
+                        <option value="<?= htmlspecialchars($oficinaId) ?>" <?= $selected ? 'selected' : '' ?>>
+                            <?= htmlspecialchars((string) ($oficina['nombre'] ?? '')) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             </div>
             <div class="col-md-6 form-group mb-3">
                 <label>Departamento *</label>
@@ -109,6 +122,21 @@ $status = $status ?? null;
             <div class="col-md-6 form-group mb-3">
                 <label>Puesto *</label>
                 <input type="text" class="form-control" name="puesto" value="<?= $get('puesto') ?>" required>
+            </div>
+            <div class="col-md-6 form-group mb-3">
+                <label>Categoria de afiliacion</label>
+                <select class="form-control" name="categoria_id">
+                    <option value="">Seleccione una categoria</option>
+                    <?php foreach (($categorias ?? []) as $categoria): ?>
+                        <?php
+                        $categoriaId = (string) ($categoria['id'] ?? '');
+                        $selectedCategoria = (string) ($form['categoria_id'] ?? '') === $categoriaId;
+                        ?>
+                        <option value="<?= htmlspecialchars($categoriaId) ?>" <?= $selectedCategoria ? 'selected' : '' ?>>
+                            <?= htmlspecialchars((string) ($categoria['nombre'] ?? '')) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             </div>
             <div class="col-md-6 form-group mb-3">
                 <label>Fecha ingreso BNCR *</label>

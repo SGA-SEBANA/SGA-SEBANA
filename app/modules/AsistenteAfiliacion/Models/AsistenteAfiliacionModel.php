@@ -63,10 +63,62 @@ class AsistenteAfiliacionModel extends ModelBase
         return $phone;
     }
 
+    public function normalizeEmail($correo)
+    {
+        return strtolower(trim((string) $correo));
+    }
+
     public function isTipoUsuarioPermitido($tipo)
     {
         $tipo = strtolower(trim((string) $tipo));
         return in_array($tipo, ['activo', 'jubilado'], true);
+    }
+
+    public function getOficinasDisponibles()
+    {
+        $sql = "SELECT id, codigo, nombre
+                FROM oficinas
+                WHERE activo = 1
+                ORDER BY nombre ASC";
+
+        try {
+            return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            $this->lastError = $e->getMessage();
+            return [];
+        }
+    }
+
+    public function getCategoriasAfiliacion()
+    {
+        $sql = "SELECT id, nombre
+                FROM categorias
+                WHERE estado = 'activo' AND tipo IN ('afiliado', 'general')
+                ORDER BY nombre ASC";
+
+        try {
+            return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            $this->lastError = $e->getMessage();
+            return [];
+        }
+    }
+
+    public function getNombreOficinaById($id)
+    {
+        $id = (int) $id;
+        if ($id <= 0) {
+            return null;
+        }
+
+        try {
+            $stmt = $this->db->prepare("SELECT nombre FROM oficinas WHERE id = :id LIMIT 1");
+            $stmt->execute([':id' => $id]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $row['nombre'] ?? null;
+        } catch (PDOException $e) {
+            return null;
+        }
     }
 
     public function read($id)
@@ -195,6 +247,53 @@ class AsistenteAfiliacionModel extends ModelBase
         return $this->cedulaExisteEnSolicitudes($cedula, $excludeId);
     }
 
+    public function correoExisteEnAfiliados($correo)
+    {
+        $correo = $this->normalizeEmail($correo);
+        if ($correo === '') {
+            return false;
+        }
+
+        try {
+            $stmt = $this->db->prepare("SELECT COUNT(*) FROM afiliados WHERE LOWER(correo) = :correo");
+            $stmt->execute([':correo' => $correo]);
+            return ((int) $stmt->fetchColumn()) > 0;
+        } catch (PDOException $e) {
+            $this->lastError = $e->getMessage();
+            return false;
+        }
+    }
+
+    public function correoExisteEnSolicitudes($correo, $excludeId = null)
+    {
+        $correo = $this->normalizeEmail($correo);
+        if ($correo === '') {
+            return false;
+        }
+
+        foreach ($this->listAll() as $row) {
+            if (!empty($excludeId) && (string) ($row['id'] ?? '') === (string) $excludeId) {
+                continue;
+            }
+
+            $actual = $this->normalizeEmail($row['correo'] ?? '');
+            if ($actual !== '' && $actual === $correo) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function correoDuplicado($correo, $excludeId = null)
+    {
+        if ($this->correoExisteEnAfiliados($correo)) {
+            return true;
+        }
+
+        return $this->correoExisteEnSolicitudes($correo, $excludeId);
+    }
+
     public function findDraftByCedula($cedula)
     {
         $cedulaNormal = $this->normalizeCedula($cedula);
@@ -252,6 +351,8 @@ class AsistenteAfiliacionModel extends ModelBase
         $record['fecha_nacimiento'] = $data['fecha_nacimiento'];
         $record['numero_empleado'] = $data['numero_empleado'];
         $record['oficina_bncr'] = $data['oficina_bncr'];
+        $record['oficina_id'] = !empty($data['oficina_id']) ? (int) $data['oficina_id'] : null;
+        $record['categoria_id'] = !empty($data['categoria_id']) ? (int) $data['categoria_id'] : null;
         $record['departamento'] = $data['departamento'];
         $record['puesto'] = $data['puesto'];
         $record['fecha_ingreso_bncr'] = $data['fecha_ingreso_bncr'];
@@ -346,6 +447,8 @@ class AsistenteAfiliacionModel extends ModelBase
         $record['fecha_nacimiento'] = $data['fecha_nacimiento'];
         $record['numero_empleado'] = $data['numero_empleado'];
         $record['oficina_bncr'] = $data['oficina_bncr'];
+        $record['oficina_id'] = !empty($data['oficina_id']) ? (int) $data['oficina_id'] : null;
+        $record['categoria_id'] = !empty($data['categoria_id']) ? (int) $data['categoria_id'] : null;
         $record['departamento'] = $data['departamento'];
         $record['puesto'] = $data['puesto'];
         $record['fecha_ingreso_bncr'] = $data['fecha_ingreso_bncr'];

@@ -8,6 +8,7 @@ use App\Modules\Usuarios\Helpers\SecurityHelper;
 
 $isEdit = $action === 'edit';
 $formAction = $isEdit ? "/SGA-SEBANA/public/users/{$user['id']}" : '/SGA-SEBANA/public/users';
+$canManageUsers = $canManageUsers ?? true;
 
 ob_start();
 ?>
@@ -19,8 +20,8 @@ ob_start();
             <h2 class="title-1">
                 <?= $isEdit ? 'Editar Usuario' : 'Nuevo Usuario' ?>
             </h2>
-            <a href="/SGA-SEBANA/public/users" class="au-btn au-btn-icon au-btn--blue au-btn--small">
-                <i class="zmdi zmdi-arrow-left"></i> Volver a la lista
+            <a href="<?= $canManageUsers ? '/SGA-SEBANA/public/users' : '/SGA-SEBANA/public/home' ?>" class="au-btn au-btn-icon au-btn--blue au-btn--small">
+                <i class="zmdi zmdi-arrow-left"></i> <?= $canManageUsers ? 'Volver a la lista' : 'Volver al panel' ?>
             </a>
         </div>
 
@@ -62,7 +63,7 @@ ob_start();
                                     class="form-control <?= isset($errors['username']) ? 'is-invalid' : '' ?>"
                                     placeholder="Nombre de usuario"
                                     value="<?= SecurityHelper::e($old['username'] ?? $user['username'] ?? '') ?>"
-                                    required minlength="3">
+                                    required minlength="3" <?= (!$canManageUsers && $isEdit) ? 'readonly' : '' ?>>
                             </div>
                             <small class="form-text text-muted">Mínimo 3 caracteres, sin espacios.</small>
                         </div>
@@ -74,7 +75,7 @@ ob_start();
                                 <input type="email" id="correo" name="correo"
                                     class="form-control <?= isset($errors['correo']) ? 'is-invalid' : '' ?>"
                                     placeholder="correo@ejemplo.com"
-                                    value="<?= SecurityHelper::e($old['correo'] ?? $user['correo'] ?? '') ?>" required>
+                                    value="<?= SecurityHelper::e($old['correo'] ?? $user['correo'] ?? '') ?>" required <?= (!$canManageUsers && $isEdit) ? 'readonly' : '' ?>>
                             </div>
                         </div>
                     </div>
@@ -104,16 +105,21 @@ ob_start();
                         <div class="col-md-12">
                             <label for="rol_id" class="form-control-label">Rol de Usuario <span
                                     class="text-danger">*</span></label>
-                            <select name="rol_id" id="rol_id"
-                                class="form-control <?= isset($errors['rol_id']) ? 'is-invalid' : '' ?>" required>
-                                <option value="">-- Seleccione un rol --</option>
-                                <?php foreach ($roles as $role): ?>
-                                    <option value="<?= $role['id'] ?>" <?= ($old['rol_id'] ?? $user['rol_id'] ?? '') == $role['id'] ? 'selected' : '' ?>>
-                                        <?= SecurityHelper::e($role['nombre']) ?> (Acceso Nivel
-                                        <?= SecurityHelper::e($role['nivel_acceso']) ?>)
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                            <?php if ($canManageUsers || !$isEdit): ?>
+                                <select name="rol_id" id="rol_id"
+                                    class="form-control <?= isset($errors['rol_id']) ? 'is-invalid' : '' ?>" required>
+                                    <option value="">-- Seleccione un rol --</option>
+                                    <?php foreach ($roles as $role): ?>
+                                        <option value="<?= $role['id'] ?>" <?= ($old['rol_id'] ?? $user['rol_id'] ?? '') == $role['id'] ? 'selected' : '' ?>>
+                                            <?= SecurityHelper::e($role['nombre']) ?> (Acceso Nivel
+                                            <?= SecurityHelper::e($role['nivel_acceso']) ?>)
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            <?php else: ?>
+                                <input type="hidden" name="rol_id" value="<?= (int) ($user['rol_id'] ?? 0) ?>">
+                                <input type="text" class="form-control" value="<?= SecurityHelper::e($authUser['rol_nombre'] ?? 'Sin rol') ?>" readonly>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -153,9 +159,9 @@ ob_start();
                 </div>
                 <div class="card-footer text-right">
                     <button type="submit" class="btn btn-primary btn-sm">
-                        <i class="zmdi zmdi-save"></i> <?= $isEdit ? 'Actualizar Usuario' : 'Crear Usuario' ?>
+                        <i class="zmdi zmdi-save"></i> <?= $isEdit ? ($canManageUsers ? 'Actualizar Usuario' : 'Actualizar Perfil') : 'Crear Usuario' ?>
                     </button>
-                    <a href="/SGA-SEBANA/public/users" class="btn btn-danger btn-sm ml-2">
+                    <a href="<?= $canManageUsers ? '/SGA-SEBANA/public/users' : '/SGA-SEBANA/public/home' ?>" class="btn btn-danger btn-sm ml-2">
                         <i class="zmdi zmdi-close"></i> Cancelar
                     </a>
                 </div>

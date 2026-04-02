@@ -20,6 +20,8 @@ ob_start();
                         echo '<strong>Error:</strong> Ocurrio un problema al guardar la solicitud.';
                     } elseif ($error === 'invalid_dates') {
                         echo '<strong>Error:</strong> Verifique las fechas ingresadas.';
+                    } elseif ($error === 'invalid_afiliado') {
+                        echo '<strong>Error:</strong> Debe seleccionar un afiliado valido.';
                     } else {
                         echo 'Ocurrio un error inesperado.';
                     }
@@ -37,6 +39,24 @@ ob_start();
             </div>
             <div class="card-body card-block px-5 py-4">
                 <form action="/SGA-SEBANA/public/vacaciones/store" method="post" class="form-horizontal">
+                    <?php if (!empty($es_jefatura)): ?>
+                        <div class="row form-group mb-4">
+                            <div class="col col-md-3">
+                                <label for="afiliado_id" class="form-control-label font-weight-bold">Afiliado</label>
+                            </div>
+                            <div class="col-12 col-md-9">
+                                <select id="afiliado_id" name="afiliado_id" class="form-control" required>
+                                    <option value="">Seleccione un afiliado...</option>
+                                    <?php foreach (($afiliados ?? []) as $afiliado): ?>
+                                        <option value="<?= (int) ($afiliado['id'] ?? 0) ?>">
+                                            <?= htmlspecialchars((string) ($afiliado['nombre_completo'] ?? '')) ?>
+                                            (<?= htmlspecialchars((string) ($afiliado['cedula'] ?? '')) ?>)
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                    <?php endif; ?>
 
                     <div class="row form-group mb-4">
                         <div class="col col-md-3">

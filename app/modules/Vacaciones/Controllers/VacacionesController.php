@@ -2,9 +2,12 @@
 namespace App\Modules\Vacaciones\Controllers;
 
 use App\Core\ControllerBase;
+use App\Modules\Afiliados\Models\Afiliados;
 use App\Modules\Vacaciones\Models\VacacionesModel;
 use App\Modules\Visitas\Models\Notification;
 use App\Modules\Usuarios\Models\User;
+use App\Modules\Usuarios\Helpers\AccessControl;
+use App\Modules\Usuarios\Models\Bitacora;
 
 class VacacionesController extends ControllerBase
 {
@@ -50,14 +53,7 @@ class VacacionesController extends ControllerBase
 
     private function isManager()
     {
-        $nivel = $_SESSION['user']['nivel_acceso'] ?? null;
-
-        if (is_numeric($nivel)) {
-            return ((int) $nivel) >= 50;
-        }
-
-        $nivel = strtolower((string) $nivel);
-        return in_array($nivel, ['alto', 'total'], true);
+        return AccessControl::hasLevel('alto');
     }
 
     private function isOwner(array $solicitud, $usuarioId)
@@ -72,6 +68,28 @@ class VacacionesController extends ControllerBase
         }
 
         return false;
+    }
+
+    private function getSelectableAfiliados(): array
+    {
+        $afiliadosModel = new Afiliados();
+        $rows = $afiliadosModel->getAll(['estado' => 'activo']);
+
+        usort($rows, function ($a, $b) {
+            return strcmp((string) ($a['nombre_completo'] ?? ''), (string) ($b['nombre_completo'] ?? ''));
+        });
+
+        return $rows;
+    }
+
+    private function logBitacora(array $data): void
+    {
+        try {
+            $bitacora = new Bitacora();
+            $bitacora->log($data);
+        } catch (\Throwable $e) {
+            // Bitacora no debe detener flujo principal.
+        }
     }
 
     private function notifyManagersNewRequest($solicitudId, $nombreUsuario)
@@ -121,10 +139,14 @@ class VacacionesController extends ControllerBase
 
     public function create()
     {
+        $esJefatura = $this->isManager();
+
         $this->view('create', [
             'titulo' => 'Solicitar Vacaciones',
             'error' => $_GET['error'] ?? null,
-            'error_detail' => $_SESSION['vacaciones_error_detail'] ?? null
+            'error_detail' => $_SESSION['vacaciones_error_detail'] ?? null,
+            'es_jefatura' => $esJefatura,
+            'afiliados' => $esJefatura ? $this->getSelectableAfiliados() : []
         ]);
 
         unset($_SESSION['vacaciones_error_detail']);
@@ -138,6 +160,18 @@ class VacacionesController extends ControllerBase
         }
 
         $usuarioId = $this->getCurrentUserId();
+        $esJefatura = $this->isManager();
+        $afiliadoId = null;
+
+        if ($esJefatura) {
+            $afiliadoId = !empty($_POST['afiliado_id']) ? (int) $_POST['afiliado_id'] : null;
+            if (empty($afiliadoId)) {
+                $_SESSION['vacaciones_error_detail'] = 'Debe seleccionar un afiliado para registrar la solicitud.';
+                $this->redirect('/SGA-SEBANA/public/vacaciones/create?error=invalid_afiliado');
+                return;
+            }
+        }
+
         $nombreUsuario = $this->getCurrentUserName();
         $fechaInicio = $_POST['fecha_inicio'] ?? '';
         $fechaFin = $_POST['fecha_fin'] ?? '';
@@ -148,15 +182,36 @@ class VacacionesController extends ControllerBase
             return;
         }
 
-        $id = $this->model->crearSolicitud($usuarioId, $fechaInicio, $fechaFin, $motivo);
+        $id = $this->model->crearSolicitud($usuarioId, $fechaInicio, $fechaFin, $motivo, $afiliadoId);
 
         if ($id) {
+            $this->logBitacora([
+                'accion' => 'CREATE',
+                'modulo' => 'vacaciones',
+                'entidad' => 'solicitud_vacaciones',
+                'entidad_id' => (int) $id,
+                'descripcion' => 'Creacion de solicitud de vacaciones',
+                'datos_nuevos' => [
+                    'fecha_inicio' => $fechaInicio,
+                    'fecha_fin' => $fechaFin,
+                    'afiliado_id' => $afiliadoId
+                ],
+                'resultado' => 'exitoso'
+            ]);
             $this->notifyManagersNewRequest($id, $nombreUsuario);
             $this->redirect('/SGA-SEBANA/public/vacaciones?success=creada');
             return;
         }
 
         $_SESSION['vacaciones_error_detail'] = $this->model->getLastError();
+        $this->logBitacora([
+            'accion' => 'CREATE',
+            'modulo' => 'vacaciones',
+            'entidad' => 'solicitud_vacaciones',
+            'descripcion' => 'Error al crear solicitud de vacaciones',
+            'resultado' => 'fallido',
+            'mensaje_error' => $this->model->getLastError()
+        ]);
         $this->redirect('/SGA-SEBANA/public/vacaciones/create?error=db_error');
     }
 
@@ -208,6 +263,15 @@ class VacacionesController extends ControllerBase
         }
 
         if ($this->model->cambiarEstado($id, $nuevoEstado, $usuarioId)) {
+            $this->logBitacora([
+                'accion' => 'STATUS_CHANGE',
+                'modulo' => 'vacaciones',
+                'entidad' => 'solicitud_vacaciones',
+                'entidad_id' => (int) $id,
+                'descripcion' => "Cambio de estado de vacaciones a {$nuevoEstado}",
+                'datos_nuevos' => ['estado' => $nuevoEstado],
+                'resultado' => 'exitoso'
+            ]);
             if (!empty($solicitud['usuario_id'])) {
                 $this->notiModel->createNotification(
                     (int) $solicitud['usuario_id'],
@@ -227,6 +291,15 @@ class VacacionesController extends ControllerBase
         }
 
         $_SESSION['vacaciones_error_detail'] = $this->model->getLastError();
+        $this->logBitacora([
+            'accion' => 'STATUS_CHANGE',
+            'modulo' => 'vacaciones',
+            'entidad' => 'solicitud_vacaciones',
+            'entidad_id' => (int) $id,
+            'descripcion' => 'Error al actualizar estado de vacaciones',
+            'resultado' => 'fallido',
+            'mensaje_error' => $this->model->getLastError()
+        ]);
         $this->redirect('/SGA-SEBANA/public/vacaciones/show/' . $id . '?error=db_error');
     }
 
@@ -251,11 +324,28 @@ class VacacionesController extends ControllerBase
         }
 
         if ($this->model->cambiarEstado($id, 'Cancelada', $usuarioId)) {
+            $this->logBitacora([
+                'accion' => 'CANCEL',
+                'modulo' => 'vacaciones',
+                'entidad' => 'solicitud_vacaciones',
+                'entidad_id' => (int) $id,
+                'descripcion' => 'Cancelacion de solicitud de vacaciones por afiliado',
+                'resultado' => 'exitoso'
+            ]);
             $this->redirect('/SGA-SEBANA/public/vacaciones/show/' . $id . '?success=cancelada');
             return;
         }
 
         $_SESSION['vacaciones_error_detail'] = $this->model->getLastError();
+        $this->logBitacora([
+            'accion' => 'CANCEL',
+            'modulo' => 'vacaciones',
+            'entidad' => 'solicitud_vacaciones',
+            'entidad_id' => (int) $id,
+            'descripcion' => 'Error al cancelar solicitud de vacaciones',
+            'resultado' => 'fallido',
+            'mensaje_error' => $this->model->getLastError()
+        ]);
         $this->redirect('/SGA-SEBANA/public/vacaciones/show/' . $id . '?error=db_error');
     }
 
@@ -289,12 +379,33 @@ class VacacionesController extends ControllerBase
         }
 
         if ($this->model->reprogramarSolicitud($id, $fechaInicio, $fechaFin, $motivo)) {
+            $this->logBitacora([
+                'accion' => 'RESCHEDULE',
+                'modulo' => 'vacaciones',
+                'entidad' => 'solicitud_vacaciones',
+                'entidad_id' => (int) $id,
+                'descripcion' => 'Reprogramacion de solicitud de vacaciones',
+                'datos_nuevos' => [
+                    'fecha_inicio' => $fechaInicio,
+                    'fecha_fin' => $fechaFin
+                ],
+                'resultado' => 'exitoso'
+            ]);
             $this->notifyManagersNewRequest($id, $this->getCurrentUserName());
             $this->redirect('/SGA-SEBANA/public/vacaciones/show/' . $id . '?success=reprogramada');
             return;
         }
 
         $_SESSION['vacaciones_error_detail'] = $this->model->getLastError();
+        $this->logBitacora([
+            'accion' => 'RESCHEDULE',
+            'modulo' => 'vacaciones',
+            'entidad' => 'solicitud_vacaciones',
+            'entidad_id' => (int) $id,
+            'descripcion' => 'Error al reprogramar solicitud de vacaciones',
+            'resultado' => 'fallido',
+            'mensaje_error' => $this->model->getLastError()
+        ]);
         $this->redirect('/SGA-SEBANA/public/vacaciones/show/' . $id . '?error=db_error');
     }
 }
