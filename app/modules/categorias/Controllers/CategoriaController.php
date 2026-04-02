@@ -241,10 +241,18 @@ class CategoriaController extends ControllerBase {
 
         if (!empty($datos)) {
             foreach ($datos as $row) {
+                $accion = $row['accion'];
+            $accionTraducida = [
+                'CREATE' => 'Creación',
+                'UPDATE' => 'Actualización',
+                'DELETE' => 'Eliminación'
+            ][$accion] ?? $accion;
+
                 $html .= '<tr>
                             <td>'.htmlspecialchars($row['id']).'</td>
                             <td>'.htmlspecialchars($row['usuario_id']).'</td>
-                            <td>'.htmlspecialchars($row['accion']).'</td>
+                            <td>'.htmlspecialchars($accionTraducida).'</td>
+
                             <td>'.htmlspecialchars($row['descripcion']).'</td>
                             <td>'.htmlspecialchars($row['fecha_creacion'] ?? '').'</td>
                           </tr>';
