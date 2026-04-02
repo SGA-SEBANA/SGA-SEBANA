@@ -8,7 +8,7 @@ ob_start();
     <?php foreach ($offices as $office): ?>
     <div class="col-sm-6 col-md-4 col-lg-3">
         <div class="card h-100 border shadow-sm">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header text-white" style="background-color:#001B71;">
                 <strong><?= htmlspecialchars($office['nombre'] ?? '') ?></strong>
             </div>
             <div class="card-body">

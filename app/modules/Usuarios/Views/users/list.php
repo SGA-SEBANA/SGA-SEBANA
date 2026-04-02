@@ -56,14 +56,14 @@ ob_start();
                         <?php foreach ($users as $user): ?>
                             <tr class="tr-shadow">
                                 <td>
-                                    <span class="block-email">
+                                    
                                         <?= SecurityHelper::e($user['username']) ?>
-                                    </span>
+                                    
                                 </td>
                                 <td>
-                                    <span class="block-email">
+                                    
                                         <?= SecurityHelper::e($user['correo']) ?>
-                                    </span>
+                                    
                                 </td>
                                 <td>
                                     <?= SecurityHelper::e($user['nombre_completo'] ?? '-') ?>
@@ -86,7 +86,7 @@ ob_start();
                                     <?php if ($user['ultimo_acceso']): ?>
                                         <?= date('d/m/Y H:i', strtotime($user['ultimo_acceso'])) ?>
                                     <?php else: ?>
-                                        <span class="text-muted">Nunca</span>
+                                        <span class="text-dark">Nunca</span>
                                     <?php endif; ?>
                                 </td>
                                 <td>

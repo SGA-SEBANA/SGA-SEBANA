@@ -64,11 +64,11 @@ $esJefatura = $es_jefatura ?? false;
                     <?php else: ?>
                         <?php foreach ($solicitudes as $s): ?>
                             <tr class="tr-shadow">
-                                <td class="font-weight-bold text-primary">#<?= htmlspecialchars($s['id']) ?></td>
+                               <td class="font-weight-bold text-dark">#<?= htmlspecialchars($s['id']) ?></td>
 
                                 <?php if ($esJefatura): ?>
                                     <td>
-                                        <span class="block-email text-dark"><?= htmlspecialchars($s['nombre_completo'] ?? 'Usuario') ?></span>
+                                        <span class="text-dark"><?= htmlspecialchars($s['nombre_completo'] ?? 'Usuario') ?></span>
                                     </td>
                                 <?php endif; ?>
 

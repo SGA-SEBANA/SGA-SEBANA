@@ -42,7 +42,7 @@ ob_start();
                         <?php foreach ($ayudas as $a): ?>
                             <tr class="tr-shadow">
                                 <td><strong>#<?= htmlspecialchars($a['id']) ?></strong></td>
-                                <td class="desc"><?= htmlspecialchars($a['nombre_completo']) ?></td>
+                                <td style="color: #000;"><?= htmlspecialchars($a['nombre_completo']) ?></td>
                                 <td><?= date('d/m/Y h:i A', strtotime($a['fecha_solicitud'])) ?></td>
                                 <td>
                                     <?php if ($a['estado'] === 'Pendiente'): ?>

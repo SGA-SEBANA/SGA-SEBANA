@@ -131,7 +131,7 @@ ob_start();
                         <?php foreach($casos as $caso): ?>
                             <tr class="tr-shadow">
                                 <td>
-                                    <strong><?= htmlspecialchars($caso['numero_expediente']) ?></strong>
+                                    <?= htmlspecialchars($caso['numero_expediente']) ?></strong>
                                 </td>
                                 <td><?= htmlspecialchars(substr($caso['titulo'], 0, 40)) ?></td>
                                 <td><?= htmlspecialchars($caso['afiliado_nombre'] ?? 'N/A') ?></td>

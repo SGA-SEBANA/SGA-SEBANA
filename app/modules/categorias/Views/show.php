@@ -39,11 +39,11 @@ ob_start();
                     <div class="card-body">
                         <div class="row mb-4">
                             <div class="col-sm-4 font-weight-bold text-dark">Nombre oficial:</div>
-                            <div class="col-sm-8 text-muted"><?= htmlspecialchars($categoria['nombre']) ?></div>
+                            <div class="col-sm-8 text-dark"><?= htmlspecialchars($categoria['nombre']) ?></div>
                         </div>
                         <div class="row mb-4">
                             <div class="col-sm-4 font-weight-bold text-dark">Tipo:</div>
-                            <div class="col-sm-8 text-muted">
+                            <div class="col-sm-8 text-dark">
                                 <span class="au-badge au-badge--blue">
                                     <?= htmlspecialchars($categoria['tipo'] ?? 'Sin tipo') ?>
                                 </span>
@@ -51,7 +51,7 @@ ob_start();
                         </div>
                         <div class="row mb-4">
                             <div class="col-sm-4 font-weight-bold text-dark">Fecha de creación:</div>
-                            <div class="col-sm-8 text-muted">
+                            <div class="col-sm-8 text-dark">
                                 <?php
                                 $fecha = $categoria['fecha_creacion'] ?? null;
                                 if ($fecha && strtotime($fecha)) {
@@ -64,7 +64,7 @@ ob_start();
                         </div>
                         <div class="row mb-4">
                             <div class="col-sm-4 font-weight-bold text-dark">Fecha de actualización:</div>
-                            <div class="col-sm-8 text-muted">
+                            <div class="col-sm-8 text-dark">
                                 <?php
                                 $fechaAct = $categoria['fecha_actualizacion'] ?? null;
                                 if ($fechaAct && strtotime($fechaAct)) {
