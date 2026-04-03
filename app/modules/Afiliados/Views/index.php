@@ -131,7 +131,7 @@ ob_start();
                                 </td>
 
                                 <td>
-                                    <span class="block-email">
+                                    <span class=text-dark font-weight-bold">
                                         <?= htmlspecialchars($afiliado['cedula']) ?>
                                     </span>
                                 </td>

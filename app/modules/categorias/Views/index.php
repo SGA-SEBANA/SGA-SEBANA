@@ -135,10 +135,10 @@ ob_start();
                     <?php else: ?>
 
                         <?php foreach ($categorias as $cat): ?>
-                            <tr class="tr-shadow">
+                            <tr>
                                 <td><?= $cat['id'] ?></td>
                                 <td>
-                                    <span class="block-email text-dark font-weight-bold">
+                                    <span class="text-dark font-weight-bold">
                                         <?= htmlspecialchars($cat['nombre']) ?>
                                     </span>
                                 </td>

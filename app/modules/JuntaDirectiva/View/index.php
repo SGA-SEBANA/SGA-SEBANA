@@ -45,7 +45,7 @@ ob_start();
                     <tr class="tr-shadow">
                         <td><?= htmlspecialchars($miembro['nombre']) ?></td>
                         <td>
-                            <span class="block-email"><?= htmlspecialchars($miembro['cargo']) ?></span>
+                            <span class="text-dark font-weight-bold"><?= htmlspecialchars($miembro['cargo']) ?></span>
                         </td>
                         <td>
                             <?php if (strtolower($miembro['estado']) === 'vigente'): ?>
