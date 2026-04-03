@@ -59,7 +59,7 @@ $esPropietario = $es_propietario ?? false;
                         </div>
                         <div class="mb-4">
                             <label class="font-weight-bold text-muted small text-uppercase">Monto Solicitado:</label>
-                            <p class="desc mt-1" style="color: #001B71; font-weight: 800; font-size: 1.4rem;">
+                            <p class="desc mt-1" style="color: #000000; font-weight: 800; font-size: 1.4rem;">
                                 C<?= number_format($ayuda['monto_solicitado'], 2) ?>
                             </p>
                         </div>

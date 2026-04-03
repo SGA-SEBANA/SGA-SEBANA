@@ -8,7 +8,7 @@ $esJefatura = $es_jefatura ?? false;
 
         <div class="overview-wrap mb-4 px-2">
             <h2 class="title-1">Control de Vacaciones</h2>
-            <a href="/SGA-SEBANA/public/vacaciones/create" class="btn btn-primary shadow-sm">
+            <a href="/SGA-SEBANA/public/vacaciones/create" class="au-btn au-btn-icon au-btn--green au-btn--small">
                 <i class="zmdi zmdi-plus me-2"></i>Nueva Solicitud
             </a>
         </div>
@@ -64,7 +64,7 @@ $esJefatura = $es_jefatura ?? false;
                     <?php else: ?>
                         <?php foreach ($solicitudes as $s): ?>
                             <tr class="tr-shadow">
-                               <td class="font-weight-bold text-dark">#<?= htmlspecialchars($s['id']) ?></td>
+                               <td class="font-weight-bold text-dark"><strong>#<?= htmlspecialchars($s['id']) ?></strong></td>
 
                                 <?php if ($esJefatura): ?>
                                     <td>

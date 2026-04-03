@@ -36,7 +36,7 @@ ob_start();
                         <?php foreach ($historial as $miembro): ?>
                             <tr class="tr-shadow">
                                 <td><?= htmlspecialchars($miembro['nombre']) ?></td>
-                                <td><span class="block-email"><?= htmlspecialchars($miembro['cargo']) ?></span></td>
+                                <td><span class="text-dark font-weight-bold"><?= htmlspecialchars($miembro['cargo']) ?></span></td>
                                 <td>
                                     <?php if (strtolower($miembro['estado']) === 'vigente'): ?>
                                         <span class="status--process">Vigente</span>

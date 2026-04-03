@@ -90,8 +90,8 @@ ob_start();
                                 <i class="zmdi zmdi-search"></i> Filtrar
                             </button>
                             <a href="/SGA-SEBANA/public/casos-rrll/reporte/pdf?estado=<?= $filtros['estado'] ?>&prioridad=<?= $filtros['prioridad'] ?>&categoria_id=<?= $filtros['categoria_id'] ?>" 
-                               class="btn btn-outline-danger btn-sm">
-                                <i class="zmdi zmdi-download"></i> PDF
+                               class="btn btn-danger btn-sm">
+                                <i class="zmdi zmdi-download"></i> Generar PDF
                             </a>
                         </div>
                     </div>
@@ -131,7 +131,7 @@ ob_start();
                         <?php foreach($casos as $caso): ?>
                             <tr class="tr-shadow">
                                 <td>
-                                    <?= htmlspecialchars($caso['numero_expediente']) ?></strong>
+                                    <strong><?= htmlspecialchars($caso['numero_expediente'])?></strong>
                                 </td>
                                 <td><?= htmlspecialchars(substr($caso['titulo'], 0, 40)) ?></td>
                                 <td><?= htmlspecialchars($caso['afiliado_nombre'] ?? 'N/A') ?></td>

@@ -38,7 +38,7 @@ ob_start();
                 <i class="zmdi zmdi-search"></i> Buscar
               </button>
               <a href="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado/exportar/pdf"
-                class="au-btn au-btn-icon au-btn--green au-btn--small" style="margin-left: 8px;">
+                class="au-btn au-btn-icon au-btn--small"style="margin-left: 8px; background-color:#dc3545; color:#fff;">
                 <i class="zmdi zmdi-download"></i> Exportar PDF
               </a>
             </div>
