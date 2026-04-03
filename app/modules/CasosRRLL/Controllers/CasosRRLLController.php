@@ -8,18 +8,21 @@ use App\Modules\CasosRRLL\Models\Etapas;
 use App\Modules\Usuarios\Models\Bitacora;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Modules\Visitas\Models\Notification; 
 
 class CasosRRLLController extends ControllerBase
 {
     private $modelo_casos;
     private $modelo_etapas;
     private $bitacora;
+    private $notiModel;
 
     public function __construct()
     {
         $this->modelo_casos = new CasosRRLL();
         $this->modelo_etapas = new Etapas();
         $this->bitacora = new Bitacora();
+        $this->notiModel = new Notification(); 
     }
 
     // ========================================
@@ -108,6 +111,20 @@ class CasosRRLLController extends ControllerBase
                 'entidad' => 'caso',
                 'descripcion' => "Creación de caso: {$datos['numero_expediente']}"
             ]);
+
+
+            // Notificación
+            $this->notiModel->createNotification(
+                1,
+                'sistema',
+                'casos',
+                'Nuevo Caso RRLL',
+                "Se creó el caso con expediente {$datos['numero_expediente']}",
+                'caso_rrll',
+                $id,
+                "/SGA-SEBANA/public/casos-rrll/show/{$datos['numero_expediente']}"
+            );
+
 
             $this->redirect('/SGA-SEBANA/public/casos-rrll?success=creado');
             return;
@@ -201,6 +218,20 @@ class CasosRRLLController extends ControllerBase
                 'descripcion' => "Actualización de caso: {$datos['numero_expediente']}"
             ]);
 
+
+            // Notificación
+            $this->notiModel->createNotification(
+                1,
+                'sistema',
+                'casos',
+                'Caso RRLL Actualizado',
+                "Se actualizó el caso ID {$id}, expediente {$datos['numero_expediente']}",
+                'caso_rrll',
+                $id,
+                "/SGA-SEBANA/public/casos-rrll/show/{$id}"
+            );
+
+
             $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$id}?success=actualizado");
             return;
         }
@@ -230,6 +261,32 @@ class CasosRRLLController extends ControllerBase
                 'entidad_id' => $id,
                 'descripcion' => "Cambio de estado del caso a: {$nuevo_estado}"
             ]);
+
+            $this->notiModel->createNotification(
+            1,
+            'sistema',
+            'casos',
+            'Estado de Etapa Cambiado',
+            "La etapa ID {$etapaId} ahora está en estado: {$nuevo_estado}",
+            'etapa_rrll',
+            $etapaId,
+            "/SGA-SEBANA/public/casos-rrll/{$etapa['caso_id']}/etapas"
+        );
+
+
+
+            // Notificación
+            $this->notiModel->createNotification(
+                1,
+                'sistema',
+                'casos',
+                'Estado de Caso Cambiado',
+                "El caso ID {$id} ahora está en estado: {$nuevo_estado}",
+                'caso_rrll',
+                $id,
+                "/SGA-SEBANA/public/casos-rrll/show/{$id}"
+            );
+
 
             $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$id}?success=estado_actualizado");
             return;
@@ -266,6 +323,20 @@ class CasosRRLLController extends ControllerBase
                 'descripcion' => "Cambio de responsable del caso"
             ]);
 
+
+            // Notificación
+            $this->notiModel->createNotification(
+                1,
+                'sistema',
+                'casos',
+                'Responsable de Caso Actualizado',
+                "Se cambió el responsable del caso ID {$id}",
+                'caso_rrll',
+                $id,
+                "/SGA-SEBANA/public/casos-rrll/show/{$id}"
+            );
+
+
             $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$id}?success=responsable_actualizado");
             return;
         }
@@ -296,6 +367,20 @@ class CasosRRLLController extends ControllerBase
                 'descripcion' => "Archivación de caso: {$caso['numero_expediente']}"
             ]);
 
+
+            // Notificación
+            $this->notiModel->createNotification(
+                1,
+                'sistema',
+                'casos',
+                'Caso Archivado',
+                "Se archivó el caso ID {$id}, expediente {$caso['numero_expediente']}",
+                'caso_rrll',
+                $id,
+                "/SGA-SEBANA/public/casos-rrll/show/{$id}"
+            );
+
+
             $this->redirect('/SGA-SEBANA/public/casos-rrll?success=archivado');
             return;
         }
@@ -323,6 +408,20 @@ class CasosRRLLController extends ControllerBase
                 'entidad_id' => $id,
                 'descripcion' => "Eliminación de caso: {$caso['numero_expediente']}"
             ]);
+
+
+            // Notificación
+            $this->notiModel->createNotification(
+                1,
+                'sistema',
+                'casos',
+                'Caso Eliminado',
+                "Se eliminó el caso ID {$id}, expediente {$caso['numero_expediente']}",
+                'caso_rrll',
+                $id,
+                null
+            );
+
 
             $this->redirect('/SGA-SEBANA/public/casos-rrll?success=eliminado');
             return;
@@ -417,6 +516,18 @@ class CasosRRLLController extends ControllerBase
                 'descripcion' => "Creación de etapa: {$datos['nombre']} para caso {$casoId}"
             ]);
 
+            $this->notiModel->createNotification(
+            1,
+            'sistema',
+            'casos',
+            'Nueva Etapa en Caso RRLL',
+            "Se creó la etapa '{$datos['nombre']}' en el caso ID {$casoId}",
+            'etapa_rrll',
+            $etapaId,
+            "/SGA-SEBANA/public/casos-rrll/{$casoId}/etapas"
+        );
+
+
             $this->redirect("/SGA-SEBANA/public/casos-rrll/{$casoId}/etapas?success=etapa_creada");
             return;
         }
@@ -479,6 +590,19 @@ class CasosRRLLController extends ControllerBase
                 'entidad_id' => $etapaId,
                 'descripcion' => "Actualización de etapa: {$datos['nombre']}"
             ]);
+
+             $this->notiModel->createNotification(
+            1,
+            'sistema',
+            'casos',
+            'Etapa Actualizada',
+            "Se actualizó la etapa '{$datos['nombre']}' del caso ID {$etapa['caso_id']}",
+            'etapa_rrll',
+            $etapaId,
+            "/SGA-SEBANA/public/casos-rrll/{$etapa['caso_id']}/etapas"
+        );
+
+
 
             $this->redirect("/SGA-SEBANA/public/casos-rrll/{$etapa['caso_id']}/etapas?success=etapa_actualizada");
             return;
@@ -562,6 +686,18 @@ class CasosRRLLController extends ControllerBase
                 'entidad_id' => $etapaId,
                 'descripcion' => "Eliminación de etapa: {$etapa['nombre']}"
             ]);
+
+            $this->notiModel->createNotification(
+            1,
+            'sistema',
+            'casos',
+            'Etapa Eliminada',
+            "Se eliminó la etapa '{$etapa['nombre']}' del caso ID {$casoId}",
+            'etapa_rrll',
+            $etapaId,
+            "/SGA-SEBANA/public/casos-rrll/{$casoId}/etapas"
+        );
+
 
             $this->redirect("/SGA-SEBANA/public/casos-rrll/{$casoId}/etapas?success=etapa_eliminada");
             return;

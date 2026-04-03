@@ -4,14 +4,17 @@ namespace App\Modules\Oficinas\Controllers;
 
 use App\Modules\Oficinas\Models\OfficeModel;
 use App\Modules\Usuarios\Helpers\SecurityHelper;
+use App\Modules\Visitas\Models\Notification;
 
 class OfficeController
 {
     private OfficeModel $officeModel;
+    private Notification $notiModel; 
 
     public function __construct()
     {
         $this->officeModel = new OfficeModel();
+        $this->notiModel = new Notification();
     }
 
     public function index()
@@ -44,6 +47,21 @@ class OfficeController
         ];
 
         $this->officeModel->createOffice($data);
+
+          // Notificación de nueva oficina
+            $this->notiModel->createNotification(
+                1,
+                'sistema',
+                'oficinas',
+                'Nueva Oficina Registrada',
+                "Se registró la oficina: {$data['nombre']}",
+                'oficina',
+                $this->officeModel->getLastInsertId(),
+                "/SGA-SEBANA/public/oficinas"
+            );
+
+
+        
         header("Location: /SGA-SEBANA/public/oficinas");
         exit;
     }
@@ -80,6 +98,21 @@ class OfficeController
         ];
 
         $this->officeModel->updateOffice($id, $data);
+
+         // Notificación de edición
+            $this->notiModel->createNotification(
+                1,
+                'sistema',
+                'oficinas',
+                'Oficina Editada',
+                "Se actualizaron los datos de la oficina ID {$id} ({$data['nombre']})",
+                'oficina',
+                $id,
+                "/SGA-SEBANA/public/oficinas/edit/{$id}"
+            );
+
+
+
         header("Location: /SGA-SEBANA/public/oficinas");
         exit;
     }
@@ -91,6 +124,20 @@ class OfficeController
     {
         SecurityHelper::requireAuth();
         $this->officeModel->toggleStatus($id);
+
+         // Notificación de cambio de estado
+        $this->notiModel->createNotification(
+            1,
+            'sistema',
+            'oficinas',
+            'Estado de Oficina Cambiado',
+            "La oficina ID {$id} ahora está en estado: {$nuevoEstado}",
+            'oficina',
+            $id,
+            "/SGA-SEBANA/public/oficinas"
+        );
+
+
         header("Location: /SGA-SEBANA/public/oficinas");
         exit;
     }
