@@ -6,13 +6,17 @@ use App\Modules\Afiliados\Models\Afiliados;
 use App\Modules\Ayudas\Models\AyudaEconomicaModel;
 use App\Modules\Usuarios\Helpers\AccessControl;
 use App\Modules\Usuarios\Models\Bitacora;
+use App\Modules\Visitas\Models\Notification; 
 
 class AyudaEconomicaController extends ControllerBase {
 
     protected $model;
+    protected $notiModel;
+
 
     public function __construct() {
         $this->model = new AyudaEconomicaModel();
+        $this->notiModel = new Notification();
 
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
@@ -138,6 +142,20 @@ class AyudaEconomicaController extends ControllerBase {
                     ],
                     'resultado' => 'exitoso'
                 ]);
+
+                // Notificación
+                $this->notiModel->createNotification(
+                    $usuario_id,
+                    'sistema',
+                    'ayuda_economica',
+                    'Nueva Solicitud de Ayuda',
+                    "Se registró una nueva solicitud de ayuda económica por el monto de ₡{$monto_solicitado}",
+                    'solicitud_ayuda',
+                    $ayuda_id,
+                    "/SGA-SEBANA/public/ayudas/show/{$ayuda_id}"
+                );
+
+                
                 if (isset($_FILES['evidencia']) && $_FILES['evidencia']['error'] === UPLOAD_ERR_OK) {
                     $this->procesarArchivo($ayuda_id, $usuario_id, $_FILES['evidencia'], 'Pendiente');
                 }
@@ -179,6 +197,22 @@ class AyudaEconomicaController extends ControllerBase {
                     'datos_nuevos' => ['motivo_cancelacion' => $motivo_cancelacion],
                     'resultado' => 'exitoso'
                 ]);
+
+                // Notificación
+                $this->notiModel->createNotification(
+                    $usuarioId,
+                    'sistema',
+                    'ayuda_economica',
+                    'Solicitud de Cancelación',
+                    "El afiliado solicitó la cancelación de la ayuda económica ID {$id}",
+                    'solicitud_ayuda',
+                    $id,
+                    "/SGA-SEBANA/public/ayudas/show/{$id}"
+                );
+
+
+
+                
                 $this->enviarNotificacionAdmin($id, 'Un usuario ha solicitado la cancelacion de su ayuda economica.');
                 $this->redirect('/SGA-SEBANA/public/ayudas/show/' . $id . '?success=cancelacion_enviada');
             } else {
@@ -247,6 +281,19 @@ class AyudaEconomicaController extends ControllerBase {
                     'datos_nuevos' => ['estado' => $nuevo_estado],
                     'resultado' => 'exitoso'
                 ]);
+
+                // Notificación
+                $this->notiModel->createNotification(
+                    1,
+                    'sistema',
+                    'ayuda_economica',
+                    'Estado de Ayuda Actualizado',
+                    "La solicitud de ayuda económica ID {$id} ahora está en estado: {$nuevo_estado}",
+                    'solicitud_ayuda',
+                    $id,
+                    "/SGA-SEBANA/public/ayudas/show/{$id}"
+                );
+
                 $this->notificarCambioEstado($ayuda['correo'] ?? '', $nuevo_estado, $id);
                 $this->redirect('/SGA-SEBANA/public/ayudas/show/' . $id . '?success=estado_actualizado');
             } else {
@@ -294,6 +341,20 @@ class AyudaEconomicaController extends ControllerBase {
                             'descripcion' => 'Carga de evidencia en solicitud de ayuda economica',
                             'resultado' => 'exitoso'
                         ]);
+
+                        // Notificación
+                $this->notiModel->createNotification(
+                    $usuario_id,
+                    'sistema',
+                    'ayuda_economica',
+                    'Nueva Evidencia Adjunta',
+                    "Se adjuntó nueva evidencia en la solicitud de ayuda económica ID {$id}",
+                    'solicitud_ayuda',
+                    $id,
+                    "/SGA-SEBANA/public/ayudas/show/{$id}"
+                );
+
+
                         $this->enviarNotificacionAdmin($id, 'Se ha adjuntado nueva evidencia a la solicitud.');
                         $this->redirect('/SGA-SEBANA/public/ayudas/show/' . $id . '?success=evidencia_agregada');
                         return;
