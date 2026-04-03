@@ -3,9 +3,19 @@
 namespace App\Modules\JuntaDirectiva\Controllers;
 use App\Modules\JuntaDirectiva\Models\JuntaDirectivaModel;
 use App\Modules\Usuarios\Models\Bitacora;
+use App\Modules\Visitas\Models\Notification;
+
 
 class JuntaDirectivaController
 {
+   protected $notiModel;
+
+   public function __construct()
+    {
+        $this->notiModel = new Notification();
+    }
+
+
 
    public function index()
    {
@@ -123,6 +133,19 @@ class JuntaDirectivaController
             ]
          ]);
 
+         // Notificación
+            $this->notiModel->createNotification(
+                1,
+                'sistema',
+                'junta_directiva',
+                'Nuevo Miembro de Junta',
+                "Se registró el cargo {$cargo} para el afiliado ID {$afiliadoId}",
+                'miembro_junta',
+                $juntaId,
+                "/SGA-SEBANA/public/junta/edit/{$juntaId}"
+            );
+
+
 
          if (!empty($_FILES['documentos']['name'][0])) {
 
@@ -224,6 +247,24 @@ class JuntaDirectivaController
             'descripcion' => "Actualización de miembro de junta ID: {$id}",
             'datos_nuevos' => $_POST
          ]);
+
+         // Notificación
+            $this->notiModel->createNotification(
+                1,
+                'sistema',
+                'junta_directiva',
+                'Miembro de Junta Editado',
+                "Se actualizaron los datos del miembro ID {$id}, cargo: {$cargo}",
+                'miembro_junta',
+                $id,
+                "/SGA-SEBANA/public/junta/edit/{$id}"
+            );
+
+
+
+
+
+
          if (!empty($_FILES['documentos']['name'][0])) {
             foreach ($_FILES['documentos']['name'] as $i => $nombreOriginal) {
 
@@ -275,6 +316,19 @@ class JuntaDirectivaController
          'descripcion' => "Finalización de cargo para miembro ID: {$id}",
          'resultado' => 'exitoso'
       ]);
+
+      // Notificación
+        $this->notiModel->createNotification(
+            1,
+            'sistema',
+            'junta_directiva',
+            'Cargo Finalizado',
+            "Se finalizó el cargo del miembro ID {$id}",
+            'miembro_junta',
+            $id,
+            "/SGA-SEBANA/public/junta/history"
+        );
+
 
       header("Location: /SGA-SEBANA/public/junta");
       exit;
