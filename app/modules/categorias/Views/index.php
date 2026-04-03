@@ -101,7 +101,7 @@ ob_start();
                 </a>
                 <!-- NUEVO BOTÓN PARA EXPORTAR HISTORIAL -->
                 <a href="/SGA-SEBANA/public/Categorias/exportarHistorialPDF"
-                   class="au-btn au-btn-icon au-btn--green au-btn--small" style="margin-left: 8px;">
+                   class="au-btn au-btn-icon au-btn--small"style="margin-left: 8px; background-color:#dc3545; color:#fff;">
                     <i class="zmdi zmdi-download"></i> Exportar Historial PDF
                 </a>
             </div>
