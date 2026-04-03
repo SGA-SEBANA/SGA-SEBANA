@@ -82,7 +82,7 @@ class Afiliados extends ModelBase
         return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getAll($filtros = [])
+    public function getAll($filtros = [], $start = 0, $limit = 10)
     {
         // Iniciamos la consulta base. 
         // JOINs para mostrar nombres en lugar de IDs si fuera necesario, 
@@ -117,12 +117,50 @@ class Afiliados extends ModelBase
         }
 
         // Ordenamiento por defecto
-        $sql .= " ORDER BY a.fecha_creacion DESC";
+        $sql .= " ORDER BY a.fecha_creacion DESC
+          LIMIT {$start}, {$limit}";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+
+    //paginacion
+    public function countAll($filtros = [])
+{
+    $sql = "SELECT COUNT(*) 
+            FROM {$this->table} a
+            WHERE 1=1";
+
+    $params = [];
+
+    // Filtro 1: Búsqueda
+    if (!empty($filtros['busqueda'])) {
+        $sql .= " AND (a.nombre_completo LIKE :b1 OR a.cedula LIKE :b2)";
+        $termino = "%" . $filtros['busqueda'] . "%";
+        $params['b1'] = $termino;
+        $params['b2'] = $termino;
+    }
+
+    // Filtro 2: Estado
+    if (!empty($filtros['estado'])) {
+        $sql .= " AND a.estado = :estado";
+        $params['estado'] = $filtros['estado'];
+    }
+
+    // Filtro 3: Oficina
+    if (!empty($filtros['oficina_id'])) {
+        $sql .= " AND a.oficina_id = :oficina_id";
+        $params['oficina_id'] = $filtros['oficina_id'];
+    }
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute($params);
+
+    return (int) $stmt->fetchColumn();
+}
+
 
     public function getById($id)
     {

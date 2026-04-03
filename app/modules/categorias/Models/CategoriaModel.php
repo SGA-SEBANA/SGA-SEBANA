@@ -37,7 +37,7 @@ class CategoriaModel extends ModelBase {
     /**
      * HU-GC-04: Obtener categorías con filtros funcionales (Fijado para PDO)
      */
-    public function obtenerTodas($filtros = []) {
+    public function obtenerTodas($filtros = [], $start = 0, $limit = 10)  {
         $sql = "SELECT * FROM {$this->table} WHERE 1=1";
         $params = [];
 
@@ -56,7 +56,8 @@ class CategoriaModel extends ModelBase {
             $params[':tipo'] = $filtros['tipo'];
         }
 
-            $sql .= " ORDER BY id ASC";
+            $sql .= " ORDER BY id ASC
+            LIMIT {$start}, {$limit}";
 
         try {
             $stmt = $this->db->prepare($sql);
@@ -67,6 +68,33 @@ class CategoriaModel extends ModelBase {
             return [];
         }
     }
+
+    public function countAll($filtros = []) {
+    $sql = "SELECT COUNT(*) FROM {$this->table} WHERE 1=1";
+    $params = [];
+
+    if (!empty($filtros['q'])) {
+        $sql .= " AND (nombre LIKE :q_nombre OR descripcion LIKE :q_desc)";
+        $busqueda = '%' . trim($filtros['q']) . '%';
+        $params[':q_nombre'] = $busqueda;
+        $params[':q_desc'] = $busqueda;
+    }
+
+    if (!empty($filtros['estado'])) {
+        $sql .= " AND estado = :estado";
+        $params[':estado'] = $filtros['estado'];
+    }
+
+    if (!empty($filtros['tipo'])) {
+        $sql .= " AND tipo = :tipo";
+        $params[':tipo'] = $filtros['tipo'];
+    }
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute($params);
+
+    return (int) $stmt->fetchColumn();
+}
 
     // Registro oficial en la base de datos
     public function registrar($nombre, $descripcion, $tipo) {

@@ -7,6 +7,7 @@ use App\Modules\Usuarios\Models\Bitacora;
 use App\Modules\Usuarios\Models\User;
 use App\Modules\Visitas\Models\VisitRequest;
 use App\Modules\Visitas\Models\Notification;
+use App\Helpers\Paginator;
 
 class VisitRequestController {
 
@@ -17,10 +18,12 @@ class VisitRequestController {
         }
     }
 
+
     private function getCurrentUserId(): ?int
     {
         return isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
     }
+
 
     private function getCurrentAfiliadoId(VisitRequest $model): ?int
     {
@@ -31,10 +34,12 @@ class VisitRequestController {
         return $model->resolveAfiliadoIdByUser($userId);
     }
 
+
     private function isOwner(array $solicitud, int $afiliadoId): bool
     {
         return !empty($solicitud['afiliado_id']) && (int) $solicitud['afiliado_id'] === $afiliadoId;
     }
+
 
     private function isManager(): bool
     {
@@ -51,36 +56,46 @@ class VisitRequestController {
         }
     }
 
-    public function index()
-    {
-        $this->ensureSession();
-        $model = new VisitRequest();
-        $esJefatura = $this->isManager();
+public function index()
+{
+    $this->ensureSession();
 
-        $limit = 10;
-        $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
-        $page = max($page, 1);
-        $start = ($page - 1) * $limit;
+    $model = new VisitRequest();
 
-        if ($esJefatura) {
-            $solicitud = $model->getVisits($start, $limit);
-            $totalRegistros = $model->countVisits();
-        } else {
-            $afiliadoId = $this->getCurrentAfiliadoId($model);
-            if (!$afiliadoId) {
-                $_SESSION['error'] = 'No fue posible asociar su usuario a un afiliado.';
-                header('Location: /SGA-SEBANA/public/home?error=no_autorizado');
-                exit;
-            }
+    $esJefatura = $this->isManager();
+    $es_jefatura = $esJefatura;
 
-            $solicitud = $model->getVisitsByAfiliado($afiliadoId, $start, $limit);
-            $totalRegistros = $model->countVisitsByAfiliado($afiliadoId);
+    $filtros = [];
+
+    if (!$esJefatura) {
+
+        $afiliadoId = $this->getCurrentAfiliadoId($model);
+
+        if (!$afiliadoId) {
+            $_SESSION['error'] = 'No fue posible asociar su usuario a un afiliado.';
+            header('Location: /SGA-SEBANA/public/home?error=no_autorizado');
+            exit;
         }
 
-        $totalPaginas = (int) ceil($totalRegistros / $limit);
-
-        require BASE_PATH . '/app/modules/Visitas/Views/index.php';
+        $filtros['afiliado_id'] = $afiliadoId;
     }
+
+    $pagination = Paginator::make(
+        $model,
+        'getVisits',
+        $filtros,
+        $_GET['page'] ?? 1,
+        10
+    );
+
+    $solicitud = $pagination['data'];
+
+    $page = $pagination['page'];
+
+    $totalPaginas = $pagination['totalPaginas'];
+
+    require BASE_PATH . '/app/modules/Visitas/Views/index.php';
+}
 
     public function createVisit() {
         $this->ensureSession();

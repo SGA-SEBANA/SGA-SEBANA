@@ -17,13 +17,24 @@ class JuntaDirectivaController
 
 
 
-   public function index()
-   {
-      $model = new JuntaDirectivaModel();
-      $junta = $model->getJuntaDirectiva();
-      require BASE_PATH . '/app/modules/JuntaDirectiva/View/index.php';
-      
-   }
+public function index()
+{
+    $model = new JuntaDirectivaModel();
+
+    $pagination = \App\Helpers\Paginator::make(
+        $model,
+        'getJuntaDirectiva',
+        [],
+        $_GET['page'] ?? 1,
+        10
+    );
+
+    $junta = $pagination['data'];
+    $page = $pagination['page'];
+    $totalPaginas = $pagination['totalPaginas'];
+
+    require BASE_PATH . '/app/modules/JuntaDirectiva/View/index.php';
+}
 
 
    public function history()

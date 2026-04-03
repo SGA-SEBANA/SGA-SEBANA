@@ -8,6 +8,7 @@ use App\Modules\Visitas\Models\Notification;
 use App\Modules\Usuarios\Models\User;
 use App\Modules\Usuarios\Helpers\AccessControl;
 use App\Modules\Usuarios\Models\Bitacora;
+use App\Helpers\Paginator;
 
 class VacacionesController extends ControllerBase
 {
@@ -120,22 +121,32 @@ class VacacionesController extends ControllerBase
         }
     }
 
-    public function index()
-    {
-        $usuarioId = $this->getCurrentUserId();
-        $esJefatura = $this->isManager();
+public function index()
+{
+    $usuarioId = $this->getCurrentUserId();
+    $esJefatura = $this->isManager();
 
-        if ($esJefatura) {
-            $solicitudes = $this->model->obtenerTodasConUsuario();
-        } else {
-            $solicitudes = $this->model->obtenerPorUsuario($usuarioId);
-        }
+    $filtros = [];
 
-        $this->view('index', [
-            'solicitudes' => $solicitudes,
-            'es_jefatura' => $esJefatura
-        ]);
+    if (!$esJefatura) {
+        $filtros['usuario_id'] = $usuarioId;
     }
+
+    $pagination = Paginator::make(
+        $this->model,
+        'getAll',
+        $filtros,
+        $_GET['page'] ?? 1,
+        10
+    );
+
+    $this->view('index', [
+        'solicitudes' => $pagination['data'],
+        'page' => $pagination['page'],
+        'totalPaginas' => $pagination['totalPaginas'],
+        'es_jefatura' => $esJefatura
+    ]);
+}
 
     public function create()
     {

@@ -5,15 +5,20 @@ ob_start();
 
 <div class="row">
     <div class="col-md-12">
+
         <!-- HEADER -->
         <div class="overview-wrap mb-4">
             <h2 class="title-1">Junta Directiva</h2>
+
             <div class="d-flex">
-                <a href="/SGA-SEBANA/public/junta/create" class="au-btn au-btn-icon au-btn--green au-btn--small">
+                <a href="/SGA-SEBANA/public/junta/create"
+                   class="au-btn au-btn-icon au-btn--green au-btn--small">
                     <i class="zmdi zmdi-plus"></i> Agregar miembro
                 </a>
-                <a href="/SGA-SEBANA/public/junta/history" class="au-btn au-btn-icon au-btn--blue au-btn--small ml-2"
-                    style="margin-left: 10px;">
+
+                <a href="/SGA-SEBANA/public/junta/history"
+                   class="au-btn au-btn-icon au-btn--blue au-btn--small ml-2"
+                   style="margin-left: 10px;">
                     <i class="zmdi zmdi-time"></i> Ver historial
                 </a>
             </div>
@@ -23,67 +28,127 @@ ob_start();
         <div class="table-responsive table-responsive-data2">
             <table class="table table-data2">
                 <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Cargo</th>
-                        <th>Estado</th>
-                        <th>Documentos</th>
-                        <th>Inicio</th>
-                        <th>Fin</th>
-                        <th></th>
-                    </tr>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Cargo</th>
+                    <th>Estado</th>
+                    <th>Documentos</th>
+                    <th>Inicio</th>
+                    <th>Fin</th>
+                    <th></th>
+                </tr>
                 </thead>
+
                 <tbody>
-                    <?php if (empty($junta)): ?>
+                <?php if (empty($junta)): ?>
                     <tr>
-                        <td colspan="8" class="text-center p-4">
-                            <p>No hay miembros activos en la Junta Directiva.</p>
+                        <td colspan="7" class="text-center p-4">
+                            No hay miembros activos en la Junta Directiva.
                         </td>
                     </tr>
-                    <?php else: ?>
+                <?php else: ?>
                     <?php foreach ($junta as $miembro): ?>
-                    <tr class="tr-shadow">
-                        <td><?= htmlspecialchars($miembro['nombre']) ?></td>
-                        <td>
-                            <span class="text-dark font-weight-bold"><?= htmlspecialchars($miembro['cargo']) ?></span>
-                        </td>
-                        <td>
-                            <?php if (strtolower($miembro['estado']) === 'vigente'): ?>
-                            <span class="status--process">Vigente</span>
-                            <?php else: ?>
-                            <span class="status--denied"><?= ucfirst($miembro['estado']) ?></span>
-                            <?php endif; ?>
-                        </td>
-                        <td>
-                            <?php if ($miembro['total_documentos'] > 0): ?>
-                            <a href="/SGA-SEBANA/public/junta/documento/<?= $miembro['id'] ?>">
-                                <i class="zmdi zmdi-file-text"></i> Ver (<?= $miembro['total_documentos'] ?>)
-                            </a>
-                            <?php else: ?>
-                            <span class="text-muted">–</span>
-                            <?php endif; ?>
-                        </td>
-                        <td><?= htmlspecialchars($miembro['fecha_inicio']) ?></td>
-                        <td><?= $miembro['fecha_fin'] ? htmlspecialchars($miembro['fecha_fin']) : '—' ?></td>
-                        <td>
-                            <div class="table-data-feature">
-                                <a href="/SGA-SEBANA/public/junta/edit/<?= $miembro['id'] ?>" class="item"
-                                    data-toggle="tooltip" title="Editar">
-                                    <i class="zmdi zmdi-edit"></i>
-                                </a>
-                                <a href="/SGA-SEBANA/public/junta/finalizar/<?= $miembro['id'] ?>" class="item"
-                                    data-toggle="tooltip" title="Finalizar"
-                                    onclick="return confirm('¿Finalizar este miembro?')">
-                                    <i class="zmdi zmdi-close-circle"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="spacer"></tr>
+                        <tr class="tr-shadow">
+
+                            <td><?= htmlspecialchars($miembro['nombre']) ?></td>
+
+                            <td>
+                                <span class="text-dark font-weight-bold">
+                                    <?= htmlspecialchars($miembro['cargo']) ?>
+                                </span>
+                            </td>
+
+                            <td>
+                                <?php if (strtolower($miembro['estado']) === 'vigente'): ?>
+                                    <span class="status--process">Vigente</span>
+                                <?php else: ?>
+                                    <span class="status--denied">
+                                        <?= ucfirst($miembro['estado']) ?>
+                                    </span>
+                                <?php endif; ?>
+                            </td>
+
+                            <td>
+                                <?php if ($miembro['total_documentos'] > 0): ?>
+                                    <a href="/SGA-SEBANA/public/junta/documentos/<?= $miembro['id'] ?>">
+                                        <i class="zmdi zmdi-file-text"></i>
+                                        Ver (<?= $miembro['total_documentos'] ?>)
+                                    </a>
+                                <?php else: ?>
+                                    <span class="text-muted">—</span>
+                                <?php endif; ?>
+                            </td>
+
+                            <td><?= htmlspecialchars($miembro['fecha_inicio']) ?></td>
+
+                            <td>
+                                <?= $miembro['fecha_fin']
+                                    ? htmlspecialchars($miembro['fecha_fin'])
+                                    : '—' ?>
+                            </td>
+
+                            <td>
+                                <div class="table-data-feature">
+
+                                    <a href="/SGA-SEBANA/public/junta/edit/<?= $miembro['id'] ?>"
+                                       class="item" data-toggle="tooltip" title="Editar">
+                                        <i class="zmdi zmdi-edit"></i>
+                                    </a>
+
+                                    <a href="/SGA-SEBANA/public/junta/finalizar/<?= $miembro['id'] ?>"
+                                       class="item"
+                                       data-toggle="tooltip"
+                                       title="Finalizar"
+                                       onclick="return confirm('¿Finalizar este miembro?')">
+                                        <i class="zmdi zmdi-close-circle"></i>
+                                    </a>
+
+                                </div>
+                            </td>
+
+                        </tr>
+                        <tr class="spacer"></tr>
                     <?php endforeach; ?>
-                    <?php endif; ?>
+                <?php endif; ?>
                 </tbody>
             </table>
+
+            <!-- PAGINACIÓN -->
+            <?php if (!empty($totalPaginas) && $totalPaginas > 1): ?>
+                <div class="mt-4 d-flex justify-content-center">
+                    <ul class="pagination">
+
+                        <!-- ANTERIOR -->
+                        <?php if ($page > 1): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<?= $page - 1 ?>">«</a>
+                            </li>
+                        <?php endif; ?>
+
+                        <?php
+                        $inicio = max(1, $page - 2);
+                        $fin = min($totalPaginas, $page + 2);
+                        ?>
+
+                        <?php for ($i = $inicio; $i <= $fin; $i++): ?>
+                            <li class="page-item <?= $i == $page ? 'active' : '' ?>">
+                                <a class="page-link" href="?page=<?= $i ?>">
+                                    <?= $i ?>
+                                </a>
+                            </li>
+                        <?php endfor; ?>
+
+                        <!-- SIGUIENTE -->
+                        <?php if ($page < $totalPaginas): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<?= $page + 1 ?>">»</a>
+                            </li>
+                        <?php endif; ?>
+
+                    </ul>
+                </div>
+            <?php endif; ?>
+
         </div>
     </div>
 </div>
@@ -91,3 +156,4 @@ ob_start();
 <?php
 $content = ob_get_clean();
 require BASE_PATH . '/public/templates/base.html.php';
+?>

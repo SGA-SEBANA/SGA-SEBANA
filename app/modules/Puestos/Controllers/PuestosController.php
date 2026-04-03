@@ -6,6 +6,7 @@ use App\Modules\Puestos\Models\PuestosModel;
 use App\Modules\Usuarios\Models\Bitacora;
 use Dompdf\Dompdf;
 use App\Modules\Visitas\Models\Notification;
+use App\Helpers\Paginator;
 
 class PuestosController
 {
@@ -22,24 +23,34 @@ class PuestosController
      * List all puestos with optional filters
      */
     public function index()
-    {
-        $model = new PuestosModel();
+{
+    $model = new PuestosModel();
+    
+    $filtros = [
+        'busqueda' => trim($_GET['q'] ?? ''),
+        'estado' => $_GET['estado'] ?? '',
+        'afiliado_id' => $_GET['afiliado_id'] ?? '',
+    ];
 
-        $filtros = [
-            'busqueda' => trim($_GET['q'] ?? ''),
-            'estado' => $_GET['estado'] ?? '',
-            'afiliado_id' => $_GET['afiliado_id'] ?? '',
-        ];
+    $pagination = Paginator::make(
+        $model,
+        'getAll',
+        $filtros,
+        $_GET['page'] ?? 1,
+        10
+    );
 
-        $puestos = $model->getAll($filtros);
-        $afiliados = $model->getAfiliados();
+    $puestos = $pagination['data'];
+    $page = $pagination['page'];
+    $totalPaginas = $pagination['totalPaginas'];
 
-        $title = "Gestión de Puestos";
-        $success = $_GET['success'] ?? null;
+    $afiliados = $model->getAfiliados();
 
-        require BASE_PATH . '/app/modules/Puestos/Views/index.php';
-    }
+    $title = "Gestión de Puestos";
+    $success = $_GET['success'] ?? null;
 
+    require BASE_PATH . '/app/modules/Puestos/Views/index.php';
+}
     /**
      * Show create form (GET) or store new puesto (POST)
      */

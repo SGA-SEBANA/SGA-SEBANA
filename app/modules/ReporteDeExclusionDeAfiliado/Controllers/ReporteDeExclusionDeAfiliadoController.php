@@ -4,27 +4,37 @@ namespace App\Modules\ReporteDeExclusionDeAfiliado\Controllers;
 use App\Core\ControllerBase;
 use App\Modules\ReporteDeExclusionDeAfiliado\Models\ReporteDeExclusionDeAfiliado;
 use Dompdf\Dompdf;
+use App\Helpers\Paginator;
 
 class ReporteDeExclusionDeAfiliadoController extends ControllerBase
 {
-    public function index()
-    {
-        $model = new ReporteDeExclusionDeAfiliado();
-        $filtros = [
-            'fecha_inicio' => $_GET['fecha_inicio'] ?? null,
-            'fecha_fin'    => $_GET['fecha_fin'] ?? null,
-            'tipo_baja'    => $_GET['tipo_baja'] ?? null,
-            'estado'       => $_GET['estado'] ?? null,
-            'nombre'       => $_GET['nombre'] ?? null,
-        ];
+   public function index()
+{
+    $model = new ReporteDeExclusionDeAfiliado();
 
-        $exclusiones = $model->getAll($filtros);
+    $filtros = [
+        'fecha_inicio' => $_GET['fecha_inicio'] ?? null,
+        'fecha_fin'    => $_GET['fecha_fin'] ?? null,
+        'tipo_baja'    => $_GET['tipo_baja'] ?? null,
+        'estado'       => $_GET['estado'] ?? null,
+        'nombre'       => $_GET['nombre'] ?? null,
+    ];
 
-        return $this->render('index', [
-            'exclusiones' => $exclusiones,
-            'filtros' => $filtros
-        ]);
-    }
+    $pagination = \App\Helpers\Paginator::make(
+        $model,
+        'getAll',
+        $filtros,
+        $_GET['page'] ?? 1,
+        10
+    );
+
+    return $this->render('index', [
+        'exclusiones' => $pagination['data'],
+        'filtros' => $filtros,
+        'page' => $pagination['page'],
+        'totalPaginas' => $pagination['totalPaginas']
+    ]);
+}
 
   public function show($id)
 {
@@ -68,6 +78,7 @@ class ReporteDeExclusionDeAfiliadoController extends ControllerBase
     $dompdf->render();
     $dompdf->stream('exclusion_'.$afiliado['cedula'].'.pdf', ['Attachment' => true]);
 }
+
 public function exportar($formato)
 {
     $model = new ReporteDeExclusionDeAfiliado();
@@ -77,8 +88,6 @@ public function exportar($formato)
         'tipo_baja'    => $_GET['tipo_baja'] ?? null,
         'estado'       => $_GET['estado'] ?? null,
     ];
-
-    $exclusiones = $model->getAll($filtros);
 
     if ($formato === 'pdf') {
         $dompdf = new Dompdf();

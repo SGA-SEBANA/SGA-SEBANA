@@ -12,7 +12,7 @@ class PuestosModel extends ModelBase
     /**
      * Get all puestos with JOINs, with optional filters
      */
-    public function getAll($filtros = [])
+    public function getAll($filtros = [], $start = 0, $limit = 10)
     {
         $sql = "SELECT p.*, 
                     a.nombre_completo AS afiliado_nombre,
@@ -49,12 +49,60 @@ class PuestosModel extends ModelBase
             $params['afiliado_id'] = $filtros['afiliado_id'];
         }
 
-        $sql .= " ORDER BY p.fecha_creacion DESC";
+          $sql .= " ORDER BY p.fecha_creacion DESC
+              LIMIT $start, $limit";
+
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function countAll($filtros = [])
+{
+    $sql = "SELECT COUNT(*) as total
+            FROM {$this->table} p
+            INNER JOIN afiliados a ON p.afiliado_id = a.id
+            LEFT JOIN oficinas o ON p.oficina_id = o.id
+            LEFT JOIN usuarios u ON p.asignado_por = u.id
+            WHERE 1=1";
+
+    $params = [];
+
+    // Filtro: búsqueda general
+    if (!empty($filtros['busqueda'])) {
+        $sql .= " AND (
+            a.nombre_completo LIKE :b1
+            OR p.nombre LIKE :b2
+            OR p.departamento LIKE :b3
+            OR a.cedula LIKE :b4
+        )";
+
+        $termino = "%" . $filtros['busqueda'] . "%";
+
+        $params['b1'] = $termino;
+        $params['b2'] = $termino;
+        $params['b3'] = $termino;
+        $params['b4'] = $termino;
+    }
+
+    // Filtro: estado
+    if (!empty($filtros['estado'])) {
+        $sql .= " AND p.estado = :estado";
+        $params['estado'] = $filtros['estado'];
+    }
+
+    // Filtro: afiliado específico
+    if (!empty($filtros['afiliado_id'])) {
+        $sql .= " AND p.afiliado_id = :afiliado_id";
+        $params['afiliado_id'] = $filtros['afiliado_id'];
+    }
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute($params);
+
+    return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+}
 
     /**
      * Get a single puesto by ID with JOINed names
