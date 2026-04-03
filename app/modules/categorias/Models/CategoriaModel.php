@@ -70,19 +70,25 @@ class CategoriaModel extends ModelBase {
 
     // Registro oficial en la base de datos
     public function registrar($nombre, $descripcion, $tipo) {
-        $sql = "INSERT INTO {$this->table} (nombre, descripcion, tipo, estado) VALUES (:nombre, :descripcion, :tipo, 'activo')";
-        try {
-            $stmt = $this->db->prepare($sql);
-            return $stmt->execute([
-                ':nombre' => trim($nombre),
-                ':descripcion' => trim($descripcion),
-                ':tipo' => trim($tipo)
-            ]);
-        } catch (PDOException $e) {
-            error_log("Error registrando categoría: " . $e->getMessage());
-            return false;
+    $sql = "INSERT INTO {$this->table} (nombre, descripcion, tipo, estado, fecha_creacion)
+            VALUES (:nombre, :descripcion, :tipo, 'activo', NOW())";
+    try {
+        $stmt = $this->db->prepare($sql);
+        $ok = $stmt->execute([
+            ':nombre' => trim($nombre),
+            ':descripcion' => trim($descripcion),
+            ':tipo' => trim($tipo)
+        ]);
+
+        if ($ok) {
+            return (int) $this->db->lastInsertId(); // devuelve el ID insertado
         }
+        return 0;
+    } catch (PDOException $e) {
+        error_log("Error registrando categoría: " . $e->getMessage());
+        return 0;
     }
+}
 
     /**
      * Busca una categoría específica por su ID

@@ -8,13 +8,17 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 use App\Modules\Bitacora\Models\BitacoraModel;
 use App\Modules\Usuarios\Models\Bitacora; // <-- agregado para registrar acciones
+use App\Modules\Visitas\Models\Notification;
+
 
 class CategoriaController extends ControllerBase {
     
     protected $model;
+    protected $notiModel;
 
     public function __construct() {
         $this->model = new CategoriaModel();
+        $this->notiModel = new Notification();
     }
 
     public function index() {
@@ -69,8 +73,23 @@ class CategoriaController extends ControllerBase {
                 return;
             }
 
-            if ($this->model->registrar($nombre, $descripcion, $tipo)) {
-                $this->enviarNotificacionMail($nombre, 'registro');
+            //if ($this->model->registrar($nombre, $descripcion, $tipo)) {
+                //$this->enviarNotificacionMail($nombre, 'registro');
+                $nuevoId = $this->model->registrar($nombre, $descripcion, $tipo);
+
+if ($nuevoId > 0) {
+    // Notificación
+    $this->notiModel->createNotification(
+        1,
+        'sistema',
+        'categorias',
+        'Nueva Categoría',
+        "Se registró la categoría: {$nombre}",
+        'categoria',
+        $nuevoId,
+        "/SGA-SEBANA/public/Categorias/show/{$nuevoId}"
+    );
+
 
                 // BITÁCORA: creación
                 $bitacora = new Bitacora();
@@ -118,8 +137,21 @@ class CategoriaController extends ControllerBase {
                 return;
             }
 
-            if ($this->model->actualizar($id, $nombre, $descripcion, $tipo)) {
-                $this->enviarNotificacionMail($nombre, 'actualización');
+            //if ($this->model->actualizar($id, $nombre, $descripcion, $tipo)) {
+                //$this->enviarNotificacionMail($nombre, 'actualización');
+                if ($this->model->actualizar($id, $nombre, $descripcion, $tipo)) {
+              // Notificación real
+             $this->notiModel->createNotification(
+               1,
+               'sistema',
+                'categorias',
+               'Categoría Editada',
+              "Se actualizó la categoría: {$nombre}",
+              'categoria',
+               $id,
+               "/SGA-SEBANA/public/Categorias/show/{$id}"
+                );
+
 
                 // BITÁCORA: actualización
                 $bitacora = new Bitacora();
@@ -152,8 +184,21 @@ class CategoriaController extends ControllerBase {
         return;
     }
 
-    if ($this->model->toggleStatus($id)) {
-        $this->enviarNotificacionMail($categoria['nombre'] ?? 'ID: '.$id, 'cambio de estado');
+    //if ($this->model->toggleStatus($id)) {
+        //$this->enviarNotificacionMail($categoria['nombre'] ?? 'ID: '.$id, 'cambio de estado');
+        if ($this->model->toggleStatus($id)) {
+    // Notificación real
+    $this->notiModel->createNotification(
+        1,
+        'sistema',
+        'categorias',
+        'Estado Cambiado',
+        "La categoría {$categoria['nombre']} ahora está en estado: {$categoria['estado']}",
+        'categoria',
+        $id,
+        "/SGA-SEBANA/public/Categorias/show/{$id}"
+    );
+
 
         // BITÁCORA: cambio de estado
         $bitacora = new Bitacora();
