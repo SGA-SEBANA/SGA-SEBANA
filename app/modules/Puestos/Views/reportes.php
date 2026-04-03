@@ -15,7 +15,7 @@ ob_start();
                 <a href="/SGA-SEBANA/public/puestos" class="au-btn au-btn-icon au-btn--blue au-btn--small">
                     <i class="zmdi zmdi-arrow-left"></i> Volver a la lista
                 </a>
-                <a href="/SGA-SEBANA/public/puestos/export-csv" class="au-btn au-btn-icon au-btn--green au-btn--small"
+                <a href="/SGA-SEBANA/public/puestos/export-csv" class="btn btn-success"
                     style="margin-left: 8px;">
                     <i class="zmdi zmdi-download"></i> Exportar CSV
                 </a>
@@ -113,7 +113,7 @@ ob_start();
                                         <td>
                                             <?= htmlspecialchars($puesto['afiliado_cedula']) ?>
                                         </td>
-                                        <td><span class="block-email">
+                                        <td><span class="text-dark font-weight-bold">
                                                 <?= htmlspecialchars($puesto['nombre']) ?>
                                             </span></td>
                                         <td>

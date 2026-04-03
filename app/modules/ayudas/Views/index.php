@@ -9,7 +9,7 @@ ob_start();
     <div class="col-md-12">
         <div class="overview-wrap mb-4 px-2">
             <h2 class="title-1">Gestion de Ayudas Economicas</h2>
-            <a href="/SGA-SEBANA/public/ayudas/create" class="btn btn-primary shadow-sm">
+            <a href="/SGA-SEBANA/public/ayudas/create" class="au-btn au-btn-icon au-btn--green au-btn--small">
                 <i class="zmdi zmdi-plus me-2"></i>Nueva Solicitud
             </a>
         </div>
@@ -55,13 +55,13 @@ ob_start();
                                         <span class="status--denied"><?= htmlspecialchars($a['estado']) ?></span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="desc" style="color: #001B71; font-weight: 800; font-size: 1.05rem;">
+                                <td class="desc" style="color: #000000; font-weight: 800; font-size: 1.05rem;">
                                     C<?= number_format($a['monto_solicitado'], 2) ?>
                                 </td>
                                 <td>
                                     <div class="table-data-feature justify-content-center">
                                         <a href="/SGA-SEBANA/public/ayudas/show/<?= $a['id'] ?>" class="item shadow-sm" data-toggle="tooltip" data-placement="top" title="Ver Detalles">
-                                            <i class="zmdi zmdi-eye text-primary"></i>
+                                            <i class="zmdi zmdi-eye text-secondary"></i>
                                         </a>
                                     </div>
                                 </td>

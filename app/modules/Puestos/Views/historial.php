@@ -59,7 +59,7 @@ ob_start();
                     <?php else: ?>
                         <?php foreach ($puestos as $puesto): ?>
                             <tr class="tr-shadow">
-                                <td><span class="block-email">
+                                <td><span class="text-dark font-weight-bold">
                                         <?= htmlspecialchars($puesto['nombre']) ?>
                                     </span></td>
                                 <td>

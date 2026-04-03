@@ -10,7 +10,7 @@ $esJefatura = $es_jefatura ?? false;
     <div class="col-md-12">
         <div class="overview-wrap mb-4">
             <h2 class="title-1">Gestion de Viaticos</h2>
-            <a href="/SGA-SEBANA/public/viaticos/create" class="btn btn-primary">
+            <a href="/SGA-SEBANA/public/viaticos/create" class="au-btn au-btn-icon au-btn--green au-btn--small">
                 <i class="zmdi zmdi-plus me-2"></i>Nueva Solicitud
             </a>
         </div>
@@ -58,7 +58,7 @@ $esJefatura = $es_jefatura ?? false;
                                 </td>
                                 <td>C<?= number_format($v['monto_alimentacion'], 2) ?></td>
                                 <td>C<?= number_format($v['monto_transporte'], 2) ?></td>
-                                <td class="desc" style="color: #001B71; font-weight: bold;">
+                                <td class="desc" style="color: #000000; font-weight: bold;">
                                     C<?= number_format($v['total_pagar'], 2) ?>
                                 </td>
                                 <td>

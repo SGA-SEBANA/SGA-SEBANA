@@ -53,7 +53,8 @@ ob_start();
                             }
                         ?>
                         <tr class="tr-shadow">
-                            <td>#<?= htmlspecialchars((string) ($s['id'] ?? '')) ?></td>
+                            <td><strong>#<?= htmlspecialchars((string) ($s['id'] ?? '')) ?></strong></td>
+
                             <td><?= htmlspecialchars((string) ($s['cedula'] ?? '')) ?></td>
                             <td><?= htmlspecialchars(trim((string) (($s['nombre'] ?? '') . ' ' . ($s['apellido1'] ?? '')))) ?></td>
                             <td><?= htmlspecialchars((string) ($s['tipo_usuario'] ?? '')) ?></td>
