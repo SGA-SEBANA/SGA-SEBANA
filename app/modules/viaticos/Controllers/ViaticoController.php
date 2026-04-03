@@ -8,13 +8,17 @@ use App\Modules\Viaticos\Models\ViaticoModel;
 use App\Modules\Usuarios\Helpers\AccessControl;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Modules\Visitas\Models\Notification; 
 
 class ViaticoController extends ControllerBase {
 
     protected $model;
+    protected $notiModel;
+
 
     public function __construct() {
         $this->model = new ViaticoModel();
+        $this->notiModel = new Notification();
 
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
@@ -257,6 +261,22 @@ class ViaticoController extends ControllerBase {
                     ],
                     'resultado' => 'exitoso'
                 ]);
+
+                // Notificación
+                $this->notiModel->createNotification(
+                    $usuario_id,
+                    'sistema',
+                    'solicitudes',
+                    'Nueva Solicitud de Viáticos',
+                    "Se registró una nueva solicitud de viáticos con ID {$nuevoId}",
+                    'solicitud_viatico',
+                    $nuevoId,
+                    "/SGA-SEBANA/public/viaticos/show?id={$nuevoId}"
+                );
+
+
+
+
                 unset($_SESSION['error_detail']);
                 $this->redirect('/SGA-SEBANA/public/viaticos?success=creado');
             } else {
@@ -354,6 +374,20 @@ class ViaticoController extends ControllerBase {
                     'datos_nuevos' => ['estado' => $nuevo_estado],
                     'resultado' => 'exitoso'
                 ]);
+
+
+                // Notificación
+                $this->notiModel->createNotification(
+                    1,
+                    'sistema',
+                    'solicitudes',
+                    'Estado de Viáticos Actualizado',
+                    "La solicitud de viáticos ID {$id} ahora está en estado: {$nuevo_estado}",
+                    'solicitud_viatico',
+                    $id,
+                    "/SGA-SEBANA/public/viaticos/show?id={$id}"
+                );
+
                 $this->redirect('/SGA-SEBANA/public/viaticos/show?id=' . $id . '&success=estado_actualizado');
             } else {
                 $_SESSION['error_detail'] = $this->model->getLastError();

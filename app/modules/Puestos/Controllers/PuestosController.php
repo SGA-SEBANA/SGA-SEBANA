@@ -5,9 +5,19 @@ namespace App\Modules\Puestos\Controllers;
 use App\Modules\Puestos\Models\PuestosModel;
 use App\Modules\Usuarios\Models\Bitacora;
 use Dompdf\Dompdf;
+use App\Modules\Visitas\Models\Notification;
 
 class PuestosController
 {
+    protected $notiModel;
+
+    public function __construct()
+    {
+        $this->notiModel = new Notification(); // inicialización
+    }
+
+
+
     /**
      * List all puestos with optional filters
      */
@@ -59,6 +69,19 @@ class PuestosController
                 'datos_nuevos' => $data,
             ]);
 
+            // Notificación
+            $this->notiModel->createNotification(
+                1,
+                'sistema',
+                'puestos',
+                'Nuevo Puesto Asignado',
+                "Se asignó el puesto '{$data['nombre']}' al afiliado ID {$data['afiliado_id']}",
+                'puesto',
+                $newId,
+                "/SGA-SEBANA/public/puestos/edit/{$newId}"
+            );
+
+
             header("Location: /SGA-SEBANA/public/puestos?success=Puesto asignado correctamente");
             exit;
         }
@@ -104,6 +127,19 @@ class PuestosController
                 'datos_nuevos' => $data,
             ]);
 
+            // Notificación
+            $this->notiModel->createNotification(
+                1,
+                'sistema',
+                'puestos',
+                'Puesto Editado',
+                "Se actualizaron los datos del puesto ID {$id}, nombre: {$data['nombre']}",
+                'puesto',
+                $id,
+                "/SGA-SEBANA/public/puestos/edit/{$id}"
+            );
+
+
             header("Location: /SGA-SEBANA/public/puestos?success=Puesto actualizado correctamente");
             exit;
         }
@@ -148,6 +184,19 @@ class PuestosController
             'descripcion' => "Eliminación de puesto '{$puesto['nombre']}' (afiliado ID: {$puesto['afiliado_id']})",
             'datos_anteriores' => $puesto,
         ]);
+
+        // Notificación
+        $this->notiModel->createNotification(
+            1,
+            'sistema',
+            'puestos',
+            'Puesto Eliminado',
+            "Se eliminó el puesto '{$puesto['nombre']}' del afiliado ID {$puesto['afiliado_id']}",
+            'puesto',
+            $id,
+            null
+        );
+
 
         header("Location: /SGA-SEBANA/public/puestos?success=Puesto eliminado correctamente");
         exit;
