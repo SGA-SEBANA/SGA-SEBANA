@@ -52,10 +52,10 @@ ob_start();
 
 </div>
 
-<script src="/SGA-SEBANA/public/assets/vendor/fullcalendar-6.1.11/fullcalendar.min.js"></script>
+<script src="/SGA-SEBANA/public/assets/vendor/fullcalendar-6.1.11/index.global.min.js"></script>
+
 
 <script src="/SGA-SEBANA/public/assets/js/calendar.js"></script>
-
 <?php
 $content = ob_get_clean();
 require BASE_PATH . '/public/templates/base.html.php';

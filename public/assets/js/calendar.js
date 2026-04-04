@@ -92,7 +92,21 @@ document.addEventListener("DOMContentLoaded", function () {
   ];
 
   const calendar = new FullCalendar.Calendar(calendarEl, {
+    locale: "es", //idioma
+    buttonText: {
+      today: "Hoy",
+      month: "Mes",
+      week: "Semana",
+      day: "Día",
+      list: "Lista",
+    },
     initialView: "dayGridMonth",
+
+    // cambios manuales
+
+    allDayText: "Todo el día",
+
+    noEventsText: "No hay eventos para mostrar",
 
     headerToolbar: {
       left: "prev,next today",
@@ -108,18 +122,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     dayMaxEvents: 3,
 
-    moreLinkText: "more",
+    // cambios manuales
+
+    moreLinkText: "más",
 
     eventClick: function (info) {
       const event = info.event;
       const props = event.extendedProps;
 
       alert(
-        `Event: ${event.title}\n` +
-          `Type: ${props.type || "N/A"}\n` +
-          `Description: ${props.description || "No description"}\n` +
-          `Start: ${event.start ? event.start.toLocaleString() : "N/A"}\n` +
-          `End: ${event.end ? event.end.toLocaleString() : "N/A"}`,
+        `Evento: ${event.title}\n` +
+          `Tipo: ${props.type || "N/A"}\n` +
+          `Descripción: ${props.description || "Sin descripción"}\n`,
       );
     },
 

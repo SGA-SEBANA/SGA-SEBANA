@@ -134,7 +134,7 @@ ob_start();
                                 <td><?= htmlspecialchars((string) ($registro['resultado_label'] ?? $registro['resultado'] ?? '-')) ?></td>
                                 <td>
                                     <a href="/SGA-SEBANA/public/bitacora/detalles/<?= (int) ($registro['id'] ?? 0) ?>"
-                                        class="au-btn au-btn-icon au-btn--blue au-btn--small">
+                                        class="au-btn au-btn-icon au-btn--blue au-btn--small text-nowrap">
                                         Ver detalle
                                     </a>
                                 </td>
