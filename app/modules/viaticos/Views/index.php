@@ -21,8 +21,7 @@ $esJefatura = $es_jefatura ?? false;
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
-
-        <div class="table-responsive table-responsive-data2">
+        <div class="table-responsive">
             <table class="table table-data2">
                 <thead>
                     <tr>
@@ -40,7 +39,7 @@ $esJefatura = $es_jefatura ?? false;
                 <tbody>
                     <?php if (!empty($viaticos)): ?>
                         <?php foreach ($viaticos as $v): ?>
-                            <tr class="tr-shadow">
+                            <tr class="tr-shadow text-nowrap">
                                 <td><strong><?= htmlspecialchars($v['consecutivo']) ?></strong></td>
                                 <td><?= !empty($v['empleados']) ? nl2br(htmlspecialchars($v['empleados'])) : 'N/D' ?></td>
                                 <td>
