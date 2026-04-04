@@ -59,15 +59,21 @@ ob_start();
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="col-md-2 d-flex gap-2">
-                        <button type="submit" class="au-btn au-btn-icon au-btn--blue au-btn--small">
-                            <i class="zmdi zmdi-search"></i> Filtrar
-                        </button>
-                        <a href="/SGA-SEBANA/public/puestos" class="au-btn au-btn-icon au-btn--small"
-                            style="background: #6c757d; color: #fff; margin-left: 5px;" title="Limpiar filtros">
-                            <i class="zmdi zmdi-refresh"></i>
-                        </a>
-                    </div>
+              <div class="col-md-auto d-flex gap-2 flex-nowrap">
+
+                <button type="submit"
+                    class="au-btn au-btn-icon au-btn--blue au-btn--small text-nowrap">
+                    <i class="zmdi zmdi-search"></i> Filtrar
+                </button>
+
+                <a href="/SGA-SEBANA/public/puestos"
+                class="au-btn au-btn-icon au-btn--small"
+                style="background: #6c757d; color: #fff;"
+                title="Limpiar filtros">
+                    <i class="zmdi zmdi-refresh"></i>
+                </a>
+
+            </div>
                 </form>
             </div>
         </div>
