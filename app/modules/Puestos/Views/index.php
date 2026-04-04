@@ -59,15 +59,21 @@ ob_start();
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="col-md-2 d-flex gap-2">
-                        <button type="submit" class="au-btn au-btn-icon au-btn--blue au-btn--small">
-                            <i class="zmdi zmdi-search"></i> Filtrar
-                        </button>
-                        <a href="/SGA-SEBANA/public/puestos" class="au-btn au-btn-icon au-btn--small"
-                            style="background: #6c757d; color: #fff; margin-left: 5px;" title="Limpiar filtros">
-                            <i class="zmdi zmdi-refresh"></i>
-                        </a>
-                    </div>
+              <div class="col-md-auto d-flex gap-2 flex-nowrap">
+
+                <button type="submit"
+                    class="au-btn au-btn-icon au-btn--blue au-btn--small text-nowrap">
+                    <i class="zmdi zmdi-search"></i> Filtrar
+                </button>
+
+                <a href="/SGA-SEBANA/public/puestos"
+                class="au-btn au-btn-icon au-btn--small"
+                style="background: #6c757d; color: #fff;"
+                title="Limpiar filtros">
+                    <i class="zmdi zmdi-refresh"></i>
+                </a>
+
+            </div>
                 </form>
             </div>
         </div>
@@ -183,6 +189,44 @@ ob_start();
                     <?php endif; ?>
                 </tbody>
             </table>
+
+       <?php if (!empty($totalPaginas) && $totalPaginas > 1): ?>
+<div class="mt-4 d-flex justify-content-center">
+  <ul class="pagination">
+
+    <!-- ANTERIOR -->
+    <?php if ($page > 1): ?>
+      <li class="page-item">
+        <a class="page-link"
+           href="?<?= http_build_query(array_merge($_GET, ['page' => $page - 1])) ?>">
+          «
+        </a>
+      </li>
+    <?php endif; ?>
+
+    <!-- NÚMEROS -->
+    <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
+      <li class="page-item <?= $i == $page ? 'active' : '' ?>">
+        <a class="page-link"
+           href="?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>">
+          <?= $i ?>
+        </a>
+      </li>
+    <?php endfor; ?>
+
+    <!-- SIGUIENTE -->
+    <?php if ($page < $totalPaginas): ?>
+      <li class="page-item">
+        <a class="page-link"
+           href="?<?= http_build_query(array_merge($_GET, ['page' => $page + 1])) ?>">
+          »
+        </a>
+      </li>
+    <?php endif; ?>
+
+  </ul>
+</div>
+<?php endif; ?>
         </div>
 
         <!-- RESULTS COUNT -->

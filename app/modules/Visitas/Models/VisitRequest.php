@@ -8,27 +8,52 @@ class VisitRequest extends ModelBase {
 
    protected $table = 'solicitudes_visitas_oficinas';
 
-   public function getVisits($start = 0, $limit = 10)
-   {
+  public function getVisits($filtros = [], $start = 0, $limit = 10)
+{
     $sql = "SELECT s.id,
         s.codigo_solicitud,
         s.afiliado_id,
         a.nombre AS afiliado_nombre,
         s.oficina_id,
         o.nombre AS oficina_nombre,
-        s.numero_empleado, s.nombre_empleado, s.fecha_visita, s.hora_visita, s.motivo, s.tipo_visita, s.estado, s.fecha_reprogramada,
-        s.hora_reprogramada, s.motivo_reprogramacion, s.motivo_cancelacion, s.motivo_rechazo, s.resultado_visita, s.aprobado_por,
-        s.fecha_aprobacion, s.observaciones, s.fecha_creacion, s.fecha_actualizacion
+        s.numero_empleado,
+        s.nombre_empleado,
+        s.fecha_visita,
+        s.hora_visita,
+        s.motivo,
+        s.tipo_visita,
+        s.estado,
+        s.fecha_reprogramada,
+        s.hora_reprogramada,
+        s.motivo_reprogramacion,
+        s.motivo_cancelacion,
+        s.motivo_rechazo,
+        s.resultado_visita,
+        s.aprobado_por,
+        s.fecha_aprobacion,
+        s.observaciones,
+        s.fecha_creacion,
+        s.fecha_actualizacion
     FROM solicitudes_visitas_oficinas s
     INNER JOIN afiliados a ON s.afiliado_id = a.id
     INNER JOIN oficinas o ON s.oficina_id = o.id
-    ORDER BY s.fecha_creacion DESC
-    LIMIT {$start}, {$limit}";
+    WHERE 1=1";
+
+    $params = [];
+
+    if (!empty($filtros['afiliado_id'])) {
+        $sql .= " AND s.afiliado_id = :afiliado_id";
+        $params['afiliado_id'] = $filtros['afiliado_id'];
+    }
+
+    $sql .= " ORDER BY s.fecha_creacion DESC
+              LIMIT {$start}, {$limit}";
 
     $stmt = $this->db->prepare($sql);
-    $stmt->execute();
+    $stmt->execute($params);
+
     return $stmt->fetchAll(\PDO::FETCH_ASSOC);
-   }
+}
 
    public function getVisitsByAfiliado($afiliadoId, $start = 0, $limit = 10)
    {
@@ -52,6 +77,25 @@ class VisitRequest extends ModelBase {
     $stmt->execute([':afiliado_id' => $afiliadoId]);
     return $stmt->fetchAll(\PDO::FETCH_ASSOC);
    }
+
+   public function countAll($filtros = [])
+{
+    $sql = "SELECT COUNT(*)
+            FROM solicitudes_visitas_oficinas
+            WHERE 1=1";
+
+    $params = [];
+
+    if (!empty($filtros['afiliado_id'])) {
+        $sql .= " AND afiliado_id = :afiliado_id";
+        $params['afiliado_id'] = $filtros['afiliado_id'];
+    }
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute($params);
+
+    return (int) $stmt->fetchColumn();
+}
 
 public function getOffices() {
     $sql = 'SELECT id, nombre FROM oficinas ORDER BY nombre ASC';
@@ -143,51 +187,53 @@ public function createVisits(
     $fecha_creacion,
     $fecha_actualizacion
 ){
-
-   $sql = "INSERT INTO {$this->table}(
-    afiliado_id,
-    oficina_id,
-    numero_empleado,
-    nombre_empleado,
-    fecha_visita,
-    hora_visita,
-    motivo,
-    tipo_visita,
-    estado,
-    fecha_reprogramada,
-    hora_reprogramada,
-    motivo_reprogramacion,
-    motivo_cancelacion,
-    motivo_rechazo,
-    resultado_visita,
-    aprobado_por,
-    fecha_aprobacion,
-    observaciones,
-    fecha_creacion,
-    fecha_actualizacion
+     
+    $sql = "INSERT INTO {$this->table}(
+        afiliado_id,
+        oficina_id,
+        numero_empleado,
+        nombre_empleado,
+        fecha_visita,
+        hora_visita,
+        motivo,	
+        tipo_visita,
+        estado,
+        fecha_reprogramada,
+        hora_reprogramada,	
+        motivo_reprogramacion,
+        motivo_cancelacion,
+        motivo_rechazo,
+        resultado_visita,
+        aprobado_por,	
+        fecha_aprobacion,
+        observaciones,
+        fecha_creacion,
+        fecha_actualizacion	
     ) VALUES (
-    :afiliado_id,
-    :oficina_id,
-    :numero_empleado,
-    :nombre_empleado,
-    :fecha_visita,
-    :hora_visita,
-    :motivo,
-    :tipo_visita,
-    :estado,
-    :fecha_reprogramada,
-    :hora_reprogramada,
-    :motivo_reprogramacion,
-    :motivo_cancelacion,
-    :motivo_rechazo,
-    :resultado_visita,
-    :aprobado_por,
-    :fecha_aprobacion,
-    :observaciones,
-    :fecha_creacion,
-    :fecha_actualizacion)";
+        :afiliado_id,
+        :oficina_id,
+        :numero_empleado,
+        :nombre_empleado,
+        :fecha_visita,
+        :hora_visita,
+        :motivo,
+        :tipo_visita,
+        :estado,
+        :fecha_reprogramada,
+        :hora_reprogramada,	
+        :motivo_reprogramacion,
+        :motivo_cancelacion,
+        :motivo_rechazo,
+        :resultado_visita,
+        :aprobado_por,	
+        :fecha_aprobacion,
+        :observaciones,
+        :fecha_creacion,
+        :fecha_actualizacion
+    )";
 
     $stmt = $this->db->prepare($sql);
+
     $stmt->bindParam(':afiliado_id', $afiliado_id);
     $stmt->bindParam(':oficina_id', $oficina_id);
     $stmt->bindParam(':numero_empleado', $numero_empleado);
@@ -209,9 +255,36 @@ public function createVisits(
     $stmt->bindParam(':fecha_creacion', $fecha_creacion);
     $stmt->bindParam(':fecha_actualizacion', $fecha_actualizacion);
 
-    $stmt->execute();
-    return $this->db->lastInsertId();
-   }
+
+    $this->db->beginTransaction();
+
+    try {
+        $stmt->execute();
+
+        $id = $this->db->lastInsertId();
+
+        $codigo = 'VIS-' . date('Y') . '-' . str_pad($id, 6, '0', STR_PAD_LEFT);
+
+        $update = $this->db->prepare("
+            UPDATE {$this->table}
+            SET codigo_solicitud = :codigo
+            WHERE id = :id
+        ");
+
+        $update->execute([
+            ':codigo' => $codigo,
+            ':id' => $id
+        ]);
+
+        $this->db->commit();
+
+        return $id;
+
+    } catch (\Exception $e) {
+        $this->db->rollBack();
+        throw $e;
+    }
+}
 
 public function rescheduleVisit($id, $fecha_reprogramada, $hora_reprogramada, $motivo_reprogramacion)
 {

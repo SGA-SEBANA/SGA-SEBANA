@@ -40,7 +40,7 @@
 
             <?php else: ?>
 
-            <p class="text-muted">No upcoming visits</p>
+            <p class="text-muted">No hay visitas próximas</p>
 
             <?php endif; ?>
 

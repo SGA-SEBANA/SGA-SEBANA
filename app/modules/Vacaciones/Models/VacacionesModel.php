@@ -560,4 +560,25 @@ class VacacionesModel extends ModelBase
     {
         return $this->lastError;
     }
+
+    //para paginacion exlucivo, necesario para el helper
+    public function getAll($filtros = [], $start = 0, $limit = 10)
+{
+    if (!empty($filtros['usuario_id'])) {
+        $rows = $this->obtenerPorUsuario($filtros['usuario_id']);
+    } else {
+        $rows = $this->obtenerTodasConUsuario();
+    }
+
+    return array_slice($rows, $start, $limit);
+}
+
+public function countAll($filtros = [])
+{
+    if (!empty($filtros['usuario_id'])) {
+        return count($this->obtenerPorUsuario($filtros['usuario_id']));
+    }
+
+    return count($this->obtenerTodasConUsuario());
+}
 }

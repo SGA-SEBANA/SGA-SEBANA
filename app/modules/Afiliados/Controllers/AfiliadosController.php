@@ -6,6 +6,7 @@ use App\Modules\Afiliados\Models\Afiliados;
 use App\Modules\Usuarios\Helpers\AffiliateAccountProvisioner;
 use App\Modules\Usuarios\Models\Bitacora;
 use App\Modules\Visitas\Models\Notification;
+use App\Helpers\Paginator;
 
 class AfiliadosController extends ControllerBase
 {
@@ -16,28 +17,41 @@ class AfiliadosController extends ControllerBase
         $this->notiModel = new Notification();
     }
 
-    public function index()
-    {
-        $filtros = [
-            'busqueda' => trim($_GET['q'] ?? ''),
-            'estado' => $_GET['estado'] ?? '',
-            'oficina_id' => $_GET['oficina_id'] ?? ''
-        ];
+  public function index()
+{
 
-        $modelo = new Afiliados();
-        $afiliados = $modelo->getAll($filtros);
-        $oficinas = $modelo->getOficinas();
+    $modelo = new Afiliados();
 
-        $data = [
-            'titulo' => 'Gestion de Afiliados',
-            'afiliados' => $afiliados,
-            'oficinas' => $oficinas,
-            'filtros' => $filtros,
-            'success' => $_GET['success'] ?? null
-        ];
+    $filtros = [
+        'busqueda' => trim($_GET['q'] ?? ''),
+        'estado' => $_GET['estado'] ?? '',
+        'oficina_id' => $_GET['oficina_id'] ?? ''
+    ];
 
-        $this->view('index', $data);
-    }
+
+    $pagination = Paginator::make(
+        $modelo,'getAll',$filtros,
+        $_GET['page'] ?? 1,10
+    );
+
+    $afiliados = $pagination['data'];
+    $page = $pagination['page'];
+    $totalPaginas = $pagination['totalPaginas'];
+
+    $oficinas = $modelo->getOficinas();
+
+    $data = [
+        'titulo' => 'Gestion de Afiliados',
+        'afiliados' => $afiliados,
+        'oficinas' => $oficinas,
+        'filtros' => $filtros,
+        'page' => $page,
+        'totalPaginas' => $totalPaginas,
+        'success' => $_GET['success'] ?? null
+    ];
+
+    $this->view('index', $data);
+}
 
     public function create()
     {

@@ -9,7 +9,7 @@ use Dompdf\Options;
 use App\Modules\Bitacora\Models\BitacoraModel;
 use App\Modules\Usuarios\Models\Bitacora; // <-- agregado para registrar acciones
 use App\Modules\Visitas\Models\Notification;
-
+use App\Helpers\Paginator;
 
 class CategoriaController extends ControllerBase {
     
@@ -21,24 +21,32 @@ class CategoriaController extends ControllerBase {
         $this->notiModel = new Notification();
     }
 
-    public function index() {
-        $filtros = [
-            'q' => $_GET['q'] ?? '',
-            'estado' => $_GET['estado'] ?? '',
-            'tipo' => $_GET['tipo'] ?? ''
-        ];
+public function index()
+{
+    $filtros = [
+        'q' => $_GET['q'] ?? '',
+        'estado' => $_GET['estado'] ?? '',
+        'tipo' => $_GET['tipo'] ?? ''
+    ];
 
-        $categorias = $this->model->obtenerTodas($filtros);
+    $pagination = \App\Helpers\Paginator::make(
+        $this->model,
+        'obtenerTodas',
+        $filtros,
+        $_GET['page'] ?? 1,
+        10
+    );
 
-        $this->view('index', [
-            'titulo' => 'Listado de Categorías',
-            'categorias' => $categorias,
-            'filtros' => $filtros,
-            'success' => $_GET['success'] ?? null,
-            'error' => $_GET['error'] ?? null
-        ]);
-    }
-
+    $this->view('index', [
+        'titulo' => 'Listado de Categorías',
+        'categorias' => $pagination['data'],
+        'filtros' => $filtros,
+        'page' => $pagination['page'],
+        'totalPaginas' => $pagination['totalPaginas'],
+        'success' => $_GET['success'] ?? null,
+        'error' => $_GET['error'] ?? null
+    ]);
+}
     public function show($id) {
         $categoria = $this->model->find($id);
         if (!$categoria) {

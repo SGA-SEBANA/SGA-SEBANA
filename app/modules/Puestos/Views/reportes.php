@@ -76,7 +76,7 @@ ob_start();
                 <strong><i class="zmdi zmdi-format-list-bulleted"></i> Listado Completo de Puestos</strong>
             </div>
             <div class="card-body">
-                <div class="table-responsive table-responsive-data2">
+                <div class="table-responsive">
                     <table class="table table-data2">
                         <thead>
                             <tr>
@@ -107,7 +107,7 @@ ob_start();
                                         <td>
                                             <?= $puesto['id'] ?>
                                         </td>
-                                        <td>
+                                        <td class="text-nowrap">
                                             <?= htmlspecialchars($puesto['afiliado_nombre']) ?>
                                         </td>
                                         <td>
@@ -119,7 +119,7 @@ ob_start();
                                         <td>
                                             <?= htmlspecialchars($puesto['departamento'] ?? '—') ?>
                                         </td>
-                                        <td>
+                                        <td class="text-nowrap">
                                             <?= htmlspecialchars($puesto['oficina_nombre'] ?? '—') ?>
                                         </td>
                                         <td>
@@ -147,10 +147,11 @@ ob_start();
                                                     style="background: #ffc107; color: #333;">Suspendido</span>
                                             <?php endif; ?>
                                         </td>
-                                        <td>
+                                        <td class="text-nowrap">
                                             <?= htmlspecialchars($puesto['fecha_asignacion']) ?>
                                         </td>
-                                        <td>
+
+                                        <td class="text-nowrap">
                                             <?= $puesto['fecha_remocion'] ? htmlspecialchars($puesto['fecha_remocion']) : '—' ?>
                                         </td>
                                     </tr>

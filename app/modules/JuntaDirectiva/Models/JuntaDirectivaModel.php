@@ -3,6 +3,7 @@
 namespace App\Modules\JuntaDirectiva\Models;
 use App\Core\ModelBase;
 
+
 class JuntaDirectivaModel extends ModelBase
 {
 
@@ -14,12 +15,12 @@ class JuntaDirectivaModel extends ModelBase
         return $this->lastError;
     }
 
-    public function getJuntaDirectiva()
+    public function getJuntaDirectiva($start = 0, $limit = 10)
     {
-        // Auto-update status for expired memberships
-        $this->checkAndCloseExpiredMemberships();
 
-        $sql = "SELECT 
+    $this->checkAndCloseExpiredMemberships();
+
+    $sql = "SELECT 
         a.nombre_completo AS nombre,
         jd.id,
         jd.cargo,
@@ -27,28 +28,47 @@ class JuntaDirectivaModel extends ModelBase
         jd.fecha_fin,
         jd.estado,
         jd.documentos
+    FROM junta_directiva jd
+    INNER JOIN afiliados a ON jd.afiliado_id = a.id
+    WHERE jd.estado IN ('vigente','suspendido','Vigente','Suspendido')
+    ORDER BY jd.fecha_inicio DESC
+    LIMIT :start, :limit";
 
-        FROM junta_directiva jd
-        INNER JOIN afiliados a ON jd.afiliado_id = a.id
-        WHERE jd.estado IN ('vigente','suspendido','Vigente','Suspendido')
-        ORDER BY jd.fecha_inicio DESC";       
+    $stmt = $this->db->prepare($sql);
+
+    $stmt->bindValue(':start', (int)$start, \PDO::PARAM_INT);
+    $stmt->bindValue(':limit', (int)$limit, \PDO::PARAM_INT);
+
+    $stmt->execute();
 
 
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute();
-        $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        foreach ($results as &$row) {
-            $docs = json_decode($row['documentos'] ?? '[]', true);
-            $row['total_documentos'] = is_array($docs) ? count($docs) : 0;
-            unset($row['documentos']);
 
-        }
-
-        return $results;
-
+    if (!$results) {
+        return [];
     }
 
+    foreach ($results as &$row) {
+        $docs = json_decode($row['documentos'] ?? '[]', true);
+        $row['total_documentos'] = is_array($docs) ? count($docs) : 0;
+        unset($row['documentos']);
+    }
+
+    return $results;
+}
+
+public function countAll()
+{
+    $sql = "SELECT COUNT(*) 
+            FROM junta_directiva jd
+            WHERE jd.estado IN ('vigente','suspendido','Vigente','Suspendido')";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute();
+
+    return (int) $stmt->fetchColumn();
+}
     public function gethistorial()
     {
              
