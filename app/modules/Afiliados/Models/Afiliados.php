@@ -2,6 +2,7 @@
 namespace App\Modules\Afiliados\Models;
 
 use App\Core\ModelBase;
+
 use PDO;
 
 class Afiliados extends ModelBase
@@ -299,5 +300,21 @@ class Afiliados extends ModelBase
 
         return $genero;
     }
+
+    public function searchByCedula($cedula)
+{
+    $sql = "SELECT id, nombre_completo, cedula
+            FROM afiliados
+            WHERE estado = 'activo'
+            AND cedula LIKE :cedula
+            LIMIT 10";
+
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([
+        ':cedula' => '%' . $cedula . '%'
+    ]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
 }
