@@ -38,7 +38,7 @@ ob_start();
                         <div class="col-md-8 mb-3">
                             <label>Buscar afiliado por cédula</label>
 
-                            <input type="text" id="buscarCedula" class="form-control" placeholder="Digite la cédula">
+                            <input type="number" id="buscarCedula" class="form-control" placeholder="Digite la cédula">
 
                             <select name="afiliado_id" id="afiliadoSelect" class="form-control mt-2" required>
                                 <option value="">-- Seleccione un afiliado --</option>
