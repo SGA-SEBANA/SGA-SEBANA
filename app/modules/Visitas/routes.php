@@ -3,6 +3,9 @@
 use App\Modules\Visitas\Controllers\VisitRequestController;
 use App\Modules\Visitas\Controllers\AdminVisitRequestController;
 use App\Modules\Visitas\Controllers\NotificationController;
+use App\Modules\Afiliados\Controllers\AfiliadosController;
+
+$router->get('/afiliados/buscar', [AfiliadosController::class, 'buscarAfiliado']);
 
 // List request
 $router->get('/visit-requests', [VisitRequestController::class, 'index']);

@@ -29,7 +29,7 @@ ob_start();
                 </div>
                 <div class="card-body card-block">
 
-                    <div class="row mb-3">
+                    <div class="row mb-3">                      
                         <div class="col-md-6">
                             <label for="afiliado_id" class="form-control-label">Afiliado</label>
                             <select name="afiliado_id" id="afiliado_id" class="form-control" required>

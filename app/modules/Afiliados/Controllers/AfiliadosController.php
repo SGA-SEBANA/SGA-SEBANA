@@ -365,4 +365,21 @@ class AfiliadosController extends ControllerBase
             'correo' => $provision['correo'] ?? ''
         ];
     }
+
+
+    public function buscarAfiliado()
+{
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+    $cedula = $_GET['cedula'] ?? '';
+
+    $model = new \App\Modules\Afiliados\Models\Afiliados();
+    $resultados = $model->searchByCedula($cedula);
+
+    header('Content-Type: application/json');
+    echo json_encode($resultados);
+}
 }
