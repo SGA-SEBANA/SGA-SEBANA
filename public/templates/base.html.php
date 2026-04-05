@@ -94,7 +94,7 @@ if ($isAffiliateRole) {
             <div class="header-mobile__bar">
                 <div class="container-fluid">
                     <div class="header-mobile-inner">
-                        <a class="logo" href="/SGA-SEBANA/public/">
+                        <a class="logo" href="<?= $panelUrl ?>">
                             <img src="/SGA-SEBANA/public/assets/img/icon/sebana_logo-removebg.png" alt="SGA-SEBANA" />
                         </a>
                         <button class="hamburger hamburger--slider" type="button">
@@ -110,7 +110,7 @@ if ($isAffiliateRole) {
                     <ul class="navbar-mobile__list list-unstyled">
                         <li>
                             <a href="<?= $panelUrl ?>">
-                                <i class="fas fa-tachometer-alt"></i><?= $isAdminPanelRole ? 'Panel' : 'Inicio' ?></a>
+                                <i class="fas fa-tachometer-alt"></i><?= $isAdminPanelRole ? 'Panel' : ($isAffiliateRole ? 'Mis Solicitudes' : 'Inicio') ?></a>
                         </li>
                         <?php if ($canOperational): ?>
                             <li>
@@ -138,6 +138,10 @@ if ($isAffiliateRole) {
                             <li>
                                 <a href="/SGA-SEBANA/public/visit-requests">
                                     <i class="fa-solid fa-building-user"></i>Visitas</a>
+                            </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/users/<?= (int) ($authUser['id'] ?? 0) ?>/edit">
+                                    <i class="fas fa-user-cog"></i>Mi Usuario</a>
                             </li>
                         <?php endif; ?>
                         <?php if ($canHighAccess): ?>
@@ -181,7 +185,7 @@ if ($isAffiliateRole) {
         </header>
         <aside class="menu-sidebar d-none d-lg-block">
             <div class="logo">
-                <a href="/SGA-SEBANA/public/">
+                <a href="<?= $panelUrl ?>">
                     <img src="/SGA-SEBANA/public/assets/img/icon/sebana_logo-removebg.png" alt="SGA-SEBANA" />
                 </a>
             </div>
@@ -190,7 +194,7 @@ if ($isAffiliateRole) {
                     <ul class="list-unstyled navbar__list">
                         <li class="active">
                             <a href="<?= $panelUrl ?>">
-                                <i class="fas fa-tachometer-alt"></i><?= $isAdminPanelRole ? 'Panel de Control' : 'Inicio' ?></a>
+                                <i class="fas fa-tachometer-alt"></i><?= $isAdminPanelRole ? 'Panel de Control' : ($isAffiliateRole ? 'Mis Solicitudes' : 'Inicio') ?></a>
                         </li>
 
                         <?php if ($canOperational): ?>
@@ -249,11 +253,14 @@ if ($isAffiliateRole) {
                             </li>
                         <?php endif; ?>
 
-                        <?php if ($canReports || $canAdminUsers): ?>
+                        <?php if ($canReports || $canAdminUsers || $isAffiliateRole): ?>
                             <li class="has-sub">
                                 <a class="js-arrow" href="#">
                                     <i class="fas fa-cogs"></i>Configuracion</a>
                                 <ul class="list-unstyled navbar__sub-list js-sub-list">
+                                    <?php if ($isAffiliateRole): ?>
+                                        <li><a href="/SGA-SEBANA/public/users/<?= (int) ($authUser['id'] ?? 0) ?>/edit"><i class="fas fa-user-cog"></i> Mi Usuario</a></li>
+                                    <?php endif; ?>
                                     <?php if ($canAdminUsers): ?>
                                         <li><a href="/SGA-SEBANA/public/users"><i class="fas fa-user-shield"></i> Usuarios</a></li>
                                     <?php endif; ?>

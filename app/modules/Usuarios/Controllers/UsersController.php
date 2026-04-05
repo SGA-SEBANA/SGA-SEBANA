@@ -30,6 +30,15 @@ class UsersController extends ControllerBase
         return AccessControl::hasLevel('total');
     }
 
+    private function mustChangeOwnPassword(int $authUserId, int $targetUserId, array $targetUser): bool
+    {
+        if ($authUserId !== $targetUserId) {
+            return false;
+        }
+
+        return !empty($_SESSION['must_change_password']) || !empty($targetUser['debe_cambiar_contrasena']);
+    }
+
     /**
      * List all users
      */
@@ -102,8 +111,10 @@ class UsersController extends ControllerBase
         $errors = $this->validateUserData($data, null);
 
         if (!empty($errors)) {
+            $formOld = $data;
+            unset($formOld['password'], $formOld['password_confirm']);
             $_SESSION['form_errors'] = $errors;
-            $_SESSION['form_old'] = $data;
+            $_SESSION['form_old'] = $formOld;
             $this->redirect('/SGA-SEBANA/public/users/create');
             return;
         }
@@ -189,6 +200,12 @@ class UsersController extends ControllerBase
         }
 
         $roles = $this->roleModel->getActive();
+        $mustChangePassword = $this->mustChangeOwnPassword($authUserId, $targetUserId, $user);
+        $isOwnProfile = ($authUserId === $targetUserId);
+
+        if (!$mustChangePassword) {
+            unset($_SESSION['must_change_password']);
+        }
 
         $this->view('users/form', [
             'title' => $canManageUsers ? 'Editar Usuario - SGA-SEBANA' : 'Actualizar Perfil - SGA-SEBANA',
@@ -200,7 +217,8 @@ class UsersController extends ControllerBase
             'csrf_token' => SecurityHelper::getCsrfToken(),
             'errors' => $_SESSION['form_errors'] ?? [],
             'old' => $_SESSION['form_old'] ?? [],
-            'mustChangePassword' => $_SESSION['must_change_password'] ?? false,
+            'mustChangePassword' => $mustChangePassword,
+            'isOwnProfile' => $isOwnProfile,
         ]);
 
         unset($_SESSION['form_errors'], $_SESSION['form_old']);
@@ -236,9 +254,13 @@ class UsersController extends ControllerBase
             return;
         }
 
+        $mustChangePassword = $this->mustChangeOwnPassword($authUserId, $userId, $existingUser);
+        $isOwnProfile = ($authUserId === $userId);
+
         $data = [
             'username' => trim($_POST['username'] ?? ''),
             'correo' => trim($_POST['correo'] ?? ''),
+            'current_password' => $_POST['current_password'] ?? '',
             'password' => $_POST['password'] ?? '',
             'password_confirm' => $_POST['password_confirm'] ?? '',
             'nombre_completo' => trim($_POST['nombre_completo'] ?? ''),
@@ -254,9 +276,25 @@ class UsersController extends ControllerBase
 
         $errors = $this->validateUserData($data, $userId);
 
+        if ($mustChangePassword && empty($data['password'])) {
+            $errors['password'] = 'Debe ingresar una nueva contrasena para continuar.';
+        }
+
+        if ($isOwnProfile && !empty($data['password'])) {
+            if (empty($data['current_password'])) {
+                $errors['current_password'] = 'Debe indicar su contrasena actual.';
+            } elseif (!password_verify($data['current_password'], (string) ($existingUser['contrasena'] ?? ''))) {
+                $errors['current_password'] = 'La contrasena actual no es correcta.';
+            } elseif (password_verify($data['password'], (string) ($existingUser['contrasena'] ?? ''))) {
+                $errors['password'] = 'La nueva contrasena debe ser diferente a la actual.';
+            }
+        }
+
         if (!empty($errors)) {
+            $formOld = $data;
+            unset($formOld['current_password'], $formOld['password'], $formOld['password_confirm']);
             $_SESSION['form_errors'] = $errors;
-            $_SESSION['form_old'] = $data;
+            $_SESSION['form_old'] = $formOld;
             $this->redirect("/SGA-SEBANA/public/users/{$userId}/edit");
             return;
         }
@@ -281,7 +319,12 @@ class UsersController extends ControllerBase
             'rol_id' => $existingUser['rol_id'],
         ];
 
-        $this->userModel->update($userId, $updateData);
+        $updated = $this->userModel->update($userId, $updateData);
+        if (!$updated) {
+            $_SESSION['error_message'] = 'No fue posible actualizar el usuario.';
+            $this->redirect("/SGA-SEBANA/public/users/{$userId}/edit");
+            return;
+        }
 
         $this->bitacora->log([
             'accion' => 'UPDATE',
@@ -299,7 +342,9 @@ class UsersController extends ControllerBase
             ],
         ]);
 
-        unset($_SESSION['must_change_password']);
+        if (!empty($data['password'])) {
+            unset($_SESSION['must_change_password']);
+        }
 
         $_SESSION['success_message'] = 'Usuario actualizado exitosamente.';
         if ($canManageUsers) {

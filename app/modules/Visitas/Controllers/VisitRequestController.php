@@ -56,6 +56,30 @@ class VisitRequestController {
         }
     }
 
+    private function notifyAdminsVisitEvent(int $solicitudId, string $titulo, string $mensaje): void
+    {
+        $admins = (new User())->getAdmins();
+        $notification = new Notification();
+
+        foreach ($admins as $admin) {
+            $adminId = (int) ($admin['id'] ?? 0);
+            if ($adminId <= 0) {
+                continue;
+            }
+
+            $notification->createNotification(
+                $adminId,
+                'sistema',
+                'visitas',
+                $titulo,
+                $mensaje,
+                'visita',
+                $solicitudId,
+                '/SGA-SEBANA/public/admin/visit-requests'
+            );
+        }
+    }
+
 public function index()
 {
     $this->ensureSession();
@@ -67,15 +91,15 @@ public function index()
 
     $filtros = [];
 
-    if (!$esJefatura) {
+        if (!$esJefatura) {
 
-        $afiliadoId = $this->getCurrentAfiliadoId($model);
+            $afiliadoId = $this->getCurrentAfiliadoId($model);
 
-        if (!$afiliadoId) {
-            $_SESSION['error'] = 'No fue posible asociar su usuario a un afiliado.';
-            header('Location: /SGA-SEBANA/public/home?error=no_autorizado');
-            exit;
-        }
+            if (!$afiliadoId) {
+                $_SESSION['error'] = 'No fue posible asociar su usuario a un afiliado.';
+                header('Location: /SGA-SEBANA/public/visit-requests?error=no_autorizado');
+                exit;
+            }
 
         $filtros['afiliado_id'] = $afiliadoId;
     }
@@ -101,6 +125,7 @@ public function index()
         $this->ensureSession();
         $model = new VisitRequest();
         $esJefatura = $this->isManager();
+        $es_jefatura = $esJefatura;
         $afiliado_id = $esJefatura ? null : $this->getCurrentAfiliadoId($model);
 
         if (!$esJefatura && !$afiliado_id) {
@@ -125,6 +150,29 @@ public function index()
                 exit;
             }
 
+            $numeroEmpleado = trim((string) ($_POST['numero_empleado'] ?? ''));
+            $nombreEmpleado = trim((string) ($_POST['nombre_empleado'] ?? ''));
+
+            if (!$esJefatura) {
+                $afiliado = $model->getAfiliadoById((int) $afiliado_id);
+                if (!$afiliado) {
+                    $_SESSION['error'] = 'No se pudo cargar la informacion del afiliado logueado.';
+                    header('Location: /SGA-SEBANA/public/visit-requests/create');
+                    exit;
+                }
+
+                $numeroEmpleado = trim((string) ($afiliado['cedula'] ?? ''));
+                $nombreEmpleado = trim((string) ($afiliado['nombre_completo'] ?? ''));
+            } else {
+                if ($numeroEmpleado === '' || $nombreEmpleado === '') {
+                    $afiliado = $model->getAfiliadoById((int) $afiliado_id);
+                    if ($afiliado) {
+                        $numeroEmpleado = $numeroEmpleado !== '' ? $numeroEmpleado : trim((string) ($afiliado['cedula'] ?? ''));
+                        $nombreEmpleado = $nombreEmpleado !== '' ? $nombreEmpleado : trim((string) ($afiliado['nombre_completo'] ?? ''));
+                    }
+                }
+            }
+
             $estado = 'pendiente';
             $fecha_creacion = date('Y-m-d H:i:s');
             $fecha_actualizacion = date('Y-m-d H:i:s');
@@ -132,8 +180,8 @@ public function index()
             $solicitudId = $model->createVisits(
                 $afiliado_id,
                 $_POST['oficina_id'] ?? null,
-                $_POST['numero_empleado'] ?? null,
-                $_POST['nombre_empleado'] ?? null,
+                $numeroEmpleado !== '' ? $numeroEmpleado : null,
+                $nombreEmpleado !== '' ? $nombreEmpleado : null,
                 $_POST['fecha_visita'] ?? null,
                 $_POST['hora_visita'] ?? null,
                 $_POST['motivo'] ?? null,
@@ -167,28 +215,12 @@ public function index()
                     'resultado' => 'exitoso'
                 ]);
 
-                $userModel = new User();
-                $notification = new Notification();
-                $admins = $userModel->getAdmins();
-
-                $nombre = $_POST['nombre_empleado'] ?? 'Empleado';
+                $nombre = $nombreEmpleado !== '' ? $nombreEmpleado : 'Empleado';
                 $fecha = $_POST['fecha_visita'] ?? 'fecha no especificada';
 
                 $titulo = 'Nueva solicitud de visita';
                 $mensaje = "Solicitud de {$nombre} para el {$fecha}";
-
-                foreach ($admins as $admin) {
-                    $notification->createNotification(
-                        $admin['id'],
-                        'sistema',
-                        'visitas',
-                        $titulo,
-                        $mensaje,
-                        'visita',
-                        $solicitudId,
-                        '/SGA-SEBANA/public/admin/visit-requests'
-                    );
-                }
+                $this->notifyAdminsVisitEvent((int) $solicitudId, $titulo, $mensaje);
             }
 
             header('Location: /SGA-SEBANA/public/visit-requests');
@@ -204,6 +236,11 @@ public function index()
 
         if(!$es_jefatura && $afiliado_id) {
             $afiliadoData = $model->getAfiliadoById($afiliado_id);
+            if (!$afiliadoData) {
+                $_SESSION['error'] = 'No se pudo cargar su informacion de afiliado.';
+                header('Location: /SGA-SEBANA/public/visit-requests');
+                exit;
+            }
         }
 
         require BASE_PATH . '/app/modules/Visitas/Views/submit_request.php';
@@ -215,7 +252,7 @@ public function index()
 
         $afiliadoId = $this->getCurrentAfiliadoId($model);
         if (!$afiliadoId) {
-            header('Location: /SGA-SEBANA/public/home?error=no_autorizado');
+            header('Location: /SGA-SEBANA/public/visit-requests?error=no_autorizado');
             exit;
         }
 
@@ -245,26 +282,10 @@ public function index()
                     'resultado' => 'exitoso'
                 ]);
 
-                $userModel = new User();
-                $notificationModel = new Notification();
-                $admins = $userModel->getAdmins();
-
                 $nombreEmpleado = $solicitud['nombre_empleado'] ?? 'Empleado';
                 $titulo = 'Solicitud reprogramada';
                 $mensaje = "La solicitud de {$nombreEmpleado} fue reprogramada para el {$fecha}";
-
-                foreach ($admins as $admin) {
-                    $notificationModel->createNotification(
-                        $admin['id'],
-                        'sistema',
-                        'visitas',
-                        $titulo,
-                        $mensaje,
-                        'visita',
-                        $id,
-                        '/SGA-SEBANA/public/admin/visit-requests'
-                    );
-                }
+                $this->notifyAdminsVisitEvent((int) $id, $titulo, $mensaje);
 
                 header('Location: /SGA-SEBANA/public/visit-requests');
                 exit;
@@ -284,7 +305,7 @@ public function index()
 
         $afiliadoId = $this->getCurrentAfiliadoId($model);
         if (!$afiliadoId) {
-            header('Location: /SGA-SEBANA/public/home?error=no_autorizado');
+            header('Location: /SGA-SEBANA/public/visit-requests?error=no_autorizado');
             exit;
         }
 
@@ -303,6 +324,12 @@ public function index()
             'descripcion' => 'Cancelacion de solicitud de visita por afiliado',
             'resultado' => 'exitoso'
         ]);
+        $nombreEmpleado = $solicitud['nombre_empleado'] ?? 'Empleado';
+        $this->notifyAdminsVisitEvent(
+            (int) $id,
+            'Solicitud de visita cancelada',
+            "La solicitud de {$nombreEmpleado} fue cancelada por el afiliado."
+        );
 
         header('Location: /SGA-SEBANA/public/visit-requests');
         exit;

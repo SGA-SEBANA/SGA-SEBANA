@@ -9,6 +9,8 @@ use App\Modules\Usuarios\Helpers\SecurityHelper;
 $isEdit = $action === 'edit';
 $formAction = $isEdit ? "/SGA-SEBANA/public/users/{$user['id']}" : '/SGA-SEBANA/public/users';
 $canManageUsers = $canManageUsers ?? true;
+$isPasswordRequired = !$isEdit || !empty($mustChangePassword);
+$isOwnProfile = !empty($isOwnProfile);
 
 ob_start();
 ?>
@@ -131,29 +133,46 @@ ob_start();
                 </div>
                 <div class="card-body card-block">
                     <h5 class="mb-3 text-muted">
-                        <?= $isEdit ? 'Cambiar Contraseña (opcional)' : 'Definir Contraseña' ?>
+                        <?= $isEdit ? ($isPasswordRequired ? 'Cambiar Contrasena (obligatorio)' : 'Cambiar Contrasena (opcional)') : 'Definir Contrasena' ?>
                     </h5>
+
+                    <?php if ($isEdit && $isOwnProfile): ?>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="current_password" class="form-control-label">
+                                    Contrasena Actual <?= $isPasswordRequired ? '<span class="text-danger">*</span>' : '' ?>
+                                </label>
+                                <input type="password" id="current_password" name="current_password"
+                                    class="form-control <?= isset($errors['current_password']) ? 'is-invalid' : '' ?>"
+                                    placeholder="Ingrese su contrasena actual"
+                                    <?= $isPasswordRequired ? 'required' : '' ?>>
+                                <small class="form-text text-muted">
+                                    Para cambiar la contrasena debe confirmar la actual.
+                                </small>
+                            </div>
+                        </div>
+                    <?php endif; ?>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="password" class="form-control-label">
-                                Contraseña <?= !$isEdit ? '<span class="text-danger">*</span>' : '' ?>
+                                Contraseña <?= $isPasswordRequired ? '<span class="text-danger">*</span>' : '' ?>
                             </label>
                             <input type="password" id="password" name="password"
                                 class="form-control <?= isset($errors['password']) ? 'is-invalid' : '' ?>"
                                 placeholder="<?= $isEdit ? 'Dejar vacío para mantener actual' : 'Contraseña segura' ?>"
-                                <?= !$isEdit ? 'required' : '' ?> minlength="8">
+                                <?= $isPasswordRequired ? 'required' : '' ?> minlength="8">
                             <small class="form-text text-muted">
                                 Mínimo 8 caracteres (A-z, 0-9, !@#).
                             </small>
                         </div>
                         <div class="col-md-6">
                             <label for="password_confirm" class="form-control-label">
-                                Confirmar Contraseña <?= !$isEdit ? '<span class="text-danger">*</span>' : '' ?>
+                                Confirmar Contraseña <?= $isPasswordRequired ? '<span class="text-danger">*</span>' : '' ?>
                             </label>
                             <input type="password" id="password_confirm" name="password_confirm"
                                 class="form-control <?= isset($errors['password_confirm']) ? 'is-invalid' : '' ?>"
-                                placeholder="Repita la contraseña" <?= !$isEdit ? 'required' : '' ?>>
+                                placeholder="Repita la contraseña" <?= $isPasswordRequired ? 'required' : '' ?>>
                         </div>
                     </div>
                 </div>
@@ -176,10 +195,18 @@ ob_start();
         const password = this.value;
         const confirmField = document.getElementById('password_confirm');
 
+        const currentField = document.getElementById('current_password');
+
         if (password.length > 0) {
             confirmField.setAttribute('required', 'required');
-        } else if (<?= $isEdit ? 'true' : 'false' ?>) {
+            if (currentField) {
+                currentField.setAttribute('required', 'required');
+            }
+        } else if (<?= (!$isPasswordRequired && $isEdit) ? 'true' : 'false' ?>) {
             confirmField.removeAttribute('required');
+            if (currentField) {
+                currentField.removeAttribute('required');
+            }
         }
     });
 

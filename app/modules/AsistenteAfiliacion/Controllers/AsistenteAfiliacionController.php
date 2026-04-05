@@ -249,10 +249,6 @@ class AsistenteAfiliacionController extends ControllerBase
         $userModel = new User();
         $admins = $userModel->getAdmins();
 
-        if (empty($admins)) {
-            $admins = [['id' => 1]];
-        }
-
         $nombre = trim(($solicitud['nombre'] ?? '') . ' ' . ($solicitud['apellido1'] ?? ''));
         $cedula = $solicitud['cedula'] ?? 'N/D';
         $id = (int) ($solicitud['id'] ?? 0);

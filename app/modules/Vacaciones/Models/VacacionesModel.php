@@ -220,6 +220,35 @@ class VacacionesModel extends ModelBase
         return null;
     }
 
+    public function resolveUsuarioIdPorAfiliado($afiliadoId)
+    {
+        $afiliadoId = (int) $afiliadoId;
+        if ($afiliadoId <= 0) {
+            return null;
+        }
+
+        try {
+            $stmt = $this->db->prepare(
+                "SELECT u.id
+                 FROM afiliados a
+                 INNER JOIN usuarios u ON (u.correo = a.correo OR u.username = a.cedula)
+                 WHERE a.id = :afiliado_id
+                   AND u.estado = 'activo'
+                 ORDER BY u.id ASC
+                 LIMIT 1"
+            );
+            $stmt->execute([':afiliado_id' => $afiliadoId]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row && !empty($row['id'])) {
+                return (int) $row['id'];
+            }
+        } catch (PDOException $e) {
+            $this->lastError = $e->getMessage();
+        }
+
+        return null;
+    }
+
     private function obtenerUsuario($usuarioId)
     {
         try {
