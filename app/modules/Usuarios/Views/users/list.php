@@ -107,8 +107,7 @@ ob_start();
                                                 <button type="submit" class="item" data-bs-toggle="tooltip"
                                                     title="<?= $user['estado'] === 'activo' ? 'Desactivar' : 'Activar' ?>"
                                                     onclick="return confirm('¿Está seguro de <?= $user['estado'] === 'activo' ? 'desactivar' : 'activar' ?> este usuario?')">
-                                                    <i
-                                                        class="zmdi zmdi-<?= $user['estado'] === 'activo' ? 'block' : 'check' ?>"></i>
+                                                    <i class="zmdi zmdi-block" style="color: #fa4251;"<?= $user['estado'] === 'activo' ? 'block' : 'check' ?>"></i>
                                                 </button>
                                             </form>
                                         <?php endif; ?>

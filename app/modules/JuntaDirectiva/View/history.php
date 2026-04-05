@@ -55,7 +55,7 @@ ob_start();
                                         <a href="/SGA-SEBANA/public/junta/activar/<?= $miembro['id'] ?>" class="item"
                                             data-toggle="tooltip" title="Re-activar"
                                             onclick="return confirm('¿Re-activar este miembro?')">
-                                            <i class="zmdi zmdi-check-circle"></i>
+                                            <i class="zmdi zmdi-check" style="color: #00b5e9;"></i>
                                         </a>
                                     </div>
                                 </td>

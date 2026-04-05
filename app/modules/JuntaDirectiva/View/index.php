@@ -100,7 +100,7 @@ ob_start();
                                        data-toggle="tooltip"
                                        title="Finalizar"
                                        onclick="return confirm('¿Finalizar este miembro?')">
-                                        <i class="zmdi zmdi-close-circle"></i>
+                                        <i class="zmdi zmdi-block" style="color: #fa4251;></i>
                                     </a>
 
                                 </div>
