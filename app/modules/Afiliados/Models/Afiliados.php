@@ -301,9 +301,13 @@ class Afiliados extends ModelBase
         return $genero;
     }
 
-    public function searchByCedula($cedula)
+public function searchByCedula($cedula)
 {
-    $sql = "SELECT id, nombre_completo, cedula
+    $sql = "SELECT 
+                id, 
+                CONCAT(nombre, ' ', apellido1, ' ', apellido2) as nombre_completo, 
+                cedula,
+                telefono
             FROM afiliados
             WHERE estado = 'activo'
             AND cedula LIKE :cedula

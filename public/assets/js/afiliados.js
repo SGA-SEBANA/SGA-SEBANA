@@ -27,9 +27,8 @@ document.getElementById("buscarCedula").addEventListener("keyup", function () {
         option.value = afiliado.id;
         option.text = afiliado.nombre_completo + " (" + afiliado.cedula + ")";
 
-        // Guardar datos en atributos para uso posterior
         option.dataset.nombre = afiliado.nombre_completo;
-        option.dataset.cedula = afiliado.cedula;
+        option.dataset.telefono = afiliado.telefono || "";
 
         select.appendChild(option);
       });
@@ -50,5 +49,5 @@ document
 
     // Precarga de datos en los campos del formulario
     document.getElementById("nombreEmpleado").value = selected.dataset.nombre;
-    document.getElementById("numeroEmpleado").value = selected.dataset.cedula;
+    document.getElementById("numeroEmpleado").value = selected.dataset.telefono;
   });
