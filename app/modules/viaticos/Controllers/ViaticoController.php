@@ -4,6 +4,7 @@ namespace App\Modules\Viaticos\Controllers;
 use App\Core\ControllerBase;
 use App\Modules\Afiliados\Models\Afiliados;
 use App\Modules\Usuarios\Models\Bitacora;
+use App\Modules\Usuarios\Models\User;
 use App\Modules\Viaticos\Models\ViaticoModel;
 use App\Modules\Usuarios\Helpers\AccessControl;
 use Dompdf\Dompdf;
@@ -66,6 +67,56 @@ class ViaticoController extends ControllerBase {
         } catch (\Throwable $e) {
             // No bloquear el flujo principal por falla de bitacora.
         }
+    }
+
+    private function notifyAdminsNewRequest(int $solicitudId): void
+    {
+        $admins = (new User())->getAdmins();
+        foreach ($admins as $admin) {
+            $adminId = (int) ($admin['id'] ?? 0);
+            if ($adminId <= 0) {
+                continue;
+            }
+
+            $this->notiModel->createNotification(
+                $adminId,
+                'sistema',
+                'solicitudes',
+                'Nueva solicitud de viaticos',
+                "Se registro una nueva solicitud de viaticos con ID {$solicitudId}.",
+                'solicitud_viatico',
+                $solicitudId,
+                "/SGA-SEBANA/public/viaticos/show?id={$solicitudId}"
+            );
+        }
+    }
+
+    private function notifyAffiliateStatus(int $solicitudId, string $estado, array $viatico): void
+    {
+        $usuarioDestino = null;
+
+        if (!empty($viatico['afiliado_id'])) {
+            $usuarioDestino = $this->model->resolveUsuarioIdPorAfiliado((int) $viatico['afiliado_id']);
+        }
+
+        if (!$usuarioDestino && !empty($viatico['usuario_id'])) {
+            $usuarioDestino = (int) $viatico['usuario_id'];
+        }
+
+        if (!$usuarioDestino) {
+            return;
+        }
+
+        $this->notiModel->createNotification(
+            $usuarioDestino,
+            'sistema',
+            'solicitudes',
+            'Solicitud de viaticos actualizada',
+            "Tu solicitud de viaticos #{$solicitudId} fue actualizada a estado: {$estado}.",
+            'solicitud_viatico',
+            $solicitudId,
+            "/SGA-SEBANA/public/viaticos/show?id={$solicitudId}"
+        );
     }
 
     public function index() {
@@ -167,131 +218,118 @@ class ViaticoController extends ControllerBase {
             'afiliados' => $esJefatura ? $this->getSelectableAfiliados() : []
         ]);
     }
-
     public function store() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!isset($_SESSION['user_id'])) {
-                $this->redirect('/SGA-SEBANA/public/login?error=sesion_expirada');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            return;
+        }
+
+        if (!isset($_SESSION['user_id'])) {
+            $this->redirect('/SGA-SEBANA/public/login?error=sesion_expirada');
+            return;
+        }
+
+        $usuario_id = (int) $_SESSION['user_id'];
+        $afiliado_id = null;
+
+        if ($this->isManager()) {
+            $afiliado_id = !empty($_POST['afiliado_id']) ? (int) $_POST['afiliado_id'] : null;
+            if (empty($afiliado_id)) {
+                $this->redirect('/SGA-SEBANA/public/viaticos/create?error=invalid_afiliado');
                 return;
             }
-            $usuario_id = (int) $_SESSION['user_id'];
-            $afiliado_id = null;
+        }
 
-            if ($this->isManager()) {
-                $afiliado_id = !empty($_POST['afiliado_id']) ? (int) $_POST['afiliado_id'] : null;
-                if (empty($afiliado_id)) {
-                    $this->redirect('/SGA-SEBANA/public/viaticos/create?error=invalid_afiliado');
-                    return;
+        $rutaArchivoFinal = null;
+        if (isset($_FILES['archivo_comprobante']) && $_FILES['archivo_comprobante']['error'] === UPLOAD_ERR_OK) {
+            $fileTmpPath = $_FILES['archivo_comprobante']['tmp_name'];
+            $fileName = $_FILES['archivo_comprobante']['name'];
+            $fileSize = $_FILES['archivo_comprobante']['size'];
+            $fileNameCmps = explode('.', $fileName);
+            $fileExtension = strtolower(end($fileNameCmps));
+
+            $extensionesPermitidas = ['jpg', 'jpeg', 'png', 'pdf'];
+            $maxSize = 5 * 1024 * 1024;
+
+            if (in_array($fileExtension, $extensionesPermitidas, true) && $fileSize <= $maxSize) {
+                $nuevoNombreArchivo = md5(time() . $fileName) . '.' . $fileExtension;
+                $directorioDestino = BASE_PATH . '/storage/viaticos/';
+
+                if (!is_dir($directorioDestino)) {
+                    mkdir($directorioDestino, 0777, true);
                 }
-            }
 
-            $rutaArchivoFinal = null;
-
-            if (isset($_FILES['archivo_comprobante']) && $_FILES['archivo_comprobante']['error'] === UPLOAD_ERR_OK) {
-                $fileTmpPath = $_FILES['archivo_comprobante']['tmp_name'];
-                $fileName = $_FILES['archivo_comprobante']['name'];
-                $fileSize = $_FILES['archivo_comprobante']['size'];
-                $fileNameCmps = explode('.', $fileName);
-                $fileExtension = strtolower(end($fileNameCmps));
-
-                $extensionesPermitidas = ['jpg', 'jpeg', 'png', 'pdf'];
-                $maxSize = 5 * 1024 * 1024;
-
-                if (in_array($fileExtension, $extensionesPermitidas, true) && $fileSize <= $maxSize) {
-                    $nuevoNombreArchivo = md5(time() . $fileName) . '.' . $fileExtension;
-                    $directorioDestino = BASE_PATH . '/storage/viaticos/';
-
-                    if (!is_dir($directorioDestino)) {
-                        mkdir($directorioDestino, 0777, true);
-                    }
-
-                    $rutaDestinoFisica = $directorioDestino . $nuevoNombreArchivo;
-
-                    if (move_uploaded_file($fileTmpPath, $rutaDestinoFisica)) {
-                        $rutaArchivoFinal = 'storage/viaticos/' . $nuevoNombreArchivo;
-                    }
+                $rutaDestinoFisica = $directorioDestino . $nuevoNombreArchivo;
+                if (move_uploaded_file($fileTmpPath, $rutaDestinoFisica)) {
+                    $rutaArchivoFinal = 'storage/viaticos/' . $nuevoNombreArchivo;
                 }
-            }
-
-            $datos = [
-                'empleados' => trim($_POST['empleados'] ?? ''),
-                'fecha_inicio' => $_POST['fecha_inicio'] ?? null,
-                'fecha_fin' => $_POST['fecha_fin'] ?? null,
-                'cantidad_dias' => (int) ($_POST['cantidad_dias'] ?? 0),
-                'cantidad_desayuno' => (int) ($_POST['cantidad_desayuno'] ?? 0),
-                'cantidad_almuerzo' => (int) ($_POST['cantidad_almuerzo'] ?? 0),
-                'cantidad_cena' => (int) ($_POST['cantidad_cena'] ?? 0),
-                'cantidad_transportes' => (int) ($_POST['cantidad_transportes'] ?? 0),
-                'aplica_transporte' => isset($_POST['aplica_transporte']) && $_POST['aplica_transporte'] == 1 ? 1 : 0,
-                'tipo_vehiculo' => trim($_POST['v_type'] ?? ''),
-                'kilometraje' => (float) ($_POST['v_km'] ?? 0),
-                'tarifa_km' => (float) ($_POST['tarifa_km_oculta'] ?? 0),
-                'monto_transporte' => (float) ($_POST['monto_transporte_oculto'] ?? 0),
-                'enlace_maps' => trim($_POST['enlace_maps'] ?? ''),
-                'aplica_desayuno' => isset($_POST['aplica_desayuno']) ? 1 : 0,
-                'aplica_almuerzo' => isset($_POST['aplica_almuerzo']) ? 1 : 0,
-                'aplica_cena' => isset($_POST['aplica_cena']) ? 1 : 0,
-                'monto_alimentacion' => (float) ($_POST['monto_alimentacion_oculto'] ?? 0),
-                'monto_hospedaje' => (float) ($_POST['monto_hospedaje'] ?? 0),
-                'monto_gastos_menores' => (float) ($_POST['monto_gastos_menores'] ?? 0),
-                'total_pagar' => (float) ($_POST['total_pagar_oculto'] ?? 0),
-                'archivo_comprobante' => $rutaArchivoFinal,
-                'afiliado_id' => $afiliado_id
-            ];
-
-            $datos['total_pagar'] = $datos['monto_alimentacion']
-                + $datos['monto_transporte']
-                + $datos['monto_hospedaje']
-                + $datos['monto_gastos_menores'];
-
-            $nuevoId = $this->model->crearSolicitud($datos, $usuario_id);
-
-            if ($nuevoId) {
-                $this->logBitacora([
-                    'accion' => 'CREATE',
-                    'modulo' => 'viaticos',
-                    'entidad' => 'solicitud_viatico',
-                    'entidad_id' => (int) $nuevoId,
-                    'descripcion' => 'Creacion de solicitud de viaticos',
-                    'datos_nuevos' => [
-                        'afiliado_id' => $afiliado_id,
-                        'total_pagar' => $datos['total_pagar'],
-                        'fecha_inicio' => $datos['fecha_inicio'],
-                        'fecha_fin' => $datos['fecha_fin']
-                    ],
-                    'resultado' => 'exitoso'
-                ]);
-
-                // Notificación
-                $this->notiModel->createNotification(
-                    $usuario_id,
-                    'sistema',
-                    'solicitudes',
-                    'Nueva Solicitud de Viáticos',
-                    "Se registró una nueva solicitud de viáticos con ID {$nuevoId}",
-                    'solicitud_viatico',
-                    $nuevoId,
-                    "/SGA-SEBANA/public/viaticos/show?id={$nuevoId}"
-                );
-
-
-
-
-                unset($_SESSION['error_detail']);
-                $this->redirect('/SGA-SEBANA/public/viaticos?success=creado');
-            } else {
-                $_SESSION['error_detail'] = $this->model->getLastError();
-                $this->logBitacora([
-                    'accion' => 'CREATE',
-                    'modulo' => 'viaticos',
-                    'entidad' => 'solicitud_viatico',
-                    'descripcion' => 'Error al crear solicitud de viaticos',
-                    'resultado' => 'fallido',
-                    'mensaje_error' => $this->model->getLastError()
-                ]);
-                $this->redirect('/SGA-SEBANA/public/viaticos/create?error=db');
             }
         }
+
+        $datos = [
+            'empleados' => trim($_POST['empleados'] ?? ''),
+            'fecha_inicio' => $_POST['fecha_inicio'] ?? null,
+            'fecha_fin' => $_POST['fecha_fin'] ?? null,
+            'cantidad_dias' => (int) ($_POST['cantidad_dias'] ?? 0),
+            'cantidad_desayuno' => (int) ($_POST['cantidad_desayuno'] ?? 0),
+            'cantidad_almuerzo' => (int) ($_POST['cantidad_almuerzo'] ?? 0),
+            'cantidad_cena' => (int) ($_POST['cantidad_cena'] ?? 0),
+            'cantidad_transportes' => (int) ($_POST['cantidad_transportes'] ?? 0),
+            'aplica_transporte' => isset($_POST['aplica_transporte']) && $_POST['aplica_transporte'] == 1 ? 1 : 0,
+            'tipo_vehiculo' => trim($_POST['v_type'] ?? ''),
+            'kilometraje' => (float) ($_POST['v_km'] ?? 0),
+            'tarifa_km' => (float) ($_POST['tarifa_km_oculta'] ?? 0),
+            'monto_transporte' => (float) ($_POST['monto_transporte_oculto'] ?? 0),
+            'enlace_maps' => trim($_POST['enlace_maps'] ?? ''),
+            'aplica_desayuno' => isset($_POST['aplica_desayuno']) ? 1 : 0,
+            'aplica_almuerzo' => isset($_POST['aplica_almuerzo']) ? 1 : 0,
+            'aplica_cena' => isset($_POST['aplica_cena']) ? 1 : 0,
+            'monto_alimentacion' => (float) ($_POST['monto_alimentacion_oculto'] ?? 0),
+            'monto_hospedaje' => (float) ($_POST['monto_hospedaje'] ?? 0),
+            'monto_gastos_menores' => (float) ($_POST['monto_gastos_menores'] ?? 0),
+            'total_pagar' => (float) ($_POST['total_pagar_oculto'] ?? 0),
+            'archivo_comprobante' => $rutaArchivoFinal,
+            'afiliado_id' => $afiliado_id
+        ];
+
+        $datos['total_pagar'] = $datos['monto_alimentacion']
+            + $datos['monto_transporte']
+            + $datos['monto_hospedaje']
+            + $datos['monto_gastos_menores'];
+
+        $nuevoId = $this->model->crearSolicitud($datos, $usuario_id);
+        if ($nuevoId) {
+            $this->logBitacora([
+                'accion' => 'CREATE',
+                'modulo' => 'viaticos',
+                'entidad' => 'solicitud_viatico',
+                'entidad_id' => (int) $nuevoId,
+                'descripcion' => 'Creacion de solicitud de viaticos',
+                'datos_nuevos' => [
+                    'afiliado_id' => $afiliado_id,
+                    'total_pagar' => $datos['total_pagar'],
+                    'fecha_inicio' => $datos['fecha_inicio'],
+                    'fecha_fin' => $datos['fecha_fin']
+                ],
+                'resultado' => 'exitoso'
+            ]);
+
+            $this->notifyAdminsNewRequest((int) $nuevoId);
+
+            unset($_SESSION['error_detail']);
+            $this->redirect('/SGA-SEBANA/public/viaticos?success=creado');
+            return;
+        }
+
+        $_SESSION['error_detail'] = $this->model->getLastError();
+        $this->logBitacora([
+            'accion' => 'CREATE',
+            'modulo' => 'viaticos',
+            'entidad' => 'solicitud_viatico',
+            'descripcion' => 'Error al crear solicitud de viaticos',
+            'resultado' => 'fallido',
+            'mensaje_error' => $this->model->getLastError()
+        ]);
+        $this->redirect('/SGA-SEBANA/public/viaticos/create?error=db');
     }
 
     public function archivo() {
@@ -349,59 +387,54 @@ class ViaticoController extends ControllerBase {
         readfile($rutaFisica);
         exit;
     }
-
     public function updateStatus() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!$this->isManager()) {
-                $this->redirect('/SGA-SEBANA/public/viaticos?error=no_autorizado');
-                return;
-            }
-
-            $id = $_POST['id'] ?? null;
-            $nuevo_estado = trim($_POST['nuevo_estado'] ?? '');
-            if (!$id || $nuevo_estado === '') {
-                $this->redirect('/SGA-SEBANA/public/viaticos');
-                return;
-            }
-
-            if ($this->model->cambiarEstado($id, $nuevo_estado)) {
-                $this->logBitacora([
-                    'accion' => 'STATUS_CHANGE',
-                    'modulo' => 'viaticos',
-                    'entidad' => 'solicitud_viatico',
-                    'entidad_id' => (int) $id,
-                    'descripcion' => "Cambio de estado de viaticos a {$nuevo_estado}",
-                    'datos_nuevos' => ['estado' => $nuevo_estado],
-                    'resultado' => 'exitoso'
-                ]);
-
-
-                // Notificación
-                $this->notiModel->createNotification(
-                    1,
-                    'sistema',
-                    'solicitudes',
-                    'Estado de Viáticos Actualizado',
-                    "La solicitud de viáticos ID {$id} ahora está en estado: {$nuevo_estado}",
-                    'solicitud_viatico',
-                    $id,
-                    "/SGA-SEBANA/public/viaticos/show?id={$id}"
-                );
-
-                $this->redirect('/SGA-SEBANA/public/viaticos/show?id=' . $id . '&success=estado_actualizado');
-            } else {
-                $_SESSION['error_detail'] = $this->model->getLastError();
-                $this->logBitacora([
-                    'accion' => 'STATUS_CHANGE',
-                    'modulo' => 'viaticos',
-                    'entidad' => 'solicitud_viatico',
-                    'entidad_id' => (int) $id,
-                    'descripcion' => 'Error al actualizar estado de viaticos',
-                    'resultado' => 'fallido',
-                    'mensaje_error' => $this->model->getLastError()
-                ]);
-                $this->redirect('/SGA-SEBANA/public/viaticos/show?id=' . $id . '&error=estado');
-            }
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            return;
         }
+
+        if (!$this->isManager()) {
+            $this->redirect('/SGA-SEBANA/public/viaticos?error=no_autorizado');
+            return;
+        }
+
+        $id = $_POST['id'] ?? null;
+        $nuevo_estado = trim($_POST['nuevo_estado'] ?? '');
+        if (!$id || $nuevo_estado === '') {
+            $this->redirect('/SGA-SEBANA/public/viaticos');
+            return;
+        }
+
+        if ($this->model->cambiarEstado($id, $nuevo_estado)) {
+            $viatico = $this->model->obtenerPorId($id);
+            $this->logBitacora([
+                'accion' => 'STATUS_CHANGE',
+                'modulo' => 'viaticos',
+                'entidad' => 'solicitud_viatico',
+                'entidad_id' => (int) $id,
+                'descripcion' => "Cambio de estado de viaticos a {$nuevo_estado}",
+                'datos_nuevos' => ['estado' => $nuevo_estado],
+                'resultado' => 'exitoso'
+            ]);
+
+            if (is_array($viatico)) {
+                $this->notifyAffiliateStatus((int) $id, $nuevo_estado, $viatico);
+            }
+
+            $this->redirect('/SGA-SEBANA/public/viaticos/show?id=' . $id . '&success=estado_actualizado');
+            return;
+        }
+
+        $_SESSION['error_detail'] = $this->model->getLastError();
+        $this->logBitacora([
+            'accion' => 'STATUS_CHANGE',
+            'modulo' => 'viaticos',
+            'entidad' => 'solicitud_viatico',
+            'entidad_id' => (int) $id,
+            'descripcion' => 'Error al actualizar estado de viaticos',
+            'resultado' => 'fallido',
+            'mensaje_error' => $this->model->getLastError()
+        ]);
+        $this->redirect('/SGA-SEBANA/public/viaticos/show?id=' . $id . '&error=estado');
     }
+
 }

@@ -13,7 +13,7 @@ class VisitRequest extends ModelBase {
     $sql = "SELECT s.id,
         s.codigo_solicitud,
         s.afiliado_id,
-        a.nombre AS afiliado_nombre,
+        a.nombre_completo AS afiliado_nombre,
         s.oficina_id,
         o.nombre AS oficina_nombre,
         s.numero_empleado,
@@ -60,7 +60,7 @@ class VisitRequest extends ModelBase {
     $sql = "SELECT s.id,
         s.codigo_solicitud,
         s.afiliado_id,
-        a.nombre AS afiliado_nombre,
+        a.nombre_completo AS afiliado_nombre,
         s.oficina_id,
         o.nombre AS oficina_nombre,
         s.numero_empleado, s.nombre_empleado, s.fecha_visita, s.hora_visita, s.motivo, s.tipo_visita, s.estado, s.fecha_reprogramada,
@@ -126,6 +126,31 @@ public function getAfiliadoById($afiliadoId)
     $stmt = $this->db->prepare($sql);
     $stmt->execute([':id' => (int) $afiliadoId]);
     return $stmt->fetch(\PDO::FETCH_ASSOC) ?: null;
+}
+
+public function resolveUserIdByAfiliado(int $afiliadoId): ?int
+{
+    if ($afiliadoId <= 0) {
+        return null;
+    }
+
+    $stmt = $this->db->prepare(
+        "SELECT u.id
+         FROM afiliados a
+         INNER JOIN usuarios u
+            ON (u.correo = a.correo OR u.username = a.cedula)
+         WHERE a.id = :afiliado_id
+         ORDER BY u.id ASC
+         LIMIT 1"
+    );
+    $stmt->execute([':afiliado_id' => $afiliadoId]);
+    $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+    if ($row && !empty($row['id'])) {
+        return (int) $row['id'];
+    }
+
+    return null;
 }
 
 public function findAfiliadoIdByReferencia(?string $numeroEmpleado, ?string $nombreEmpleado): ?int
@@ -400,37 +425,42 @@ public function resolveAfiliadoIdByUser($usuarioId)
         return null;
     }
 
-    $stmt = $this->db->prepare('SELECT id FROM afiliados WHERE id = :id LIMIT 1');
-    $stmt->execute([':id' => $usuarioId]);
-    $directo = $stmt->fetch(\PDO::FETCH_ASSOC);
-    if ($directo && !empty($directo['id'])) {
-        return (int) $directo['id'];
+    $stmt = $this->db->prepare('SELECT id, username, correo FROM usuarios WHERE id = :usuario_id LIMIT 1');
+    $stmt->execute([':usuario_id' => $usuarioId]);
+    $usuario = $stmt->fetch(\PDO::FETCH_ASSOC);
+    if (!$usuario) {
+        return null;
     }
 
-    $stmt = $this->db->prepare(
-        'SELECT a.id
-         FROM usuarios u
-         INNER JOIN afiliados a ON a.correo = u.correo
-         WHERE u.id = :usuario_id
-         LIMIT 1'
-    );
-    $stmt->execute([':usuario_id' => $usuarioId]);
-    $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-    if ($row && !empty($row['id'])) {
-        return (int) $row['id'];
+    $username = trim((string) ($usuario['username'] ?? ''));
+    $correo = trim((string) ($usuario['correo'] ?? ''));
+
+    if ($username !== '') {
+        $stmt = $this->db->prepare(
+            "SELECT id
+             FROM afiliados
+             WHERE cedula = :cedula
+             LIMIT 1"
+        );
+        $stmt->execute([':cedula' => $username]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        if ($row && !empty($row['id'])) {
+            return (int) $row['id'];
+        }
     }
 
-    $stmt = $this->db->prepare(
-        'SELECT a.id
-         FROM usuarios u
-         INNER JOIN afiliados a ON (a.cedula = u.username OR a.correo = u.username)
-         WHERE u.id = :usuario_id
-         LIMIT 1'
-    );
-    $stmt->execute([':usuario_id' => $usuarioId]);
-    $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-    if ($row && !empty($row['id'])) {
-        return (int) $row['id'];
+    if ($correo !== '') {
+        $stmt = $this->db->prepare(
+            "SELECT id
+             FROM afiliados
+             WHERE correo = :correo
+             LIMIT 1"
+        );
+        $stmt->execute([':correo' => $correo]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        if ($row && !empty($row['id'])) {
+            return (int) $row['id'];
+        }
     }
 
     return null;

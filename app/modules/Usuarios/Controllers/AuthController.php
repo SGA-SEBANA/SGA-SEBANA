@@ -48,7 +48,8 @@ class AuthController extends ControllerBase
     public function showLogin(): void
     {
         if (SecurityHelper::isAuthenticated()) {
-            $this->redirect('/SGA-SEBANA/public/home');
+            $authUser = SecurityHelper::getAuthUser() ?? [];
+            $this->redirect($this->resolvePostLoginRedirect($authUser));
             return;
         }
 
@@ -156,6 +157,8 @@ class AuthController extends ControllerBase
             $this->redirect('/SGA-SEBANA/public/users/' . $user['id'] . '/edit');
             return;
         }
+
+        unset($_SESSION['must_change_password']);
 
         $this->redirect($this->resolvePostLoginRedirect($_SESSION['user']));
     }

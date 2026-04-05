@@ -95,30 +95,64 @@ class VacacionesController extends ControllerBase
 
     private function notifyManagersNewRequest($solicitudId, $nombreUsuario)
     {
-        $userModel = new User();
-        $admins = $userModel->getAdmins();
+        $this->notifyManagers(
+            (int) $solicitudId,
+            'Nueva solicitud de vacaciones',
+            "{$nombreUsuario} envio una solicitud de vacaciones."
+        );
+    }
 
-        if (empty($admins)) {
-            $admins = [['id' => 1]];
-        }
+    private function notifyManagers(int $solicitudId, string $titulo, string $mensaje): void
+    {
+        $admins = (new User())->getAdmins();
 
         foreach ($admins as $admin) {
-            if (empty($admin['id'])) {
+            $adminId = (int) ($admin['id'] ?? 0);
+            if ($adminId <= 0) {
                 continue;
             }
 
             $this->notiModel->createNotification(
-                (int) $admin['id'],
+                $adminId,
                 'sistema',
                 'vacaciones',
-                'Nueva solicitud de vacaciones',
-                "{$nombreUsuario} envio una solicitud de vacaciones.",
+                $titulo,
+                $mensaje,
                 'solicitud_vacaciones',
                 (int) $solicitudId,
                 "/SGA-SEBANA/public/vacaciones/show/{$solicitudId}",
                 'normal'
             );
         }
+    }
+
+    private function notifyAffiliateStatus(int $solicitudId, string $estado, array $solicitud): void
+    {
+        $usuarioDestino = null;
+
+        if (!empty($solicitud['afiliado_id'])) {
+            $usuarioDestino = $this->model->resolveUsuarioIdPorAfiliado((int) $solicitud['afiliado_id']);
+        }
+
+        if (!$usuarioDestino && !empty($solicitud['usuario_id'])) {
+            $usuarioDestino = (int) $solicitud['usuario_id'];
+        }
+
+        if (!$usuarioDestino) {
+            return;
+        }
+
+        $this->notiModel->createNotification(
+            $usuarioDestino,
+            'sistema',
+            'vacaciones',
+            'Solicitud de vacaciones actualizada',
+            "Tu solicitud de vacaciones #{$solicitudId} fue actualizada a estado {$estado}.",
+            'solicitud_vacaciones',
+            $solicitudId,
+            "/SGA-SEBANA/public/vacaciones/show/{$solicitudId}",
+            'normal'
+        );
     }
 
 public function index()
@@ -283,19 +317,7 @@ public function index()
                 'datos_nuevos' => ['estado' => $nuevoEstado],
                 'resultado' => 'exitoso'
             ]);
-            if (!empty($solicitud['usuario_id'])) {
-                $this->notiModel->createNotification(
-                    (int) $solicitud['usuario_id'],
-                    'sistema',
-                    'vacaciones',
-                    'Solicitud de vacaciones actualizada',
-                    "Tu solicitud fue marcada como {$nuevoEstado}.",
-                    'solicitud_vacaciones',
-                    (int) $id,
-                    "/SGA-SEBANA/public/vacaciones/show/{$id}",
-                    'normal'
-                );
-            }
+            $this->notifyAffiliateStatus((int) $id, (string) $nuevoEstado, $solicitud);
 
             $this->redirect('/SGA-SEBANA/public/vacaciones/show/' . $id . '?success=estado_actualizado');
             return;
@@ -343,6 +365,11 @@ public function index()
                 'descripcion' => 'Cancelacion de solicitud de vacaciones por afiliado',
                 'resultado' => 'exitoso'
             ]);
+            $this->notifyManagers(
+                (int) $id,
+                'Solicitud de vacaciones cancelada',
+                "{$this->getCurrentUserName()} cancelo su solicitud de vacaciones."
+            );
             $this->redirect('/SGA-SEBANA/public/vacaciones/show/' . $id . '?success=cancelada');
             return;
         }
@@ -402,7 +429,11 @@ public function index()
                 ],
                 'resultado' => 'exitoso'
             ]);
-            $this->notifyManagersNewRequest($id, $this->getCurrentUserName());
+            $this->notifyManagers(
+                (int) $id,
+                'Solicitud de vacaciones reprogramada',
+                "{$this->getCurrentUserName()} reprogramo su solicitud de vacaciones."
+            );
             $this->redirect('/SGA-SEBANA/public/vacaciones/show/' . $id . '?success=reprogramada');
             return;
         }

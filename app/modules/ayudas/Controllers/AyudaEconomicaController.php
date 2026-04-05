@@ -6,6 +6,7 @@ use App\Modules\Afiliados\Models\Afiliados;
 use App\Modules\Ayudas\Models\AyudaEconomicaModel;
 use App\Modules\Usuarios\Helpers\AccessControl;
 use App\Modules\Usuarios\Models\Bitacora;
+use App\Modules\Usuarios\Models\User;
 use App\Modules\Visitas\Models\Notification; 
 
 class AyudaEconomicaController extends ControllerBase {
@@ -64,6 +65,93 @@ class AyudaEconomicaController extends ControllerBase {
         } catch (\Throwable $e) {
             // No interrumpir el flujo funcional.
         }
+    }
+
+    private function notifyAdmins(string $titulo, string $mensaje, string $entidadTipo, int $entidadId, string $url, string $categoria = 'solicitudes'): void
+    {
+        $admins = (new User())->getAdmins();
+
+        foreach ($admins as $admin) {
+            $adminId = (int) ($admin['id'] ?? 0);
+            if ($adminId <= 0) {
+                continue;
+            }
+
+            $this->notiModel->createNotification(
+                $adminId,
+                'sistema',
+                $categoria,
+                $titulo,
+                $mensaje,
+                $entidadTipo,
+                $entidadId,
+                $url
+            );
+        }
+    }
+
+    private function notifyAdminsNewRequest(int $ayudaId, float $montoSolicitado): void
+    {
+        $this->notifyAdmins(
+            'Nueva solicitud de ayuda economica',
+            "Se registro una nueva solicitud de ayuda economica por un monto de CRC {$montoSolicitado}.",
+            'solicitud_ayuda',
+            $ayudaId,
+            "/SGA-SEBANA/public/ayudas/show/{$ayudaId}",
+            'ayuda_economica'
+        );
+    }
+
+    private function notifyAdminsCancellationRequest(int $ayudaId): void
+    {
+        $this->notifyAdmins(
+            'Solicitud de cancelacion de ayuda',
+            "Se solicito cancelar la ayuda economica #{$ayudaId}.",
+            'solicitud_ayuda',
+            $ayudaId,
+            "/SGA-SEBANA/public/ayudas/show/{$ayudaId}",
+            'ayuda_economica'
+        );
+    }
+
+    private function notifyAdminsEvidence(int $ayudaId): void
+    {
+        $this->notifyAdmins(
+            'Nueva evidencia en ayuda economica',
+            "Se adjunto nueva evidencia en la ayuda economica #{$ayudaId}.",
+            'solicitud_ayuda',
+            $ayudaId,
+            "/SGA-SEBANA/public/ayudas/show/{$ayudaId}",
+            'ayuda_economica'
+        );
+    }
+
+    private function notifyAffiliateStatus(int $ayudaId, string $estado, array $ayuda): void
+    {
+        $usuarioDestino = null;
+
+        if (!empty($ayuda['afiliado_id'])) {
+            $usuarioDestino = $this->model->resolveUsuarioIdPorAfiliado((int) $ayuda['afiliado_id']);
+        }
+
+        if (!$usuarioDestino && !empty($ayuda['usuario_id'])) {
+            $usuarioDestino = (int) $ayuda['usuario_id'];
+        }
+
+        if (!$usuarioDestino) {
+            return;
+        }
+
+        $this->notiModel->createNotification(
+            $usuarioDestino,
+            'sistema',
+            'ayuda_economica',
+            'Solicitud de ayuda economica actualizada',
+            "Tu solicitud de ayuda economica #{$ayudaId} cambio a estado {$estado}.",
+            'solicitud_ayuda',
+            $ayudaId,
+            "/SGA-SEBANA/public/ayudas/show/{$ayudaId}"
+        );
     }
 
     public function index() {
@@ -142,18 +230,7 @@ class AyudaEconomicaController extends ControllerBase {
                     ],
                     'resultado' => 'exitoso'
                 ]);
-
-                // Notificación
-                $this->notiModel->createNotification(
-                    $usuario_id,
-                    'sistema',
-                    'ayuda_economica',
-                    'Nueva Solicitud de Ayuda',
-                    "Se registró una nueva solicitud de ayuda económica por el monto de ₡{$monto_solicitado}",
-                    'solicitud_ayuda',
-                    $ayuda_id,
-                    "/SGA-SEBANA/public/ayudas/show/{$ayuda_id}"
-                );
+                $this->notifyAdminsNewRequest((int) $ayuda_id, $monto_solicitado);
 
                 
                 if (isset($_FILES['evidencia']) && $_FILES['evidencia']['error'] === UPLOAD_ERR_OK) {
@@ -197,23 +274,7 @@ class AyudaEconomicaController extends ControllerBase {
                     'datos_nuevos' => ['motivo_cancelacion' => $motivo_cancelacion],
                     'resultado' => 'exitoso'
                 ]);
-
-                // Notificación
-                $this->notiModel->createNotification(
-                    $usuarioId,
-                    'sistema',
-                    'ayuda_economica',
-                    'Solicitud de Cancelación',
-                    "El afiliado solicitó la cancelación de la ayuda económica ID {$id}",
-                    'solicitud_ayuda',
-                    $id,
-                    "/SGA-SEBANA/public/ayudas/show/{$id}"
-                );
-
-
-
-                
-                $this->enviarNotificacionAdmin($id, 'Un usuario ha solicitado la cancelacion de su ayuda economica.');
+                $this->notifyAdminsCancellationRequest((int) $id);
                 $this->redirect('/SGA-SEBANA/public/ayudas/show/' . $id . '?success=cancelacion_enviada');
             } else {
                 $this->logBitacora([
@@ -281,20 +342,9 @@ class AyudaEconomicaController extends ControllerBase {
                     'datos_nuevos' => ['estado' => $nuevo_estado],
                     'resultado' => 'exitoso'
                 ]);
-
-                // Notificación
-                $this->notiModel->createNotification(
-                    1,
-                    'sistema',
-                    'ayuda_economica',
-                    'Estado de Ayuda Actualizado',
-                    "La solicitud de ayuda económica ID {$id} ahora está en estado: {$nuevo_estado}",
-                    'solicitud_ayuda',
-                    $id,
-                    "/SGA-SEBANA/public/ayudas/show/{$id}"
-                );
-
-                $this->notificarCambioEstado($ayuda['correo'] ?? '', $nuevo_estado, $id);
+                if (is_array($ayuda)) {
+                    $this->notifyAffiliateStatus((int) $id, (string) $nuevo_estado, $ayuda);
+                }
                 $this->redirect('/SGA-SEBANA/public/ayudas/show/' . $id . '?success=estado_actualizado');
             } else {
                 $this->logBitacora([
@@ -341,21 +391,7 @@ class AyudaEconomicaController extends ControllerBase {
                             'descripcion' => 'Carga de evidencia en solicitud de ayuda economica',
                             'resultado' => 'exitoso'
                         ]);
-
-                        // Notificación
-                $this->notiModel->createNotification(
-                    $usuario_id,
-                    'sistema',
-                    'ayuda_economica',
-                    'Nueva Evidencia Adjunta',
-                    "Se adjuntó nueva evidencia en la solicitud de ayuda económica ID {$id}",
-                    'solicitud_ayuda',
-                    $id,
-                    "/SGA-SEBANA/public/ayudas/show/{$id}"
-                );
-
-
-                        $this->enviarNotificacionAdmin($id, 'Se ha adjuntado nueva evidencia a la solicitud.');
+                        $this->notifyAdminsEvidence((int) $id);
                         $this->redirect('/SGA-SEBANA/public/ayudas/show/' . $id . '?success=evidencia_agregada');
                         return;
                     }
@@ -470,17 +506,5 @@ class AyudaEconomicaController extends ControllerBase {
         header('Content-Disposition: ' . $disposition . '; filename="' . basename($rutaFisica) . '"');
         readfile($rutaFisica);
         exit;
-    }
-
-    private function notificarCambioEstado($correo, $estado, $id) {
-        $asunto = "Actualizacion de Solicitud SEBANA #$id";
-        $mensaje = "Hola, le informamos que su solicitud de ayuda economica ha sido actualizada al estado: $estado.";
-    }
-
-    private function enviarNotificacionAdmin($id, $accion) {
-        $admins = $this->model->obtenerCorreosAdministradores();
-        foreach ($admins as $email) {
-            // Pendiente: integrar envio de correo o canal interno.
-        }
     }
 }

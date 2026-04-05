@@ -247,11 +247,13 @@ class User extends ModelBase
     public function getAdmins(): array
     {
         $sql = "
-            SELECT u.id
+            SELECT DISTINCT u.id
             FROM {$this->table} u
             INNER JOIN roles r ON u.rol_id = r.id
-            WHERE r.id = 3
-            AND u.estado = 'activo'
+            WHERE u.estado = 'activo'
+              AND (u.bloqueado = 0 OR u.bloqueado IS NULL)
+              AND r.activo = 1
+              AND r.nivel_acceso IN ('alto', 'total')
         ";
 
         $stmt = $this->db->prepare($sql);

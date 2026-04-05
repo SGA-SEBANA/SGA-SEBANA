@@ -1,53 +1,58 @@
 /**
- * AFILIADOS - BUSCAR Y GESTIONAR AFILIADOS
- * ========================================
- * Script para buscar afiliados por cédula y precarga de datos
+ * Busqueda de afiliados para formulario de visitas (modo admin).
+ * El script se autodesactiva si no existen los elementos requeridos.
  */
+(function () {
+  const inputCedula = document.getElementById("buscarCedula");
+  const selectAfiliado = document.getElementById("afiliadoSelect");
+  const inputNombre = document.getElementById("nombreEmpleado");
+  const inputNumero = document.getElementById("numeroEmpleado");
 
-// ========================================================================
-// BUSCAR AFILIADOS POR CÉDULA
-// ========================================================================
+  if (!inputCedula || !selectAfiliado) {
+    return;
+  }
 
-document.getElementById("buscarCedula").addEventListener("keyup", function () {
-  let cedula = this.value;
+  function fillEmployeeFields() {
+    if (!inputNombre || !inputNumero) {
+      return;
+    }
 
-  // No buscar si la cédula tiene menos de 3 caracteres
-  if (cedula.length < 3) return;
+    const selected = selectAfiliado.options[selectAfiliado.selectedIndex];
+    if (!selected || !selected.value) {
+      return;
+    }
 
-  // Realizar búsqueda
-  fetch("/SGA-SEBANA/public/afiliados/buscar?cedula=" + cedula)
-    .then((res) => res.json())
-    .then((data) => {
-      let select = document.getElementById("afiliadoSelect");
-      select.innerHTML = '<option value="">-- Seleccione --</option>';
+    inputNombre.value = selected.dataset.nombre || "";
+    inputNumero.value = selected.dataset.cedula || "";
+  }
 
-      // Llenar el select con los resultados
-      data.forEach((afiliado) => {
-        let option = document.createElement("option");
-        option.value = afiliado.id;
-        option.text = afiliado.nombre_completo + " (" + afiliado.cedula + ")";
+  inputCedula.addEventListener("keyup", function () {
+    const cedula = (this.value || "").trim();
 
-        option.dataset.nombre = afiliado.nombre_completo;
-        option.dataset.telefono = afiliado.telefono || "";
+    if (cedula.length < 3) {
+      return;
+    }
 
-        select.appendChild(option);
+    fetch("/SGA-SEBANA/public/afiliados/buscar?cedula=" + encodeURIComponent(cedula))
+      .then(function (res) {
+        return res.json();
+      })
+      .then(function (data) {
+        selectAfiliado.innerHTML = '<option value="">-- Seleccione un afiliado --</option>';
+
+        (data || []).forEach(function (afiliado) {
+          const option = document.createElement("option");
+          option.value = afiliado.id;
+          option.text = (afiliado.nombre_completo || "") + " (" + (afiliado.cedula || "") + ")";
+          option.dataset.nombre = afiliado.nombre_completo || "";
+          option.dataset.cedula = afiliado.cedula || "";
+          selectAfiliado.appendChild(option);
+        });
+      })
+      .catch(function () {
+        // Evitar romper la UI por un fallo de red.
       });
-    });
-});
-
-// ========================================================================
-// CARGAR DATOS DEL AFILIADO SELECCIONADO
-// ========================================================================
-
-document
-  .getElementById("afiliadoSelect")
-  .addEventListener("change", function () {
-    let selected = this.options[this.selectedIndex];
-
-    // Validar que hay un valor seleccionado
-    if (!selected.value) return;
-
-    // Precarga de datos en los campos del formulario
-    document.getElementById("nombreEmpleado").value = selected.dataset.nombre;
-    document.getElementById("numeroEmpleado").value = selected.dataset.telefono;
   });
+
+  selectAfiliado.addEventListener("change", fillEmployeeFields);
+})();

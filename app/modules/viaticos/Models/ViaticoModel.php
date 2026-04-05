@@ -164,6 +164,34 @@ class ViaticoModel extends ModelBase {
         return $this->resolverAfiliadoId($usuario_id);
     }
 
+    public function resolveUsuarioIdPorAfiliado($afiliado_id) {
+        $afiliado_id = (int) $afiliado_id;
+        if ($afiliado_id <= 0) {
+            return null;
+        }
+
+        try {
+            $stmt = $this->db->prepare("
+                SELECT u.id
+                FROM afiliados a
+                INNER JOIN usuarios u ON (u.correo = a.correo OR u.username = a.cedula)
+                WHERE a.id = :afiliado_id
+                AND u.estado = 'activo'
+                ORDER BY u.id ASC
+                LIMIT 1
+            ");
+            $stmt->execute([':afiliado_id' => $afiliado_id]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row && !empty($row['id'])) {
+                return (int) $row['id'];
+            }
+        } catch (PDOException $e) {
+            error_log("Error resolviendo usuario por afiliado en viaticos: " . $e->getMessage());
+        }
+
+        return null;
+    }
+
     private function crearAfiliadoBasicoDesdeUsuario($usuario_id) {
         try {
             $stmt = $this->db->prepare("SELECT id, username, correo, nombre_completo FROM usuarios WHERE id = :id LIMIT 1");
