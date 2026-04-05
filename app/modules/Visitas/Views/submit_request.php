@@ -33,13 +33,10 @@ ob_start();
                 <form method="POST" action="/SGA-SEBANA/public/visit-requests/create">
 
                     <div class="row">
-
-                        <?php if (true): ?>
+                        <?php if ($esJefatura): ?>
                         <div class="col-md-8 mb-3">
                             <label>Buscar afiliado por cédula</label>
-
                             <input type="number" id="buscarCedula" class="form-control" placeholder="Digite la cédula">
-
                             <select name="afiliado_id" id="afiliadoSelect" class="form-control mt-2" required>
                                 <option value="">-- Seleccione un afiliado --</option>
                             </select>
@@ -50,39 +47,48 @@ ob_start();
                             <label>Oficina</label>
                             <select name="oficina_id" class="form-control" required>
                                 <option value="">-- Seleccione una oficina --</option>
-                                <?php foreach($oficinas as $oficina): ?>
+                                <?php foreach ($oficinas as $oficina): ?>
                                 <option value="<?= $oficina['id'] ?>">
                                     <?= htmlspecialchars($oficina['nombre']) ?>
                                 </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
+                    </div>
 
-                        <div class="col-md-4 mb-3">
-                            <label>Número de empleado</label>
-                            <input type="text" id="numeroEmpleado" name="numero_empleado" class="form-control" required>
-                        </div>
-
+                    <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label>Nombre del empleado</label>
-                            <input type="text" id="nombreEmpleado" name="nombre_empleado" class="form-control" required>
+                            <label>Número de empleado</label>
+                            <input type="text" name="numero_empleado"
+                                value="<?= !$esJefatura ? htmlspecialchars($afiliadoData['cedula'] ?? '') : '' ?>"
+                                <?= !$esJefatura ? 'readonly' : '' ?>
+                                class="form-control">
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Nombre de empleado</label>
+                            <input type="text" name="nombre_empleado"
+                                value="<?= !$esJefatura ? htmlspecialchars($afiliadoData['nombre_completo'] ?? '') : '' ?>"
+                                <?= !$esJefatura ? 'readonly' : '' ?>
+                                class="form-control">
+                        </div>
+                    </div>
 
+                    <div class="row">
                         <div class="col-md-3 mb-3">
                             <label>Fecha de visita</label>
                             <input type="date" name="fecha_visita" class="form-control">
                         </div>
-
                         <div class="col-md-3 mb-3">
                             <label>Hora de visita</label>
                             <input type="time" name="hora_visita" class="form-control">
                         </div>
-
                         <div class="col-md-6 mb-3">
                             <label>Motivo</label>
                             <textarea name="motivo" class="form-control"></textarea>
                         </div>
+                    </div>
 
+                    <div class="row">
                         <div class="col-md-3 mb-3">
                             <label>Tipo de visita</label>
                             <select name="tipo_visita" class="form-control">
@@ -90,12 +96,10 @@ ob_start();
                                 <option value="extraordinaria">Extraordinaria</option>
                             </select>
                         </div>
-
-                        <div class="col-md-12 mb-3">
+                        <div class="col-md-9 mb-3">
                             <label>Observaciones</label>
                             <textarea name="observaciones" class="form-control"></textarea>
                         </div>
-
                     </div>
 
                     <button type="submit" class="au-btn au-btn-icon au-btn--green">

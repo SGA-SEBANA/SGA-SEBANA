@@ -200,6 +200,12 @@ public function index()
         $oficinas = $model->getOffices();
         $afiliados = $esJefatura ? $model->getActiveAfiliados() : [];
 
+        $afiliadoData = null;
+
+        if(!$es_jefatura && $afiliado_id) {
+            $afiliadoData = $model->getAfiliadoById($afiliado_id);
+        }
+
         require BASE_PATH . '/app/modules/Visitas/Views/submit_request.php';
     }
 

@@ -5,42 +5,57 @@
 
         <div class="upcoming-events">
 
-            <?php if(!empty($visits)): ?>
+            <?php if (!empty($visits)): ?>
 
-            <?php foreach($visits as $visit): ?>
+                <?php foreach ($visits as $visit): ?>
 
-            <?php
-                $date = new DateTime($visit['fecha_visita']);
-                $month = strtoupper($date->format('M'));
-                $day = $date->format('d');
-                ?>
+                    <?php
+                        // Validar que exista la fecha
+                        if (empty($visit['fecha_visita'])) {
+                            continue;
+                        }
 
-            <div class="event-item d-flex align-items-start mb-3 p-3 border rounded">
+                        $date = new DateTime($visit['fecha_visita']);
 
-                <div class="event-date text-center me-3">
-                    <div class="fs-6 fw-bold text-primary"><?= $month ?></div>
-                    <div class="fs-4 fw-bold"><?= $day ?></div>
-                </div>
+                        // Meses en español
+                        $meses = [
+                            'Jan' => 'ENE', 'Feb' => 'FEB', 'Mar' => 'MAR', 'Apr' => 'ABR',
+                            'May' => 'MAY', 'Jun' => 'JUN', 'Jul' => 'JUL', 'Aug' => 'AGO',
+                            'Sep' => 'SEP', 'Oct' => 'OCT', 'Nov' => 'NOV', 'Dec' => 'DIC'
+                        ];
 
-                <div class="event-details flex-grow-1">
-                    <h6 class="mb-1"><?= htmlspecialchars($visit['nombre_empleado']) ?></h6>
+                        $month = $meses[$date->format('M')];
+                        $day = $date->format('d');
+                    ?>
 
-                    <small class="text-muted">
-                        <?= date("h:i A", strtotime($visit['hora_visita'])) ?>
-                    </small>
+                    <div class="event-item d-flex align-items-start mb-3 p-3 border rounded">
 
-                    <div class="mt-1">
-                        <span class="badge bg-success">Visit</span>
+                        <div class="event-date text-center me-3">
+                            <div class="fs-6 fw-bold text-primary"><?= $month ?></div>
+                            <div class="fs-4 fw-bold"><?= $day ?></div>
+                        </div>
+
+                        <div class="event-details flex-grow-1">
+                            <h6 class="mb-1">
+                                <?= htmlspecialchars($visit['nombre_empleado']) ?>
+                            </h6>
+
+                            <small class="text-muted">
+                                <?= date("H:i", strtotime($visit['hora_visita'])) ?>
+                            </small>
+
+                            <div class="mt-1">
+                                <span class="badge bg-success">Visita</span>
+                            </div>
+                        </div>
+
                     </div>
-                </div>
 
-            </div>
-
-            <?php endforeach; ?>
+                <?php endforeach; ?>
 
             <?php else: ?>
 
-            <p class="text-muted">No hay visitas próximas</p>
+                <p class="text-muted">No hay visitas próximas</p>
 
             <?php endif; ?>
 
