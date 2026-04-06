@@ -95,7 +95,11 @@ class Etapas extends ModelBase
         ];
 
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute($params);
+        if (!$stmt->execute($params)) {
+            return false;
+        }
+
+        return (int) $this->db->lastInsertId();
     }
 
     /**

@@ -110,7 +110,9 @@ class CasosRRLLController extends ControllerBase
             return;
         }
 
-        if ($this->modelo_casos->create($datos)) {
+        $id = $this->modelo_casos->create($datos);
+
+        if ($id !== false) {
             $this->bitacora->log([
                 'accion' => 'CREATE',
                 'modulo' => 'casos_rrll',
@@ -128,7 +130,7 @@ class CasosRRLLController extends ControllerBase
                 "Se creó el caso con expediente {$datos['numero_expediente']}",
                 'caso_rrll',
                 $id,
-                "/SGA-SEBANA/public/casos-rrll/show/{$datos['numero_expediente']}"
+                "/SGA-SEBANA/public/casos-rrll/show/{$id}"
             );
 
 
@@ -267,19 +269,6 @@ class CasosRRLLController extends ControllerBase
                 'entidad_id' => $id,
                 'descripcion' => "Cambio de estado del caso a: {$nuevo_estado}"
             ]);
-
-            $this->notiModel->createNotification(
-            1,
-            'sistema',
-            'casos',
-            'Estado de Etapa Cambiado',
-            "La etapa ID {$etapaId} ahora está en estado: {$nuevo_estado}",
-            'etapa_rrll',
-            $etapaId,
-            "/SGA-SEBANA/public/casos-rrll/{$etapa['caso_id']}/etapas"
-        );
-
-
 
             // Notificación
             $this->notiModel->createNotification(
@@ -514,7 +503,9 @@ class CasosRRLLController extends ControllerBase
             return;
         }
 
-        if ($this->modelo_etapas->create($datos)) {
+        $etapaId = $this->modelo_etapas->create($datos);
+
+        if ($etapaId !== false) {
             $this->bitacora->log([
                 'accion' => 'CREATE',
                 'modulo' => 'casos_rrll',
