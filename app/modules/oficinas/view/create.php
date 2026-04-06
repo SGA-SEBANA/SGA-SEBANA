@@ -1,77 +1,142 @@
 <?php
 $title = 'Nueva Oficina';
 ob_start();
+
 $old = $old ?? [];
 $office = $office ?? [];
+$errors = $errors ?? [];
 ?>
 
-<form method="post" action="/SGA-SEBANA/public/oficinas/create">
-    <div class="mb-3">
-        <label>Código</label>
-        <input type="text" name="codigo" class="form-control"
-            value="<?= htmlspecialchars($old['codigo'] ?? $office['codigo'] ?? '') ?>">
+<div class="row">
+    <div class="col-lg-12">
+        <div class="overview-wrap mb-4">
+            <h2 class="title-1">Nueva Oficina</h2>
+            <a href="/SGA-SEBANA/public/oficinas" class="au-btn au-btn-icon au-btn--blue">
+                <i class="zmdi zmdi-arrow-left"></i> Volver a la lista
+            </a>
+        </div>
+
+        <?php if (!empty($errors['general'])): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="zmdi zmdi-alert-triangle"></i> <?= htmlspecialchars((string) $errors['general']) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+
+        <form method="post" action="/SGA-SEBANA/public/oficinas/create" class="form-horizontal">
+            <div class="card">
+                <div class="card-header">
+                    <strong><i class="zmdi zmdi-city"></i> Datos de la oficina</strong>
+                </div>
+                <div class="card-body card-block">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="codigo" class="form-control-label">Codigo</label>
+                            <input type="text" id="codigo" name="codigo" class="form-control"
+                                value="<?= htmlspecialchars((string) ($old['codigo'] ?? $office['codigo'] ?? '')) ?>"
+                                placeholder="Ej: OF-010">
+                        </div>
+                        <div class="col-md-8">
+                            <label for="nombre" class="form-control-label">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" id="nombre" name="nombre" class="form-control <?= !empty($errors['nombre']) ? 'is-invalid' : '' ?>"
+                                value="<?= htmlspecialchars((string) ($old['nombre'] ?? $office['nombre'] ?? '')) ?>"
+                                placeholder="Nombre de la oficina" required>
+                            <?php if (!empty($errors['nombre'])): ?>
+                                <div class="invalid-feedback"><?= htmlspecialchars((string) $errors['nombre']) ?></div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="direccion" class="form-control-label">Direccion</label>
+                            <input type="text" id="direccion" name="direccion" class="form-control"
+                                value="<?= htmlspecialchars((string) ($old['direccion'] ?? $office['direccion'] ?? '')) ?>"
+                                placeholder="Direccion exacta de la oficina">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="provincia" class="form-control-label">Provincia</label>
+                            <input type="text" id="provincia" name="provincia" class="form-control"
+                                value="<?= htmlspecialchars((string) ($old['provincia'] ?? $office['provincia'] ?? '')) ?>">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="canton" class="form-control-label">Canton</label>
+                            <input type="text" id="canton" name="canton" class="form-control"
+                                value="<?= htmlspecialchars((string) ($old['canton'] ?? $office['canton'] ?? '')) ?>">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="distrito" class="form-control-label">Distrito</label>
+                            <input type="text" id="distrito" name="distrito" class="form-control"
+                                value="<?= htmlspecialchars((string) ($old['distrito'] ?? $office['distrito'] ?? '')) ?>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <strong><i class="zmdi zmdi-phone"></i> Contacto y administracion</strong>
+                </div>
+                <div class="card-body card-block">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="telefono" class="form-control-label">Telefono</label>
+                            <input type="text" id="telefono" name="telefono" class="form-control"
+                                value="<?= htmlspecialchars((string) ($old['telefono'] ?? $office['telefono'] ?? '')) ?>">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="correo" class="form-control-label">Correo</label>
+                            <input type="email" id="correo" name="correo" class="form-control <?= !empty($errors['correo']) ? 'is-invalid' : '' ?>"
+                                value="<?= htmlspecialchars((string) ($old['correo'] ?? $office['correo'] ?? '')) ?>"
+                                placeholder="oficina@sebana.cr">
+                            <?php if (!empty($errors['correo'])): ?>
+                                <div class="invalid-feedback"><?= htmlspecialchars((string) $errors['correo']) ?></div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="horario_atencion" class="form-control-label">Horario de atencion</label>
+                            <input type="text" id="horario_atencion" name="horario_atencion" class="form-control"
+                                value="<?= htmlspecialchars((string) ($old['horario_atencion'] ?? $office['horario_atencion'] ?? '')) ?>"
+                                placeholder="L-V 8:00 a.m. - 5:00 p.m.">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="responsable" class="form-control-label">Responsable</label>
+                            <input type="text" id="responsable" name="responsable" class="form-control"
+                                value="<?= htmlspecialchars((string) ($old['responsable'] ?? $office['responsable'] ?? '')) ?>">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="coordenadas_gps" class="form-control-label">Coordenadas GPS</label>
+                            <input type="text" id="coordenadas_gps" name="coordenadas_gps" class="form-control"
+                                value="<?= htmlspecialchars((string) ($old['coordenadas_gps'] ?? $office['coordenadas_gps'] ?? '')) ?>"
+                                placeholder="9.9281,-84.0907">
+                        </div>
+                    </div>
+
+                    <div class="row mb-2">
+                        <div class="col-md-12">
+                            <label for="observaciones" class="form-control-label">Observaciones</label>
+                            <textarea id="observaciones" name="observaciones" rows="3" class="form-control"><?= htmlspecialchars((string) ($old['observaciones'] ?? $office['observaciones'] ?? '')) ?></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-right">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="zmdi zmdi-save"></i> Guardar Oficina
+                    </button>
+                    <a href="/SGA-SEBANA/public/oficinas" class="btn btn-danger btn-sm">
+                        <i class="zmdi zmdi-close"></i> Cancelar
+                    </a>
+                </div>
+            </div>
+        </form>
     </div>
-    <div class="mb-3">
-        <label>Nombre</label>
-        <input type="text" name="nombre" class="form-control"
-            value="<?= htmlspecialchars($old['nombre'] ?? $office['nombre'] ?? '') ?>">
-        <?php if(!empty($errors['nombre'])): ?><small
-            class="text-danger"><?= $errors['nombre'] ?></small><?php endif; ?>
-    </div>
-    <div class="mb-3">
-        <label>Dirección</label>
-        <input type="text" name="direccion" class="form-control"
-            value="<?= htmlspecialchars($old['direccion'] ?? $office['direccion'] ?? '') ?>">
-        <?php if(!empty($errors['direccion'])): ?><small
-            class="text-danger"><?= $errors['direccion'] ?></small><?php endif; ?>
-    </div>
-    <div class="mb-3">
-        <label>Provincia</label>
-        <input type="text" name="provincia" class="form-control"
-            value="<?= htmlspecialchars($old['provincia'] ?? $office['provincia'] ?? '') ?>">
-    </div>
-    <div class="mb-3">
-        <label>Cantón</label>
-        <input type="text" name="canton" class="form-control"
-            value="<?= htmlspecialchars($old['canton'] ?? $office['canton'] ?? '') ?>">
-    </div>
-    <div class="mb-3">
-        <label>Distrito</label>
-        <input type="text" name="distrito" class="form-control"
-            value="<?= htmlspecialchars($old['distrito'] ?? $office['distrito'] ?? '') ?>">
-    </div>
-    <div class="mb-3">
-        <label>Teléfono</label>
-        <input type="text" name="telefono" class="form-control"
-            value="<?= htmlspecialchars($old['telefono'] ?? $office['telefono'] ?? '') ?>">
-    </div>
-    <div class="mb-3">
-        <label>Correo</label>
-        <input type="email" name="correo" class="form-control"
-            value="<?= htmlspecialchars($old['correo'] ?? $office['correo'] ?? '') ?>">
-    </div>
-    <div class="mb-3">
-        <label>Horario Atención</label>
-        <input type="text" name="horario_atencion" class="form-control"
-            value="<?= htmlspecialchars($old['horario_atencion'] ?? $office['horario_atencion'] ?? '') ?>">
-    </div>
-    <div class="mb-3">
-        <label>Responsable</label>
-        <input type="text" name="responsable" class="form-control"
-            value="<?= htmlspecialchars($old['responsable'] ?? $office['responsable'] ?? '') ?>">
-    </div>
-    <div class="mb-3">
-        <label>Coordenadas GPS</label>
-        <input type="text" name="coordenadas_gps" class="form-control"
-            value="<?= htmlspecialchars($old['coordenadas_gps'] ?? $office['coordenadas_gps'] ?? '') ?>">
-    </div>
-    <div class="mb-3">
-        <label>Observaciones</label>
-        <textarea name="observaciones"
-            class="form-control"><?= htmlspecialchars($old['observaciones'] ?? $office['observaciones'] ?? '') ?></textarea>
-    </div>
-  <button type="submit" class="btn btn-primary">Crear</button>
-</form>
+</div>
 
 <?php
 $content = ob_get_clean();

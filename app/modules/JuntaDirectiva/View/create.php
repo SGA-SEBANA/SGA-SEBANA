@@ -43,8 +43,14 @@ ob_start();
                         </div>
                         <div class="col-md-6">
                             <label for="cargo" class="form-control-label">Cargo</label>
-                            <input type="text" id="cargo" name="cargo" placeholder="Ej: Presidente" class="form-control"
-                                required>
+                            <select id="cargo" name="cargo" class="form-control" required>
+                                <option value="">Seleccione un cargo</option>
+                                <?php foreach (($cargosDisponibles ?? []) as $cargo): ?>
+                                    <option value="<?= htmlspecialchars((string) $cargo) ?>">
+                                        <?= htmlspecialchars((string) $cargo) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                     </div>
 
@@ -70,8 +76,9 @@ ob_start();
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <label for="periodo" class="form-control-label">Periodo</label>
-                            <input type="text" id="periodo" name="periodo" placeholder="Ej: 2024-2026"
-                                class="form-control">
+                            <input type="text" id="periodo" name="periodo" placeholder="Ej: 2026-2029"
+                                class="form-control" readonly>
+                            <small class="form-text text-muted">Se calcula automaticamente por trienios (2026-2029, 2029-2032, etc.).</small>
                         </div>
                     </div>
 
@@ -120,6 +127,34 @@ ob_start();
         </form>
     </div>
 </div>
+
+<script>
+    (function () {
+        const fechaInput = document.getElementById('fecha_inicio');
+        const periodoInput = document.getElementById('periodo');
+
+        const calcularPeriodo = (fecha) => {
+            if (!fecha) return '';
+            const year = parseInt(fecha.substring(0, 4), 10);
+            if (Number.isNaN(year)) return '';
+
+            const base = 2026;
+            if (year < base) {
+                return `${year}-${year + 3}`;
+            }
+
+            const inicio = base + Math.floor((year - base) / 3) * 3;
+            return `${inicio}-${inicio + 3}`;
+        };
+
+        const refrescar = () => {
+            periodoInput.value = calcularPeriodo(fechaInput.value);
+        };
+
+        fechaInput.addEventListener('change', refrescar);
+        fechaInput.addEventListener('input', refrescar);
+    })();
+</script>
 
 <?php
 $content = ob_get_clean();

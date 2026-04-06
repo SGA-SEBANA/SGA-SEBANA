@@ -51,6 +51,7 @@ $generoActual = strtolower((string) ($afiliado['genero'] ?? ''));
                             <label for="cedula" class="form-control-label">Cédula</label>
                             <input type="text" id="cedula" name="cedula" class="form-control" pattern="\d{9,12}"
                                 value="<?= htmlspecialchars($afiliado['cedula'] ?? '') ?>" required>
+                            <small class="form-text text-muted">Formato unico: escriba solo numeros. Ejemplo: 702000717 (sin guiones ni espacios).</small>
                         </div>
                         <div class="col-md-4">
                             <label for="fecha_nac" class="form-control-label">Fecha Nacimiento</label>

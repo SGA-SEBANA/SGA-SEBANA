@@ -3,6 +3,31 @@ $title = "Oficinas";
 ob_start();
 ?>
 
+<div class="overview-wrap mb-4">
+    <h2 class="title-1">Oficinas</h2>
+    <a href="/SGA-SEBANA/public/oficinas/create" class="au-btn au-btn-icon au-btn--green au-btn--small">
+        <i class="zmdi zmdi-plus"></i> Nueva oficina
+    </a>
+</div>
+
+<?php if (!empty($_GET['success'])): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <?php
+        $success = (string) $_GET['success'];
+        if ($success === 'created') {
+            echo 'Oficina creada correctamente.';
+        } elseif ($success === 'updated') {
+            echo 'Oficina actualizada correctamente.';
+        } elseif ($success === 'toggled') {
+            echo 'Estado de la oficina actualizado correctamente.';
+        } else {
+            echo 'Operacion completada correctamente.';
+        }
+        ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
 <div class="row g-4">
     <?php if (!empty($offices)): ?>
     <?php foreach ($offices as $office): ?>

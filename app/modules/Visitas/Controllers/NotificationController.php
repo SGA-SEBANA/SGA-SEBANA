@@ -9,23 +9,7 @@ class NotificationController
 {
     private function resolvePanelUrl(): string
     {
-        $roleKey = AccessControl::currentRoleKey();
-        if (AccessControl::isAffiliateRole()) {
-            return '/SGA-SEBANA/public/visit-requests';
-        }
-        if ($roleKey === 'operador') {
-            return '/SGA-SEBANA/public/afiliados';
-        }
-        if ($roleKey === 'auditor') {
-            return '/SGA-SEBANA/public/bitacora';
-        }
-        if ($roleKey === 'admin_rrll') {
-            return '/SGA-SEBANA/public/casos-rrll';
-        }
-        if ($roleKey === 'admin_solicitudes') {
-            return '/SGA-SEBANA/public/admin/visit-requests';
-        }
-        return '/SGA-SEBANA/public/home';
+        return AccessControl::defaultPanelPath();
     }
 
     public function read($id)

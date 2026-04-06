@@ -52,7 +52,21 @@ class AccessControl
                 ];
             }
 
+            if (!empty($rule['exclude_roles']) && self::hasAnyRole((array) $rule['exclude_roles'])) {
+                return [
+                    'allowed' => false,
+                    'redirect' => self::unauthorizedRedirect()
+                ];
+            }
+
             if (!empty($rule['affiliate_only']) && !self::isAffiliateRole()) {
+                return [
+                    'allowed' => false,
+                    'redirect' => self::unauthorizedRedirect()
+                ];
+            }
+
+            if (!empty($rule['employee_only']) && !self::isEmployeeRole()) {
                 return [
                     'allowed' => false,
                     'redirect' => self::unauthorizedRedirect()
@@ -81,12 +95,12 @@ class AccessControl
 
     public static function isAffiliateRole(): bool
     {
-        $role = self::currentRoleKey();
-        if ($role === 'consulta') {
-            return true;
-        }
+        return self::currentRoleKey() === 'consulta';
+    }
 
-        return self::currentLevelRank() === 1;
+    public static function isEmployeeRole(): bool
+    {
+        return self::currentRoleKey() === 'empleado_sebana';
     }
 
     public static function isAuditor(): bool
@@ -208,20 +222,20 @@ class AccessControl
             ['pattern' => '~^/puestos(?:/.*)?$~i', 'methods' => ['GET', 'POST'], 'min' => 'medio'],
             ['pattern' => '~^/junta(?:$|/history$|/documento/[^/]+$|/ver-documento/[^/]+$)$~i', 'methods' => ['GET'], 'min' => 'medio'],
 
-            ['pattern' => '~^/visit-requests$~i', 'methods' => ['GET'], 'min' => 'basico'],
-            ['pattern' => '~^/visit-requests/create$~i', 'methods' => ['GET', 'POST'], 'min' => 'basico'],
-            ['pattern' => '~^/visit-requests/\d+/(reschedule|cancel)$~i', 'methods' => ['GET', 'POST'], 'min' => 'basico', 'affiliate_only' => true],
+            ['pattern' => '~^/visit-requests$~i', 'methods' => ['GET'], 'min' => 'basico', 'exclude_roles' => ['empleado_sebana']],
+            ['pattern' => '~^/visit-requests/create$~i', 'methods' => ['GET', 'POST'], 'min' => 'basico', 'exclude_roles' => ['empleado_sebana']],
+            ['pattern' => '~^/visit-requests/\d+/(reschedule|cancel)$~i', 'methods' => ['GET', 'POST'], 'min' => 'basico', 'affiliate_only' => true, 'exclude_roles' => ['empleado_sebana']],
 
-            ['pattern' => '~^/ayudas(?:$|/show/\d+$|/archivo/\d+$)$~i', 'methods' => ['GET'], 'min' => 'basico'],
-            ['pattern' => '~^/ayudas/(create|store)$~i', 'methods' => ['GET', 'POST'], 'min' => 'basico'],
-            ['pattern' => '~^/ayudas/(cancel|evidence)/\d+$~i', 'methods' => ['POST'], 'min' => 'basico', 'affiliate_only' => true],
+            ['pattern' => '~^/ayudas(?:$|/show/\d+$|/archivo/\d+$)$~i', 'methods' => ['GET'], 'min' => 'basico', 'exclude_roles' => ['empleado_sebana']],
+            ['pattern' => '~^/ayudas/(create|store)$~i', 'methods' => ['GET', 'POST'], 'min' => 'basico', 'exclude_roles' => ['empleado_sebana']],
+            ['pattern' => '~^/ayudas/(cancel|evidence)/\d+$~i', 'methods' => ['POST'], 'min' => 'basico', 'affiliate_only' => true, 'exclude_roles' => ['empleado_sebana']],
 
-            ['pattern' => '~^/vacaciones(?:$|/show/\d+$)$~i', 'methods' => ['GET'], 'min' => 'basico'],
-            ['pattern' => '~^/vacaciones/(create|store)$~i', 'methods' => ['GET', 'POST'], 'min' => 'basico'],
-            ['pattern' => '~^/vacaciones/(cancel|reschedule)/\d+$~i', 'methods' => ['POST'], 'min' => 'basico', 'affiliate_only' => true],
+            ['pattern' => '~^/vacaciones(?:$|/show/\d+$)$~i', 'methods' => ['GET'], 'min' => 'basico', 'roles' => ['admin_general', 'admin_solicitudes', 'empleado_sebana']],
+            ['pattern' => '~^/vacaciones/(create|store)$~i', 'methods' => ['GET', 'POST'], 'min' => 'basico', 'roles' => ['admin_general', 'admin_solicitudes', 'empleado_sebana']],
+            ['pattern' => '~^/vacaciones/(cancel|reschedule)/\d+$~i', 'methods' => ['POST'], 'min' => 'basico', 'employee_only' => true],
 
-            ['pattern' => '~^/viaticos(?:$|/show$|/pdf$|/archivo$)$~i', 'methods' => ['GET'], 'min' => 'basico'],
-            ['pattern' => '~^/viaticos/(create|store)$~i', 'methods' => ['GET', 'POST'], 'min' => 'basico']
+            ['pattern' => '~^/viaticos(?:$|/show$|/pdf$|/archivo$)$~i', 'methods' => ['GET'], 'min' => 'basico', 'exclude_roles' => ['empleado_sebana']],
+            ['pattern' => '~^/viaticos/(create|store)$~i', 'methods' => ['GET', 'POST'], 'min' => 'basico', 'exclude_roles' => ['empleado_sebana']]
         ];
     }
 
@@ -231,23 +245,30 @@ class AccessControl
             return '/SGA-SEBANA/public/login';
         }
 
+        return self::defaultPanelPath() . '?error=no_autorizado';
+    }
+
+    public static function defaultPanelPath(): string
+    {
         $base = '/SGA-SEBANA/public';
         $role = self::currentRoleKey();
 
         switch ($role) {
             case 'admin_rrll':
-                return $base . '/casos-rrll?error=no_autorizado';
+                return $base . '/casos-rrll';
             case 'admin_solicitudes':
-                return $base . '/admin/visit-requests?error=no_autorizado';
+                return $base . '/admin/visit-requests';
             case 'operador':
-                return $base . '/afiliados?error=no_autorizado';
+                return $base . '/afiliados';
             case 'auditor':
-                return $base . '/bitacora?error=no_autorizado';
+                return $base . '/bitacora';
             case 'consulta':
-                return $base . '/visit-requests?error=no_autorizado';
+                return $base . '/visit-requests';
+            case 'empleado_sebana':
+                return $base . '/vacaciones';
             case 'admin_general':
             default:
-                return $base . '/home?error=no_autorizado';
+                return $base . '/home';
         }
     }
 
@@ -277,6 +298,9 @@ class AccessControl
                 return 'operador';
             case 'consulta':
                 return 'consulta';
+            case 'empleado de sebana':
+            case 'empleado sebana':
+                return 'empleado_sebana';
             case 'auditor':
                 return 'auditor';
             default:

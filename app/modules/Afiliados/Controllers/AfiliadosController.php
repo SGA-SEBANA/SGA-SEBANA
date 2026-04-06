@@ -77,6 +77,11 @@ class AfiliadosController extends ControllerBase
             $datos = $this->limpiarDatos($_POST);
             $modelo = new Afiliados();
 
+            if ($datos['cedula'] === '') {
+                echo "<script>alert('Error: Cedula invalida. Use solo numeros (formato unico).'); window.history.back();</script>";
+                return;
+            }
+
             if ($modelo->existeCedula($datos['cedula'])) {
                 echo "<script>alert('Error: Cedula duplicada.'); window.history.back();</script>";
                 return;
@@ -170,6 +175,11 @@ class AfiliadosController extends ControllerBase
             $datos = $this->limpiarDatos($_POST);
             $modelo = new Afiliados();
             $anterior = $modelo->getById($id);
+
+            if ($datos['cedula'] === '') {
+                echo "<script>alert('Error: Cedula invalida. Use solo numeros (formato unico).'); window.history.back();</script>";
+                return;
+            }
 
             if ($modelo->existeCedula($datos['cedula'], $id)) {
                 echo "<script>alert('Error: Esa cedula ya pertenece a otro afiliado.'); window.history.back();</script>";
@@ -323,7 +333,7 @@ class AfiliadosController extends ControllerBase
             'nombre' => trim($post['nombre'] ?? ''),
             'apellido1' => trim($post['apellido1'] ?? ''),
             'apellido2' => trim($post['apellido2'] ?? ''),
-            'cedula' => trim($post['cedula'] ?? ''),
+            'cedula' => $this->normalizeCedula($post['cedula'] ?? ''),
             'genero' => trim($post['genero'] ?? ''),
             'fecha_nacimiento' => trim($post['fecha_nacimiento'] ?? ''),
             'correo' => trim($post['correo'] ?? ''),
@@ -336,6 +346,11 @@ class AfiliadosController extends ControllerBase
             'datos_contacto_emergencia' => json_encode($contactoEmergencia),
             'observaciones' => trim($post['observaciones'] ?? '')
         ];
+    }
+
+    private function normalizeCedula($cedula): string
+    {
+        return preg_replace('/[^0-9]/', '', trim((string) $cedula)) ?? '';
     }
 
     private function buildAutoUserNotice(array $provision): array
@@ -366,6 +381,68 @@ class AfiliadosController extends ControllerBase
         ];
     }
 
+    public function reporteGenero()
+    {
+        $modelo = new Afiliados();
+        $genero = strtolower(trim((string) ($_GET['genero'] ?? '')));
+        $permitidos = ['masculino', 'femenino', 'otro', 'prefiero_no_decir'];
+
+        if ($genero !== '' && !in_array($genero, $permitidos, true)) {
+            $genero = '';
+        }
+
+        $rows = $modelo->getReporteGenero($genero !== '' ? $genero : null);
+
+        $bitacora = new Bitacora();
+        $bitacora->log([
+            'accion' => 'READ',
+            'modulo' => 'afiliados',
+            'entidad' => 'reporte_genero',
+            'descripcion' => 'Generacion de reporte de afiliados por genero',
+            'datos_nuevos' => ['genero' => $genero !== '' ? $genero : 'todos']
+        ]);
+
+        $slugGenero = $genero !== '' ? $genero : 'todos';
+        $filename = 'reporte_afiliados_genero_' . $slugGenero . '_' . date('Ymd_His') . '.csv';
+
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        $output = fopen('php://output', 'w');
+        if ($output === false) {
+            echo 'No se pudo generar el archivo.';
+            return;
+        }
+
+        // BOM UTF-8 para compatibilidad con Excel
+        fwrite($output, "\xEF\xBB\xBF");
+        fputcsv($output, ['Cedula', 'Nombre completo', 'Genero', 'Categoria', 'Oficina', 'Telefono', 'Correo', 'Estado']);
+
+        foreach ($rows as $row) {
+            $generoRaw = strtolower((string) ($row['genero'] ?? ''));
+            $generoLabel = match ($generoRaw) {
+                'masculino' => 'Masculino',
+                'femenino' => 'Femenino',
+                'otro' => 'Otro',
+                default => 'Prefiero no decir'
+            };
+
+            fputcsv($output, [
+                (string) ($row['cedula'] ?? ''),
+                (string) ($row['nombre_completo'] ?? ''),
+                $generoLabel,
+                (string) ($row['categoria_nombre'] ?? 'Sin categoria'),
+                (string) ($row['oficina_nombre'] ?? 'Sin oficina'),
+                (string) ($row['telefono'] ?? ''),
+                (string) ($row['correo'] ?? ''),
+                ucfirst((string) ($row['estado'] ?? ''))
+            ]);
+        }
+
+        fclose($output);
+        exit;
+    }
+
 
     public function buscarAfiliado()
 {
@@ -374,7 +451,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-    $cedula = $_GET['cedula'] ?? '';
+    $cedula = $this->normalizeCedula($_GET['cedula'] ?? '');
 
     $model = new \App\Modules\Afiliados\Models\Afiliados();
     $resultados = $model->searchByCedula($cedula);

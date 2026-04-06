@@ -36,6 +36,9 @@ class AuthController extends ControllerBase
                 return '/SGA-SEBANA/public/afiliados';
             case 'auditor':
                 return '/SGA-SEBANA/public/bitacora';
+            case 'empleado de sebana':
+            case 'empleado sebana':
+                return '/SGA-SEBANA/public/vacaciones';
             case 'consulta':
             default:
                 return '/SGA-SEBANA/public/visit-requests';

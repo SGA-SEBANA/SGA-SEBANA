@@ -53,6 +53,48 @@ public function index()
       return $model->cargoExists($cargo);
 }
 
+   private function cargosPermitidos(): array
+   {
+      return [
+         'Secretaria General',
+         'Subsecretaria General',
+         'Secretaria de Finanzas',
+         'Subsecretaria de Finanzas',
+         'Secretaria de Actas y Correspondencia',
+         'Secretaria de Organizacion',
+         'Secretaria de Cultura y Deportes',
+         'Secretaria de la Mujer',
+         'Secretaria de Juventud',
+         'Fiscalia',
+         'Vocal 1',
+         'Vocal 2',
+         'Vocal 3'
+      ];
+   }
+
+   private function esCargoPermitido(string $cargo): bool
+   {
+      return in_array($cargo, $this->cargosPermitidos(), true);
+   }
+
+   private function calcularPeriodoTrienio(string $fechaInicio): string
+   {
+      $timestamp = strtotime($fechaInicio);
+      if ($timestamp === false) {
+         return '';
+      }
+
+      $year = (int) date('Y', $timestamp);
+      $base = 2026;
+
+      if ($year < $base) {
+         return $year . '-' . ($year + 3);
+      }
+
+      $inicio = $base + (int) (floor(($year - $base) / 3) * 3);
+      return $inicio . '-' . ($inicio + 3);
+   }
+
 
    public function create()
    {
@@ -60,6 +102,7 @@ public function index()
          session_start();
       }
       $model = new JuntaDirectivaModel();
+      $cargosDisponibles = $this->cargosPermitidos();
 
       if ($_POST) {
          $afiliadoId = (int) ($_POST['afiliado_id'] ?? 0);
@@ -67,7 +110,7 @@ public function index()
          $estado = strtolower(trim((string) ($_POST['estado'] ?? 'vigente')));
          $fechaInicio = trim((string) ($_POST['fecha_inicio'] ?? ''));
          $fechaFin = trim((string) ($_POST['fecha_fin'] ?? ''));
-         $periodo = trim((string) ($_POST['periodo'] ?? ''));
+         $periodo = '';
          $responsabilidades = trim((string) ($_POST['responsabilidades'] ?? ''));
          $observaciones = trim((string) ($_POST['observaciones'] ?? ''));
 
@@ -79,6 +122,12 @@ public function index()
 
          if ($cargo === '') {
             $_SESSION['error'] = "El campo cargo es obligatorio.";
+            header("Location: /SGA-SEBANA/public/junta/create");
+            exit;
+         }
+
+         if (!$this->esCargoPermitido($cargo)) {
+            $_SESSION['error'] = "Debe seleccionar un cargo valido de la lista.";
             header("Location: /SGA-SEBANA/public/junta/create");
             exit;
          }
@@ -106,6 +155,8 @@ public function index()
             header("Location: /SGA-SEBANA/public/junta/create");
             exit;
          }
+
+         $periodo = $this->calcularPeriodoTrienio($fechaInicio);
 
          $juntaId = $model->createMiembroJunta(
             $afiliadoId,
@@ -211,15 +262,20 @@ public function index()
    public function edit($id)
    {
       $model = new JuntaDirectivaModel();
+      $cargosDisponibles = $this->cargosPermitidos();
 
       if ($_POST) {
          $cargo = trim((string) ($_POST['cargo'] ?? ''));
          $fechaInicio = trim((string) ($_POST['fecha_inicio'] ?? ''));
          $fechaFin = trim((string) ($_POST['fecha_fin'] ?? ''));
-         $periodo = trim((string) ($_POST['periodo'] ?? ''));
+         $periodo = '';
          $estado = strtolower(trim((string) ($_POST['estado'] ?? 'vigente')));
          $responsabilidades = trim((string) ($_POST['responsabilidades'] ?? ''));
          $observaciones = trim((string) ($_POST['observaciones'] ?? ''));
+
+         if (!$this->esCargoPermitido($cargo)) {
+            die("Error: Debe seleccionar un cargo valido de la lista.");
+         }
 
          if ($fechaInicio === '') {
             die("Error: La fecha de inicio es obligatoria.");
@@ -232,6 +288,8 @@ public function index()
          if ($estado === 'finalizado' && $fechaFin === '') {
             die("Error: Si el estado es finalizado, debe indicar fecha de fin.");
          }
+
+         $periodo = $this->calcularPeriodoTrienio($fechaInicio);
 
          $updated = $model->updateMiembroJunta(
             $id,
@@ -305,8 +363,11 @@ public function index()
          exit;
       }
       $miembro = $model->getMiembroById($id);
+      if (!empty($miembro['fecha_inicio'])) {
+         $miembro['periodo'] = $this->calcularPeriodoTrienio((string) $miembro['fecha_inicio']);
+      }
       $documentos = $model->getDocumentos($id);
-      require BASE_PATH . '/app/modules/juntaDirectiva/view/edit.php';
+      require BASE_PATH . '/app/modules/JuntaDirectiva/View/edit.php';
    }
 
 

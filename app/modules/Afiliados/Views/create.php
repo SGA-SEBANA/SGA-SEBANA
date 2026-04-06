@@ -89,7 +89,7 @@ ob_start();
                             <label for="cedula" class="form-control-label">Cédula</label>
                             <input type="text" id="cedula" name="cedula" placeholder="000000000" class="form-control"
                                 pattern="\d{9,12}" title="9 a 12 dígitos" required>
-                            <small class="form-text text-muted">Sin guiones ni espacios</small>
+                            <small class="form-text text-muted">Formato unico: escriba solo numeros. Ejemplo: 702000717 (sin guiones ni espacios).</small>
                         </div>
                         <div class="col-md-4">
                             <label for="fecha_nac" class="form-control-label">Fecha Nacimiento</label>

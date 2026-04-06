@@ -100,7 +100,7 @@ ob_start();
                                        data-toggle="tooltip"
                                        title="Finalizar"
                                        onclick="return confirm('¿Finalizar este miembro?')">
-                                        <i class="zmdi zmdi-block" style="color: #fa4251;></i>
+                                        <i class="zmdi zmdi-block" style="color: #fa4251;"></i>
                                     </a>
 
                                 </div>
@@ -114,40 +114,11 @@ ob_start();
             </table>
 
             <!-- PAGINACIÓN -->
-            <?php if (!empty($totalPaginas) && $totalPaginas > 1): ?>
-                <div class="mt-4 d-flex justify-content-center">
-                    <ul class="pagination">
-
-                        <!-- ANTERIOR -->
-                        <?php if ($page > 1): ?>
-                            <li class="page-item">
-                                <a class="page-link" href="?page=<?= $page - 1 ?>">«</a>
-                            </li>
-                        <?php endif; ?>
-
                         <?php
-                        $inicio = max(1, $page - 2);
-                        $fin = min($totalPaginas, $page + 2);
-                        ?>
+            require_once BASE_PATH . '/public/templates/components/pagination.php';
+            echo render_sga_pagination((int) ($page ?? 1), (int) ($totalPaginas ?? 1), $_GET);
+            ?>
 
-                        <?php for ($i = $inicio; $i <= $fin; $i++): ?>
-                            <li class="page-item <?= $i == $page ? 'active' : '' ?>">
-                                <a class="page-link" href="?page=<?= $i ?>">
-                                    <?= $i ?>
-                                </a>
-                            </li>
-                        <?php endfor; ?>
-
-                        <!-- SIGUIENTE -->
-                        <?php if ($page < $totalPaginas): ?>
-                            <li class="page-item">
-                                <a class="page-link" href="?page=<?= $page + 1 ?>">»</a>
-                            </li>
-                        <?php endif; ?>
-
-                    </ul>
-                </div>
-            <?php endif; ?>
 
         </div>
     </div>

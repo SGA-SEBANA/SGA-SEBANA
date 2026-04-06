@@ -32,26 +32,21 @@ $can = static function (string $required) use ($accessRank): bool {
 
 $roleKey = AccessControl::currentRoleKey();
 $isAffiliateRole = AccessControl::isAffiliateRole();
+$isEmployeeRole = AccessControl::isEmployeeRole();
 $isAuditorRole = ($roleKey === 'auditor');
 $canAdminUsers = $can('total');
 $canAdminRrll = in_array($roleKey, ['admin_general', 'admin_rrll'], true);
 $canAdminSolicitudes = in_array($roleKey, ['admin_general', 'admin_solicitudes'], true);
+$canManageVacaciones = in_array($roleKey, ['admin_general', 'admin_solicitudes'], true);
 $canHighAccess = $can('alto') && !$isAuditorRole;
 $canOperational = $can('medio') && !$isAuditorRole;
 $canReports = $can('medio');
 $isAdminPanelRole = in_array($roleKey, ['admin_general', 'admin_rrll', 'admin_solicitudes'], true);
 
-$panelUrl = '/SGA-SEBANA/public/home';
-if ($isAffiliateRole) {
-    $panelUrl = '/SGA-SEBANA/public/visit-requests';
-} elseif ($roleKey === 'operador') {
-    $panelUrl = '/SGA-SEBANA/public/afiliados';
-} elseif ($roleKey === 'auditor') {
-    $panelUrl = '/SGA-SEBANA/public/bitacora';
-} elseif ($roleKey === 'admin_rrll') {
-    $panelUrl = '/SGA-SEBANA/public/casos-rrll';
-} elseif ($roleKey === 'admin_solicitudes') {
-    $panelUrl = '/SGA-SEBANA/public/admin/visit-requests';
+$panelUrl = AccessControl::defaultPanelPath();
+$displayName = trim((string) ($authUser['nombre_completo'] ?? ''));
+if ($displayName === '') {
+    $displayName = (string) ($authUser['username'] ?? 'Usuario');
 }
 
 ?>
@@ -86,6 +81,49 @@ if ($isAffiliateRole) {
 
     <link rel="stylesheet" href="/SGA-SEBANA/public/assets/css/calendar.css">
 
+    <style>
+        .sga-pagination-wrapper .pagination {
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .sga-pagination-wrapper .page-link {
+            min-width: 38px;
+            text-align: center;
+            border-radius: 10px;
+            border: 1px solid #d9e3ef;
+            background: #fff;
+            color: #20437c;
+            font-weight: 600;
+            padding: 0.45rem 0.7rem;
+        }
+
+        .sga-pagination-wrapper .page-link:hover {
+            background: #eef4ff;
+            color: #173560;
+            border-color: #b8cdec;
+        }
+
+        .sga-pagination-wrapper .page-item.active .page-link {
+            background: #1c4388;
+            border-color: #1c4388;
+            color: #fff;
+            box-shadow: 0 8px 16px rgba(28, 67, 136, 0.2);
+        }
+
+        .sga-pagination-wrapper .page-item.disabled .page-link {
+            color: #8f9ba8;
+            background: #f6f8fb;
+            border-color: #e6ebf2;
+            pointer-events: none;
+        }
+
+        .sga-pagination-meta {
+            font-size: 0.8rem;
+            color: #6d7d8f;
+        }
+    </style>
+
 </head>
 
 <body>
@@ -110,7 +148,7 @@ if ($isAffiliateRole) {
                     <ul class="navbar-mobile__list list-unstyled">
                         <li>
                             <a href="<?= $panelUrl ?>">
-                                <i class="fas fa-tachometer-alt"></i><?= $isAdminPanelRole ? 'Panel' : ($isAffiliateRole ? 'Mis Solicitudes' : 'Inicio') ?></a>
+                                <i class="fas fa-tachometer-alt"></i><?= $isAdminPanelRole ? 'Panel' : ($isAffiliateRole ? 'Mis Solicitudes' : ($isEmployeeRole ? 'Mis Vacaciones' : 'Inicio')) ?></a>
                         </li>
                         <?php if ($canOperational): ?>
                             <li>
@@ -123,10 +161,6 @@ if ($isAffiliateRole) {
                             </li>
                         <?php endif; ?>
                         <?php if ($isAffiliateRole): ?>
-                            <li>
-                                <a href="/SGA-SEBANA/public/vacaciones">
-                                    <i class="fa-solid fa-umbrella-beach"></i>Vacaciones</a>
-                            </li>
                             <li>
                                 <a href="/SGA-SEBANA/public/ayudas">
                                     <i class="fa-solid fa-hand-holding-dollar"></i>Ayudas</a>
@@ -144,11 +178,17 @@ if ($isAffiliateRole) {
                                     <i class="fas fa-user-cog"></i>Mi Usuario</a>
                             </li>
                         <?php endif; ?>
-                        <?php if ($canHighAccess): ?>
+                        <?php if ($isEmployeeRole): ?>
                             <li>
                                 <a href="/SGA-SEBANA/public/vacaciones">
-                                    <i class="fa-solid fa-umbrella-beach"></i>Solicitudes Vacaciones</a>
+                                    <i class="fa-solid fa-umbrella-beach"></i>Vacaciones</a>
                             </li>
+                            <li>
+                                <a href="/SGA-SEBANA/public/users/<?= (int) ($authUser['id'] ?? 0) ?>/edit">
+                                    <i class="fas fa-user-cog"></i>Mi Usuario</a>
+                            </li>
+                        <?php endif; ?>
+                        <?php if ($canHighAccess): ?>
                             <li>
                                 <a href="/SGA-SEBANA/public/ayudas">
                                     <i class="fa-solid fa-hand-holding-dollar"></i>Solicitudes Ayudas</a>
@@ -160,6 +200,12 @@ if ($isAffiliateRole) {
                             <li>
                                 <a href="/SGA-SEBANA/public/visit-requests">
                                     <i class="fa-solid fa-building-user"></i>Solicitudes Visitas</a>
+                            </li>
+                        <?php endif; ?>
+                        <?php if ($canManageVacaciones): ?>
+                            <li>
+                                <a href="/SGA-SEBANA/public/vacaciones">
+                                    <i class="fa-solid fa-umbrella-beach"></i>Solicitudes Vacaciones</a>
                             </li>
                         <?php endif; ?>
                         <?php if ($canAdminSolicitudes): ?>
@@ -194,7 +240,7 @@ if ($isAffiliateRole) {
                     <ul class="list-unstyled navbar__list">
                         <li class="active">
                             <a href="<?= $panelUrl ?>">
-                                <i class="fas fa-tachometer-alt"></i><?= $isAdminPanelRole ? 'Panel de Control' : ($isAffiliateRole ? 'Mis Solicitudes' : 'Inicio') ?></a>
+                                <i class="fas fa-tachometer-alt"></i><?= $isAdminPanelRole ? 'Panel de Control' : ($isAffiliateRole ? 'Mis Solicitudes' : ($isEmployeeRole ? 'Mis Vacaciones' : 'Inicio')) ?></a>
                         </li>
 
                         <?php if ($canOperational): ?>
@@ -205,6 +251,7 @@ if ($isAffiliateRole) {
                                     <li><a href="/SGA-SEBANA/public/afiliados"><i class="fas fa-user-friends"></i> Lista de Afiliados</a></li>
                                     <li><a href="/SGA-SEBANA/public/ReporteDeExclusionDeAfiliado"><i class="fas fa-user-times"></i> Exclusiones</a></li>
                                     <li><a href="/SGA-SEBANA/public/Categorias"><i class="fas fa-tags"></i> Categorias</a></li>
+                                    <li><a href="/SGA-SEBANA/public/puestos"><i class="fas fa-briefcase"></i> Puestos</a></li>
                                 </ul>
                             </li>
 
@@ -213,12 +260,11 @@ if ($isAffiliateRole) {
                                     <i class="fas fa-sitemap"></i>Estructura Organica</a>
                                 <ul class="list-unstyled navbar__sub-list js-sub-list">
                                     <li><a href="/SGA-SEBANA/public/junta"><i class="fas fa-user-tie"></i> Junta Directiva</a></li>
-                                    <li><a href="/SGA-SEBANA/public/puestos"><i class="fas fa-briefcase"></i> Puestos</a></li>
                                 </ul>
                             </li>
                         <?php endif; ?>
 
-                        <?php if ($isAffiliateRole || $canAdminSolicitudes || $canAdminRrll || $canOperational || $canHighAccess): ?>
+                        <?php if ($isAffiliateRole || $isEmployeeRole || $canAdminSolicitudes || $canAdminRrll || $canOperational || $canHighAccess): ?>
                             <li class="has-sub">
                                 <a class="js-arrow" href="#">
                                     <i class="fas fa-file-invoice-dollar"></i>Tramites y Solicitudes</a>
@@ -227,6 +273,9 @@ if ($isAffiliateRole) {
                                         <li><a href="/SGA-SEBANA/public/visit-requests"><i class="fa-solid fa-building-user"></i> Solicitar Visita</a></li>
                                         <li><a href="/SGA-SEBANA/public/ayudas"><i class="fa-solid fa-hand-holding-dollar"></i> Ayudas</a></li>
                                         <li><a href="/SGA-SEBANA/public/viaticos"><i class="fa-solid fa-receipt"></i> Viaticos</a></li>
+                                    <?php endif; ?>
+
+                                    <?php if ($isEmployeeRole): ?>
                                         <li><a href="/SGA-SEBANA/public/vacaciones"><i class="fa-solid fa-umbrella-beach"></i> Vacaciones</a></li>
                                     <?php endif; ?>
 
@@ -234,6 +283,9 @@ if ($isAffiliateRole) {
                                         <li><a href="/SGA-SEBANA/public/visit-requests"><i class="fa-solid fa-building-user"></i> Visitas</a></li>
                                         <li><a href="/SGA-SEBANA/public/ayudas"><i class="fa-solid fa-hand-holding-dollar"></i> Ayudas</a></li>
                                         <li><a href="/SGA-SEBANA/public/viaticos"><i class="fa-solid fa-receipt"></i> Viaticos</a></li>
+                                    <?php endif; ?>
+
+                                    <?php if ($canManageVacaciones): ?>
                                         <li><a href="/SGA-SEBANA/public/vacaciones"><i class="fa-solid fa-umbrella-beach"></i> Vacaciones</a></li>
                                     <?php endif; ?>
 
@@ -253,12 +305,12 @@ if ($isAffiliateRole) {
                             </li>
                         <?php endif; ?>
 
-                        <?php if ($canReports || $canAdminUsers || $isAffiliateRole): ?>
+                        <?php if ($canReports || $canAdminUsers || $isAffiliateRole || $isEmployeeRole): ?>
                             <li class="has-sub">
                                 <a class="js-arrow" href="#">
                                     <i class="fas fa-cogs"></i>Configuracion</a>
                                 <ul class="list-unstyled navbar__sub-list js-sub-list">
-                                    <?php if ($isAffiliateRole): ?>
+                                    <?php if ($isAffiliateRole || $isEmployeeRole): ?>
                                         <li><a href="/SGA-SEBANA/public/users/<?= (int) ($authUser['id'] ?? 0) ?>/edit"><i class="fas fa-user-cog"></i> Mi Usuario</a></li>
                                     <?php endif; ?>
                                     <?php if ($canAdminUsers): ?>
@@ -325,7 +377,7 @@ if ($isAffiliateRole) {
                                         </div>
                                         <div class="content">
                                             <a class="js-acc-btn"
-                                                href="#"><?= htmlspecialchars($authUser['username'] ?? 'Usuario') ?></a>
+                                                href="#"><?= htmlspecialchars($displayName) ?></a>
                                         </div>
                                         <div class="account-dropdown js-dropdown">
                                             <div class="info clearfix">

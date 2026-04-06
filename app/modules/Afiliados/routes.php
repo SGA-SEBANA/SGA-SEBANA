@@ -8,6 +8,7 @@ use App\Modules\Afiliados\Controllers\AfiliadosController;
 
 // Listado
 $router->get('/afiliados', [AfiliadosController::class, 'index']);
+$router->get('/afiliados/reporte/genero', [AfiliadosController::class, 'reporteGenero']);
 
 // Crear
 $router->get('/afiliados/create', [AfiliadosController::class, 'create']);

@@ -39,8 +39,14 @@ class CasosRRLLController extends ControllerBase
             'estado' => $_GET['estado'] ?? '',
             'categoria_id' => $_GET['categoria_id'] ?? '',
             'prioridad' => $_GET['prioridad'] ?? '',
-            'afiliado_id' => $_GET['afiliado_id'] ?? ''
+            'afiliado_id' => $_GET['afiliado_id'] ?? '',
+            'etapa_nombre' => trim($_GET['etapa_nombre'] ?? ''),
+            'etapa_estado' => $_GET['etapa_estado'] ?? ''
         ];
+
+        if (($filtros['etapa_nombre'] ?? '') === '' && (($_GET['solo_investigacion'] ?? '') === '1')) {
+            $filtros['etapa_nombre'] = 'investigacion';
+        }
 
         $casos = $this->modelo_casos->getAll($filtros);
         $categorias = $this->modelo_casos->getCategorias();
@@ -718,8 +724,14 @@ class CasosRRLLController extends ControllerBase
         $filtros = [
             'estado' => $_GET['estado'] ?? '',
             'categoria_id' => $_GET['categoria_id'] ?? '',
-            'prioridad' => $_GET['prioridad'] ?? ''
+            'prioridad' => $_GET['prioridad'] ?? '',
+            'etapa_nombre' => trim($_GET['etapa_nombre'] ?? ''),
+            'etapa_estado' => $_GET['etapa_estado'] ?? ''
         ];
+
+        if (($filtros['etapa_nombre'] ?? '') === '' && (($_GET['solo_investigacion'] ?? '') === '1')) {
+            $filtros['etapa_nombre'] = 'investigacion';
+        }
 
         $casos = $this->modelo_casos->getAll($filtros);
 
