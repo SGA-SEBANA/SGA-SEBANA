@@ -27,15 +27,15 @@ class OfficeModel extends ModelBase
     {
         $sql = "INSERT INTO {$this->table} (
             codigo, nombre, direccion, provincia, canton, distrito, telefono, correo,
-            horario_atencion, responsable, coordenadas_gps, observaciones, estado
+            horario_atencion, responsable, coordenadas_gps, observaciones, activo
         ) VALUES (
             :codigo, :nombre, :direccion, :provincia, :canton, :distrito, :telefono, :correo,
-            :horario_atencion, :responsable, :coordenadas_gps, :observaciones, 'activo'
+            :horario_atencion, :responsable, :coordenadas_gps, :observaciones, :activo
         )";
 
         $stmt = $this->db->prepare($sql);
-        $stmt->execute($data);
-        return $this->db->lastInsertId();
+        $ok = $stmt->execute($data);
+        return $ok ? (int) $this->db->lastInsertId() : 0;
     }
 
    public function updateOffice($id, $data)
@@ -76,6 +76,11 @@ public function toggleStatus($id)
     $stmt = $this->db->prepare("UPDATE {$this->table} SET activo = :activo WHERE id = :id");
     return $stmt->execute(['activo' => $newStatus, 'id' => $id]);
 }
+
+    public function getLastInsertId(): int
+    {
+        return (int) $this->db->lastInsertId();
+    }
     public function deleteOffice($id)
     {
         $stmt = $this->db->prepare("DELETE FROM {$this->table} WHERE id = :id");

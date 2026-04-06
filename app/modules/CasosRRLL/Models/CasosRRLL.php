@@ -73,6 +73,28 @@ class CasosRRLL extends ModelBase
             $params['prioridad'] = $filtros['prioridad'];
         }
 
+        // Filtro por etapa (nombre contiene texto, p.ej. investigacion)
+        if (!empty($filtros['etapa_nombre'])) {
+            $sql .= " AND EXISTS (
+                        SELECT 1
+                        FROM etapas_casos e
+                        WHERE e.caso_id = c.id
+                          AND e.nombre LIKE :etapa_nombre
+                     )";
+            $params['etapa_nombre'] = '%' . $filtros['etapa_nombre'] . '%';
+        }
+
+        // Filtro por estado de etapa
+        if (!empty($filtros['etapa_estado'])) {
+            $sql .= " AND EXISTS (
+                        SELECT 1
+                        FROM etapas_casos e_estado
+                        WHERE e_estado.caso_id = c.id
+                          AND e_estado.estado = :etapa_estado
+                     )";
+            $params['etapa_estado'] = $filtros['etapa_estado'];
+        }
+
         // Filtro por afiliado
         if (!empty($filtros['afiliado_id'])) {
             $sql .= " AND c.afiliado_id = :afiliado_id";
@@ -143,7 +165,11 @@ class CasosRRLL extends ModelBase
         ];
 
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute($params);
+        if (!$stmt->execute($params)) {
+            return false;
+        }
+
+        return (int) $this->db->lastInsertId();
     }
 
     /**

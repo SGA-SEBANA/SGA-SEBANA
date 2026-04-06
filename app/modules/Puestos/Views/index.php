@@ -190,43 +190,11 @@ ob_start();
                 </tbody>
             </table>
 
-       <?php if (!empty($totalPaginas) && $totalPaginas > 1): ?>
-<div class="mt-4 d-flex justify-content-center">
-  <ul class="pagination">
+                   <?php
+            require_once BASE_PATH . '/public/templates/components/pagination.php';
+            echo render_sga_pagination((int) ($page ?? 1), (int) ($totalPaginas ?? 1), $_GET);
+            ?>
 
-    <!-- ANTERIOR -->
-    <?php if ($page > 1): ?>
-      <li class="page-item">
-        <a class="page-link"
-           href="?<?= http_build_query(array_merge($_GET, ['page' => $page - 1])) ?>">
-          «
-        </a>
-      </li>
-    <?php endif; ?>
-
-    <!-- NÚMEROS -->
-    <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
-      <li class="page-item <?= $i == $page ? 'active' : '' ?>">
-        <a class="page-link"
-           href="?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>">
-          <?= $i ?>
-        </a>
-      </li>
-    <?php endfor; ?>
-
-    <!-- SIGUIENTE -->
-    <?php if ($page < $totalPaginas): ?>
-      <li class="page-item">
-        <a class="page-link"
-           href="?<?= http_build_query(array_merge($_GET, ['page' => $page + 1])) ?>">
-          »
-        </a>
-      </li>
-    <?php endif; ?>
-
-  </ul>
-</div>
-<?php endif; ?>
         </div>
 
         <!-- RESULTS COUNT -->

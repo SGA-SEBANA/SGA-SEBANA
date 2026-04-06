@@ -39,8 +39,14 @@ class CasosRRLLController extends ControllerBase
             'estado' => $_GET['estado'] ?? '',
             'categoria_id' => $_GET['categoria_id'] ?? '',
             'prioridad' => $_GET['prioridad'] ?? '',
-            'afiliado_id' => $_GET['afiliado_id'] ?? ''
+            'afiliado_id' => $_GET['afiliado_id'] ?? '',
+            'etapa_nombre' => trim($_GET['etapa_nombre'] ?? ''),
+            'etapa_estado' => $_GET['etapa_estado'] ?? ''
         ];
+
+        if (($filtros['etapa_nombre'] ?? '') === '' && (($_GET['solo_investigacion'] ?? '') === '1')) {
+            $filtros['etapa_nombre'] = 'investigacion';
+        }
 
         $casos = $this->modelo_casos->getAll($filtros);
         $categorias = $this->modelo_casos->getCategorias();
@@ -104,7 +110,9 @@ class CasosRRLLController extends ControllerBase
             return;
         }
 
-        if ($this->modelo_casos->create($datos)) {
+        $id = $this->modelo_casos->create($datos);
+
+        if ($id !== false) {
             $this->bitacora->log([
                 'accion' => 'CREATE',
                 'modulo' => 'casos_rrll',
@@ -122,7 +130,7 @@ class CasosRRLLController extends ControllerBase
                 "Se creó el caso con expediente {$datos['numero_expediente']}",
                 'caso_rrll',
                 $id,
-                "/SGA-SEBANA/public/casos-rrll/show/{$datos['numero_expediente']}"
+                "/SGA-SEBANA/public/casos-rrll/show/{$id}"
             );
 
 
@@ -261,19 +269,6 @@ class CasosRRLLController extends ControllerBase
                 'entidad_id' => $id,
                 'descripcion' => "Cambio de estado del caso a: {$nuevo_estado}"
             ]);
-
-            $this->notiModel->createNotification(
-            1,
-            'sistema',
-            'casos',
-            'Estado de Etapa Cambiado',
-            "La etapa ID {$etapaId} ahora está en estado: {$nuevo_estado}",
-            'etapa_rrll',
-            $etapaId,
-            "/SGA-SEBANA/public/casos-rrll/{$etapa['caso_id']}/etapas"
-        );
-
-
 
             // Notificación
             $this->notiModel->createNotification(
@@ -508,7 +503,9 @@ class CasosRRLLController extends ControllerBase
             return;
         }
 
-        if ($this->modelo_etapas->create($datos)) {
+        $etapaId = $this->modelo_etapas->create($datos);
+
+        if ($etapaId !== false) {
             $this->bitacora->log([
                 'accion' => 'CREATE',
                 'modulo' => 'casos_rrll',
@@ -718,8 +715,14 @@ class CasosRRLLController extends ControllerBase
         $filtros = [
             'estado' => $_GET['estado'] ?? '',
             'categoria_id' => $_GET['categoria_id'] ?? '',
-            'prioridad' => $_GET['prioridad'] ?? ''
+            'prioridad' => $_GET['prioridad'] ?? '',
+            'etapa_nombre' => trim($_GET['etapa_nombre'] ?? ''),
+            'etapa_estado' => $_GET['etapa_estado'] ?? ''
         ];
+
+        if (($filtros['etapa_nombre'] ?? '') === '' && (($_GET['solo_investigacion'] ?? '') === '1')) {
+            $filtros['etapa_nombre'] = 'investigacion';
+        }
 
         $casos = $this->modelo_casos->getAll($filtros);
 

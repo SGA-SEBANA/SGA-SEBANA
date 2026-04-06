@@ -5,12 +5,14 @@
  */
 
 use App\Modules\Usuarios\Helpers\SecurityHelper;
+use App\Modules\Usuarios\Helpers\AccessControl;
 
 $isEdit = $action === 'edit';
 $formAction = $isEdit ? "/SGA-SEBANA/public/users/{$user['id']}" : '/SGA-SEBANA/public/users';
 $canManageUsers = $canManageUsers ?? true;
 $isPasswordRequired = !$isEdit || !empty($mustChangePassword);
 $isOwnProfile = !empty($isOwnProfile);
+$backUrl = $canManageUsers ? '/SGA-SEBANA/public/users' : AccessControl::defaultPanelPath();
 
 ob_start();
 ?>
@@ -22,7 +24,7 @@ ob_start();
             <h2 class="title-1">
                 <?= $isEdit ? 'Editar Usuario' : 'Nuevo Usuario' ?>
             </h2>
-            <a href="<?= $canManageUsers ? '/SGA-SEBANA/public/users' : '/SGA-SEBANA/public/home' ?>" class="au-btn au-btn-icon au-btn--blue au-btn--small">
+            <a href="<?= $backUrl ?>" class="au-btn au-btn-icon au-btn--blue au-btn--small">
                 <i class="zmdi zmdi-arrow-left"></i> <?= $canManageUsers ? 'Volver a la lista' : 'Volver al panel' ?>
             </a>
         </div>
@@ -180,7 +182,7 @@ ob_start();
                     <button type="submit" class="btn btn-primary btn-sm">
                         <i class="zmdi zmdi-save"></i> <?= $isEdit ? ($canManageUsers ? 'Actualizar Usuario' : 'Actualizar Perfil') : 'Crear Usuario' ?>
                     </button>
-                    <a href="<?= $canManageUsers ? '/SGA-SEBANA/public/users' : '/SGA-SEBANA/public/home' ?>" class="btn btn-danger btn-sm ml-2">
+                    <a href="<?= $backUrl ?>" class="btn btn-danger btn-sm ml-2">
                         <i class="zmdi zmdi-close"></i> Cancelar
                     </a>
                 </div>

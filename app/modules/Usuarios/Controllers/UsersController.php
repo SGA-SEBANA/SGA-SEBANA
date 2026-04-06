@@ -187,7 +187,7 @@ class UsersController extends ControllerBase
         $canManageUsers = $this->canManageUsers();
 
         if (!$canManageUsers && $authUserId !== $targetUserId) {
-            $this->redirect('/SGA-SEBANA/public/home?error=no_autorizado');
+            $this->redirect(AccessControl::defaultPanelPath() . '?error=no_autorizado');
             return;
         }
 
@@ -250,7 +250,7 @@ class UsersController extends ControllerBase
         }
 
         if (!$canManageUsers && $authUserId !== $userId) {
-            $this->redirect('/SGA-SEBANA/public/home?error=no_autorizado');
+            $this->redirect(AccessControl::defaultPanelPath() . '?error=no_autorizado');
             return;
         }
 
@@ -352,7 +352,7 @@ class UsersController extends ControllerBase
             return;
         }
 
-        $this->redirect('/SGA-SEBANA/public/home?success=perfil_actualizado');
+        $this->redirect(AccessControl::defaultPanelPath() . '?success=perfil_actualizado');
     }
 
     /**

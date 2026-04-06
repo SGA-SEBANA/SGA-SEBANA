@@ -110,18 +110,10 @@ $esJefatura = $es_jefatura ?? false;
                     <?php endif; ?>
                 </tbody>
             </table>
-            <div class="mt-3 d-flex justify-content-center gap-2">
-<?php if (!empty($totalPaginas) && $totalPaginas > 1): ?>
-<div class="mt-3 d-flex justify-content-center gap-2">
-    <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
-        <a href="?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>"
-           class="btn btn-sm <?= $i == $page ? 'btn-primary' : 'btn-secondary' ?>">
-            <?= $i ?>
-        </a>
-    <?php endfor; ?>
-</div>
-<?php endif; ?>
-</div>
+            <?php
+            require_once BASE_PATH . '/public/templates/components/pagination.php';
+            echo render_sga_pagination((int) ($page ?? 1), (int) ($totalPaginas ?? 1), $_GET);
+            ?>
         </div>
 
     </div>

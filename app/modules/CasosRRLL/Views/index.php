@@ -85,13 +85,27 @@ ob_start();
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-3 d-flex align-items-end">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="etapa_nombre" class="mb-1">Etapa (nombre)</label>
+                                <input type="text"
+                                       id="etapa_nombre"
+                                       name="etapa_nombre"
+                                       class="form-control form-control-sm"
+                                       placeholder="Ej: investigacion"
+                                       value="<?= htmlspecialchars((string) ($filtros['etapa_nombre'] ?? '')) ?>">
+                            </div>
+                        </div>
+                        <div class="col-md-12 d-flex align-items-end mt-2">
                             <button type="submit" class="btn btn-primary btn-sm me-2">
                                 <i class="zmdi zmdi-search"></i> Filtrar
                             </button>
-                            <a href="/SGA-SEBANA/public/casos-rrll/reporte/pdf?estado=<?= $filtros['estado'] ?>&prioridad=<?= $filtros['prioridad'] ?>&categoria_id=<?= $filtros['categoria_id'] ?>" 
+                            <a href="/SGA-SEBANA/public/casos-rrll/reporte/pdf?estado=<?= urlencode((string) ($filtros['estado'] ?? '')) ?>&prioridad=<?= urlencode((string) ($filtros['prioridad'] ?? '')) ?>&categoria_id=<?= urlencode((string) ($filtros['categoria_id'] ?? '')) ?>&etapa_nombre=<?= urlencode((string) ($filtros['etapa_nombre'] ?? '')) ?>&etapa_estado=<?= urlencode((string) ($filtros['etapa_estado'] ?? '')) ?>" 
                                class="btn btn-danger btn-sm">
                                 <i class="zmdi zmdi-download"></i> Generar PDF
+                            </a>
+                            <a href="/SGA-SEBANA/public/casos-rrll/reporte/pdf?solo_investigacion=1" class="btn btn-outline-danger btn-sm ms-2">
+                                <i class="zmdi zmdi-collection-text"></i> Reporte investigacion
                             </a>
                         </div>
                     </div>

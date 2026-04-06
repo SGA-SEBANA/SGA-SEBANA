@@ -64,7 +64,8 @@ $status = $status ?? null;
         <div class="row">
             <div class="col-md-6 form-group mb-3">
                 <label>Cedula *</label>
-                <input type="text" class="form-control" name="cedula" value="<?= $get('cedula') ?>" required>
+                <input type="text" class="form-control" name="cedula" value="<?= $get('cedula') ?>" placeholder="702000717" required>
+                <small class="text-muted">Formato unico: escriba solo numeros. Ejemplo: 702000717.</small>
             </div>
             <div class="col-md-6 form-group mb-3">
                 <label>Correo electronico *</label>

@@ -10,10 +10,24 @@ class Afiliados extends ModelBase
 
     protected $table = 'afiliados';
 
+    private function normalizeCedula($cedula)
+    {
+        return preg_replace('/[^0-9]/', '', trim((string) $cedula)) ?? '';
+    }
+
     public function getByCedula($cedula)
     {
-        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE cedula = :cedula LIMIT 1");
-        $stmt->execute(['cedula' => $cedula]);
+        $cedulaNormal = $this->normalizeCedula($cedula);
+        if ($cedulaNormal === '') {
+            return null;
+        }
+
+        $stmt = $this->db->prepare(
+            "SELECT * FROM {$this->table}
+             WHERE REPLACE(REPLACE(REPLACE(cedula, '-', ''), ' ', ''), '.', '') = :cedula_normal
+             LIMIT 1"
+        );
+        $stmt->execute(['cedula_normal' => $cedulaNormal]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
@@ -31,8 +45,14 @@ class Afiliados extends ModelBase
 
     public function existeCedula($cedula, $idExcluir = null)
     {
-        $sql = "SELECT COUNT(*) FROM {$this->table} WHERE cedula = :cedula";
-        $params = ['cedula' => $cedula];
+        $cedulaNormal = $this->normalizeCedula($cedula);
+        if ($cedulaNormal === '') {
+            return false;
+        }
+
+        $sql = "SELECT COUNT(*) FROM {$this->table}
+                WHERE REPLACE(REPLACE(REPLACE(cedula, '-', ''), ' ', ''), '.', '') = :cedula_normal";
+        $params = ['cedula_normal' => $cedulaNormal];
 
         if ($idExcluir) {
             $sql .= " AND id != :id";
@@ -191,7 +211,7 @@ class Afiliados extends ModelBase
             'nombre' => trim((string) ($data['nombre'] ?? '')),
             'apellido1' => trim((string) ($data['apellido1'] ?? '')),
             'apellido2' => trim((string) ($data['apellido2'] ?? '')),
-            'cedula' => trim((string) ($data['cedula'] ?? '')),
+            'cedula' => $this->normalizeCedula($data['cedula'] ?? ''),
             'genero' => $this->normalizeGenero($data['genero'] ?? null),
             'fecha_nacimiento' => $data['fecha_nacimiento'] ?: null,
             'correo' => trim((string) ($data['correo'] ?? '')) ?: null,
@@ -239,7 +259,7 @@ class Afiliados extends ModelBase
             'nombre' => trim((string) ($data['nombre'] ?? '')),
             'apellido1' => trim((string) ($data['apellido1'] ?? '')),
             'apellido2' => trim((string) ($data['apellido2'] ?? '')),
-            'cedula' => trim((string) ($data['cedula'] ?? '')),
+            'cedula' => $this->normalizeCedula($data['cedula'] ?? ''),
             'genero' => $this->normalizeGenero($data['genero'] ?? null),
             'fecha_nacimiento' => $data['fecha_nacimiento'] ?: null,
             'correo' => trim((string) ($data['correo'] ?? '')) ?: null,
@@ -303,6 +323,7 @@ class Afiliados extends ModelBase
 
 public function searchByCedula($cedula)
 {
+    $cedulaNormal = $this->normalizeCedula($cedula);
     $sql = "SELECT 
                 id, 
                 CONCAT(nombre, ' ', apellido1, ' ', apellido2) as nombre_completo, 
@@ -310,15 +331,47 @@ public function searchByCedula($cedula)
                 telefono
             FROM afiliados
             WHERE estado = 'activo'
-            AND cedula LIKE :cedula
+            AND (
+                cedula LIKE :cedula
+                OR REPLACE(REPLACE(REPLACE(cedula, '-', ''), ' ', ''), '.', '') LIKE :cedula_normal
+            )
             LIMIT 10";
 
     $stmt = $this->db->prepare($sql);
     $stmt->execute([
-        ':cedula' => '%' . $cedula . '%'
+        ':cedula' => '%' . trim((string) $cedula) . '%',
+        ':cedula_normal' => '%' . $cedulaNormal . '%'
     ]);
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+    public function getReporteGenero($genero = null)
+    {
+        $sql = "SELECT
+                    a.cedula,
+                    a.nombre_completo,
+                    a.genero,
+                    a.estado,
+                    a.correo,
+                    a.telefono,
+                    c.nombre AS categoria_nombre,
+                    o.nombre AS oficina_nombre
+                FROM {$this->table} a
+                LEFT JOIN categorias c ON a.categoria_id = c.id
+                LEFT JOIN oficinas o ON a.oficina_id = o.id
+                WHERE 1=1";
+
+        $params = [];
+        if (!empty($genero)) {
+            $sql .= " AND a.genero = :genero";
+            $params[':genero'] = $genero;
+        }
+
+        $sql .= " ORDER BY a.nombre_completo ASC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
 }

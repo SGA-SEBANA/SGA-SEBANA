@@ -271,9 +271,17 @@ ob_start();
                             </tr>
                             <tr>
                                 <td>
-                                    <a href="/SGA-SEBANA/public/puestos/reportes"
+                                    <a href="/SGA-SEBANA/public/afiliados/reporte/genero"
                                         style="color: white; display: block; width: 100%;">
-                                        <i class="zmdi zmdi-chart m-r-10"></i> Ver Reportes
+                                        <i class="zmdi zmdi-chart m-r-10"></i> Reporte Afiliados
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <a href="/SGA-SEBANA/public/casos-rrll/reporte/pdf?solo_investigacion=1"
+                                        style="color: white; display: block; width: 100%;">
+                                        <i class="zmdi zmdi-assignment-check m-r-10"></i> Reporte RRLL Investigacion
                                     </a>
                                 </td>
                             </tr>

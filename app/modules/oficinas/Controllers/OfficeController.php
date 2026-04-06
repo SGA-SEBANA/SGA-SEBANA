@@ -9,7 +9,7 @@ use App\Modules\Visitas\Models\Notification;
 class OfficeController
 {
     private OfficeModel $officeModel;
-    private Notification $notiModel; 
+    private Notification $notiModel;
 
     public function __construct()
     {
@@ -22,84 +22,64 @@ class OfficeController
         SecurityHelper::requireAuth();
         $offices = $this->officeModel->getAll();
         $authUser = SecurityHelper::getAuthUser();
-        require BASE_PATH . '/app/modules/Oficinas/View/index.php';
+        require BASE_PATH . '/app/modules/oficinas/view/index.php';
     }
 
     public function create()
-{
-    SecurityHelper::requireAuth();
-    $authUser = SecurityHelper::getAuthUser();
+    {
+        SecurityHelper::requireAuth();
+        $authUser = SecurityHelper::getAuthUser();
+        $errors = [];
+        $old = [];
+        $office = [];
 
-    if ($_POST) {
-        $data = [
-            'codigo' => trim($_POST['codigo'] ?? ''),
-            'nombre' => trim($_POST['nombre'] ?? ''),
-            'direccion' => trim($_POST['direccion'] ?? ''),
-            'provincia' => trim($_POST['provincia'] ?? ''),
-            'canton' => trim($_POST['canton'] ?? ''),
-            'distrito' => trim($_POST['distrito'] ?? ''),
-            'telefono' => trim($_POST['telefono'] ?? ''),
-            'correo' => trim($_POST['correo'] ?? ''),
-            'horario_atencion' => trim($_POST['horario_atencion'] ?? ''),
-            'responsable' => trim($_POST['responsable'] ?? ''),
-            'coordenadas_gps' => trim($_POST['coordenadas_gps'] ?? ''),
-            'observaciones' => trim($_POST['observaciones'] ?? '')
-        ];
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $old = $this->collectPayload($_POST);
+            $errors = $this->validate($old);
 
-        $this->officeModel->createOffice($data);
+            if (empty($errors)) {
+                $data = $old;
+                $data['activo'] = 1;
 
-          // Notificación de nueva oficina
-            $this->notiModel->createNotification(
-                1,
-                'sistema',
-                'oficinas',
-                'Nueva Oficina Registrada',
-                "Se registró la oficina: {$data['nombre']}",
-                'oficina',
-                $this->officeModel->getLastInsertId(),
-                "/SGA-SEBANA/public/oficinas"
-            );
+                $newOfficeId = $this->officeModel->createOffice($data);
+                if ($newOfficeId <= 0) {
+                    $errors['general'] = 'No se pudo registrar la oficina. Intente de nuevo.';
+                } else {
+                    $this->notiModel->createNotification(
+                        1,
+                        'sistema',
+                        'oficinas',
+                        'Nueva Oficina Registrada',
+                        "Se registro la oficina: {$data['nombre']}",
+                        'oficina',
+                        $newOfficeId,
+                        "/SGA-SEBANA/public/oficinas"
+                    );
 
+                    header('Location: /SGA-SEBANA/public/oficinas?success=created');
+                    exit;
+                }
+            }
+        }
 
-        
-        header("Location: /SGA-SEBANA/public/oficinas");
-        exit;
+        require BASE_PATH . '/app/modules/oficinas/view/create.php';
     }
-
-    $office = [];
-    require BASE_PATH . '/app/modules/Oficinas/View/create.php';
-}
 
     public function edit($id)
-{
-    SecurityHelper::requireAuth();
-    $office = $this->officeModel->find($id);
-    $authUser = SecurityHelper::getAuthUser();
+    {
+        SecurityHelper::requireAuth();
+        $authUser = SecurityHelper::getAuthUser();
+        $office = $this->officeModel->find($id);
 
-    if (!$office) {
-        header("Location: /SGA-SEBANA/public/oficinas");
-        exit;
-    }
+        if (!$office) {
+            header('Location: /SGA-SEBANA/public/oficinas');
+            exit;
+        }
 
-    if ($_POST) {
-        $data = [
-            'codigo' => trim($_POST['codigo'] ?? ''),
-            'nombre' => trim($_POST['nombre'] ?? ''),
-            'direccion' => trim($_POST['direccion'] ?? ''),
-            'provincia' => trim($_POST['provincia'] ?? ''),
-            'canton' => trim($_POST['canton'] ?? ''),
-            'distrito' => trim($_POST['distrito'] ?? ''),
-            'telefono' => trim($_POST['telefono'] ?? ''),
-            'correo' => trim($_POST['correo'] ?? ''),
-            'horario_atencion' => trim($_POST['horario_atencion'] ?? ''),
-            'responsable' => trim($_POST['responsable'] ?? ''),
-            'coordenadas_gps' => trim($_POST['coordenadas_gps'] ?? ''),
-            'observaciones' => trim($_POST['observaciones'] ?? '')
-        ];
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $data = $this->collectPayload($_POST);
+            $this->officeModel->updateOffice($id, $data);
 
-        $this->officeModel->updateOffice($id, $data);
-
-         // Notificación de edición
             $this->notiModel->createNotification(
                 1,
                 'sistema',
@@ -107,51 +87,76 @@ class OfficeController
                 'Oficina Editada',
                 "Se actualizaron los datos de la oficina ID {$id} ({$data['nombre']})",
                 'oficina',
-                $id,
+                (int) $id,
                 "/SGA-SEBANA/public/oficinas/edit/{$id}"
             );
 
+            header('Location: /SGA-SEBANA/public/oficinas?success=updated');
+            exit;
+        }
 
-
-        header("Location: /SGA-SEBANA/public/oficinas");
-        exit;
+        require BASE_PATH . '/app/modules/oficinas/view/edit.php';
     }
-
-    require BASE_PATH . '/app/modules/Oficinas/View/edit.php';
-}
 
     public function toggleStatus($id)
     {
         SecurityHelper::requireAuth();
         $this->officeModel->toggleStatus($id);
 
-         // Notificación de cambio de estado
+        $office = $this->officeModel->find($id);
+        $nuevoEstado = ((int) ($office['activo'] ?? 0) === 1) ? 'Activa' : 'Inactiva';
+
         $this->notiModel->createNotification(
             1,
             'sistema',
             'oficinas',
             'Estado de Oficina Cambiado',
-            "La oficina ID {$id} ahora está en estado: {$nuevoEstado}",
+            "La oficina ID {$id} ahora esta en estado: {$nuevoEstado}",
             'oficina',
-            $id,
-            "/SGA-SEBANA/public/oficinas"
+            (int) $id,
+            '/SGA-SEBANA/public/oficinas'
         );
 
-
-        header("Location: /SGA-SEBANA/public/oficinas");
+        header('Location: /SGA-SEBANA/public/oficinas?success=toggled');
         exit;
     }
 
-    /*
-    public function delete($id)
+    private function collectPayload(array $source): array
     {
-        SecurityHelper::requireAuth();
-        $this->officeModel->deleteOffice($id);
-        header("Location: /SGA-SEBANA/public/oficinas");
-        exit;
+        $payload = [
+            'codigo' => trim((string) ($source['codigo'] ?? '')),
+            'nombre' => trim((string) ($source['nombre'] ?? '')),
+            'direccion' => trim((string) ($source['direccion'] ?? '')),
+            'provincia' => trim((string) ($source['provincia'] ?? '')),
+            'canton' => trim((string) ($source['canton'] ?? '')),
+            'distrito' => trim((string) ($source['distrito'] ?? '')),
+            'telefono' => trim((string) ($source['telefono'] ?? '')),
+            'correo' => trim((string) ($source['correo'] ?? '')),
+            'horario_atencion' => trim((string) ($source['horario_atencion'] ?? '')),
+            'responsable' => trim((string) ($source['responsable'] ?? '')),
+            'coordenadas_gps' => trim((string) ($source['coordenadas_gps'] ?? '')),
+            'observaciones' => trim((string) ($source['observaciones'] ?? '')),
+        ];
+
+        if (array_key_exists('activo', $source)) {
+            $payload['activo'] = ((int) ($source['activo'] ?? 0) === 1) ? 1 : 0;
+        }
+
+        return $payload;
     }
-        */
 
+    private function validate(array $data): array
+    {
+        $errors = [];
 
+        if ($data['nombre'] === '') {
+            $errors['nombre'] = 'El nombre de la oficina es obligatorio.';
+        }
 
+        if ($data['correo'] !== '' && !filter_var($data['correo'], FILTER_VALIDATE_EMAIL)) {
+            $errors['correo'] = 'El correo no tiene un formato valido.';
+        }
+
+        return $errors;
+    }
 }

@@ -31,6 +31,7 @@ ob_start();
                                 <label for="buscarCedula">Buscar afiliado por cedula</label>
                                 <input type="text" id="buscarCedula" class="form-control"
                                        placeholder="Digite la cedula del afiliado">
+                                <small class="form-text text-muted">Formato unico: escriba solo numeros, sin guiones ni espacios.</small>
                             </div>
                             <div class="col-md-5 mb-3">
                                 <label for="afiliadoSelect">Afiliado</label>
@@ -69,7 +70,7 @@ ob_start();
                         </div>
 
                         <div class="col-md-4 mb-3">
-                            <label for="numeroEmpleado">Numero de empleado</label>
+                            <label for="numeroEmpleado">Numero de empleado / cedula</label>
                             <input type="text"
                                    id="numeroEmpleado"
                                    name="numero_empleado"
@@ -77,6 +78,9 @@ ob_start();
                                    class="form-control"
                                    <?= empty($es_jefatura) ? 'readonly' : '' ?>
                                    required>
+                            <?php if (!empty($es_jefatura)): ?>
+                                <small class="form-text text-muted">Formato unico de cedula: solo numeros.</small>
+                            <?php endif; ?>
                         </div>
 
                         <div class="col-md-4 mb-3">
