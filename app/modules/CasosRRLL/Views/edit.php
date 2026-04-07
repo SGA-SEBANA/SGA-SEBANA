@@ -76,15 +76,9 @@ ob_start();
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="estado" class="form-control-label font-weight-bold">Estado</label>
-                                <select id="estado" name="estado" class="form-control">
-                                    <option value="activo" <?= $caso['estado'] === 'activo' ? 'selected' : '' ?>>Activo</option>
-                                    <option value="en_progreso" <?= $caso['estado'] === 'en_progreso' ? 'selected' : '' ?>>En Progreso</option>
-                                    <option value="cerrado" <?= $caso['estado'] === 'cerrado' ? 'selected' : '' ?>>Cerrado</option>
-                                    <option value="suspendido" <?= $caso['estado'] === 'suspendido' ? 'selected' : '' ?>>Suspendido</option>
-                                </select>
-                            </div>
+                            <label class="form-control-label font-weight-bold">Estado actual</label>
+                            <div class="form-control bg-light"><?= htmlspecialchars((string) ($caso['estado'] ?? 'activo')) ?></div>
+                            <small class="form-text text-muted">Cambios de estado solo desde el dashboard del expediente.</small>
                         </div>
                     </div>
 
@@ -161,10 +155,11 @@ ob_start();
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="resultado_final" class="form-control-label font-weight-bold">Resultado Final</label>
-                                <textarea id="resultado_final" name="resultado_final" rows="2" class="form-control"><?= htmlspecialchars($caso['resultado_final'] ?? '') ?></textarea>
+                            <label class="form-control-label font-weight-bold">Resultado final</label>
+                            <div class="form-control bg-light">
+                                <?= htmlspecialchars((string) ($caso['resultado_final'] ?? 'Se define unicamente en el proceso de cierre.')) ?>
                             </div>
+                            <small class="form-text text-muted">No editable en este formulario.</small>
                         </div>
                     </div>
 

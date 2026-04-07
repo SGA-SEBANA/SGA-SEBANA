@@ -21,6 +21,7 @@ ob_start();
                 <?php
                     if($_GET['error'] === 'campos_requeridos') echo "Los campos obligatorios no pueden estar vacíos.";
                     elseif($_GET['error'] === 'nombre_duplicado') echo "Ya existe una etapa con ese nombre en este caso.";
+                    elseif($_GET['error'] === 'orden_duplicado') echo "El orden de etapa ya existe en este expediente.";
                     elseif($_GET['error'] === 'db_error') echo "Error al guardar en la base de datos.";
                 ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -59,12 +60,9 @@ ob_start();
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="estado" class="form-control-label font-weight-bold">Estado Inicial</label>
-                                <select id="estado" name="estado" class="form-control">
-                                    <option value="pendiente" selected>Pendiente</option>
-                                    <option value="en_progreso">En Progreso</option>
-                                    <option value="finalizado">Finalizado</option>
-                                    <option value="bloqueado">Bloqueado</option>
-                                </select>
+                                <input type="hidden" name="estado" value="pendiente">
+                                <input type="text" class="form-control" value="Pendiente" readonly>
+                                <small class="text-muted">Las transiciones de etapa se controlan desde la gestion del expediente.</small>
                             </div>
                         </div>
                         <div class="col-md-6">

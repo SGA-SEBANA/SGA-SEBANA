@@ -79,14 +79,9 @@ ob_start();
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="estado" class="form-control-label font-weight-bold">Estado Inicial</label>
-                                <select id="estado" name="estado" class="form-control">
-                                    <option value="activo" selected>Activo</option>
-                                    <option value="en_progreso">En Progreso</option>
-                                    <option value="suspendido">Suspendido</option>
-                                </select>
-                            </div>
+                            <label class="form-control-label font-weight-bold">Estado inicial</label>
+                            <div class="form-control bg-light">Abierto (asignado automáticamente)</div>
+                            <small class="form-text text-muted">El estado y el cierre se administran por flujo de control.</small>
                         </div>
                     </div>
 

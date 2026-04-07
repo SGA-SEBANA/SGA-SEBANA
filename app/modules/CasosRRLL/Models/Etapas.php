@@ -68,12 +68,13 @@ class Etapas extends ModelBase
      */
     public function create($datos)
     {
-        // Obtener el máximo orden para ese caso
-        $sqlMaxOrden = "SELECT MAX(orden) as max_orden FROM {$this->table} WHERE caso_id = :caso_id";
-        $stmtOrden = $this->db->prepare($sqlMaxOrden);
-        $stmtOrden->execute(['caso_id' => $datos['caso_id']]);
-        $resultOrden = $stmtOrden->fetch(PDO::FETCH_ASSOC);
-        $nuevoOrden = ($resultOrden['max_orden'] ?? 0) + 1;
+        $nuevoOrden = isset($datos['orden']) && (int) $datos['orden'] > 0
+            ? (int) $datos['orden']
+            : $this->obtenerSiguienteOrden($datos['caso_id']);
+
+        if ($this->existeOrdenEnCaso($datos['caso_id'], $nuevoOrden)) {
+            return false;
+        }
 
         $sql = "INSERT INTO {$this->table} 
                 (caso_id, nombre, descripcion, orden, estado, fecha_inicio, 
@@ -143,30 +144,37 @@ class Etapas extends ModelBase
      */
     public function cambiarEstado($id, $nuevoEstado)
     {
-        $estados_validos = ['pendiente', 'en_progreso', 'finalizado', 'bloqueado', 'cancelado'];
+        return $this->actualizarEstadoConFecha($id, $nuevoEstado);
+    }
 
-        if (!in_array($nuevoEstado, $estados_validos)) {
+    public function actualizarEstadoConFecha($id, $nuevoEstado, ?string $fechaReal = null): bool
+    {
+        $estados_validos = ['pendiente', 'en_progreso', 'finalizado', 'bloqueado', 'cancelado'];
+        if (!in_array($nuevoEstado, $estados_validos, true)) {
             return false;
         }
 
-        // Si el nuevo estado es finalizado, establecer fecha_fin
-        $params = ['estado' => $nuevoEstado, 'id' => $id];
-        
-        if ($nuevoEstado === 'finalizado') {
-            $sql = "UPDATE {$this->table} SET 
-                    estado = :estado,
-                    fecha_fin = NOW(),
+        $sql = "UPDATE {$this->table}
+                SET estado = :estado_set,
+                    fecha_fin = CASE
+                        WHEN :estado_eval = 'finalizado' AND :fecha_fin_eval IS NOT NULL AND TRIM(:fecha_fin_eval) <> '' THEN :fecha_fin_set
+                        WHEN :estado_eval2 = 'finalizado' AND fecha_fin IS NULL THEN CURDATE()
+                        WHEN :estado_eval3 <> 'finalizado' THEN NULL
+                        ELSE fecha_fin
+                    END,
                     fecha_actualizacion = NOW()
-                    WHERE id = :id";
-        } else {
-            $sql = "UPDATE {$this->table} SET 
-                    estado = :estado,
-                    fecha_actualizacion = NOW()
-                    WHERE id = :id";
-        }
+                WHERE id = :id";
 
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute($params);
+        return $stmt->execute([
+            'estado_set' => $nuevoEstado,
+            'estado_eval' => $nuevoEstado,
+            'estado_eval2' => $nuevoEstado,
+            'estado_eval3' => $nuevoEstado,
+            'fecha_fin_eval' => $fechaReal,
+            'fecha_fin_set' => $fechaReal,
+            'id' => $id
+        ]);
     }
 
     /**
@@ -174,21 +182,13 @@ class Etapas extends ModelBase
      */
     public function delete($id)
     {
-        // Obtener el caso_id y orden de la etapa a eliminar
-        $etapa = $this->getById($id);
-        if (!$etapa) return false;
-
-        // Eliminar la etapa
-        $sql = "DELETE FROM {$this->table} WHERE id = :id";
+        // Soft delete: cancelar etapa
+        $sql = "UPDATE {$this->table}
+                SET estado = 'cancelado',
+                    fecha_actualizacion = NOW()
+                WHERE id = :id";
         $stmt = $this->db->prepare($sql);
-        $resultado = $stmt->execute(['id' => $id]);
-
-        // Reordenar las etapas restantes del caso
-        if ($resultado) {
-            $this->reordenarEtapas($etapa['caso_id']);
-        }
-
-        return $resultado;
+        return $stmt->execute(['id' => $id]);
     }
 
     /**
@@ -275,6 +275,84 @@ class Etapas extends ModelBase
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function obtenerSiguienteOrden($casoId): int
+    {
+        $sql = "SELECT MAX(orden) as max_orden FROM {$this->table} WHERE caso_id = :caso_id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['caso_id' => $casoId]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return ((int) ($result['max_orden'] ?? 0)) + 1;
+    }
+
+    public function existeOrdenEnCaso($casoId, $orden, $idExcluir = null): bool
+    {
+        $sql = "SELECT COUNT(*) FROM {$this->table} WHERE caso_id = :caso_id AND orden = :orden";
+        $params = [
+            'caso_id' => $casoId,
+            'orden' => $orden
+        ];
+
+        if ($idExcluir) {
+            $sql .= " AND id != :id";
+            $params['id'] = $idExcluir;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
+    public function existeEtapaPreviaSinCompletar($casoId, $ordenActual, $idActual = null): bool
+    {
+        $sql = "SELECT COUNT(*)
+                FROM {$this->table}
+                WHERE caso_id = :caso_id
+                  AND orden < :orden
+                  AND estado NOT IN ('finalizado', 'cancelado')";
+        $params = [
+            'caso_id' => $casoId,
+            'orden' => $ordenActual
+        ];
+
+        if ($idActual) {
+            $sql .= " AND id != :id";
+            $params['id'] = $idActual;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
+    public function obtenerDocumentosEtapa($etapaId): array
+    {
+        $sql = "SELECT documentos_generados FROM {$this->table} WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $etapaId]);
+        $raw = (string) ($stmt->fetchColumn() ?? '');
+        return $this->decodeDocumentList($raw);
+    }
+
+    public function guardarDocumentosEtapa($etapaId, array $documentos): bool
+    {
+        $sql = "UPDATE {$this->table}
+                SET documentos_generados = :documentos,
+                    fecha_actualizacion = NOW()
+                WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'documentos' => json_encode(array_values($documentos), JSON_UNESCAPED_UNICODE),
+            'id' => $etapaId
+        ]);
+    }
+
+    public function agregarDocumentoEtapa($etapaId, array $documento): bool
+    {
+        $docs = $this->obtenerDocumentosEtapa($etapaId);
+        $docs[] = $documento;
+        return $this->guardarDocumentosEtapa($etapaId, $docs);
+    }
+
     /**
      * Calcular duración de una etapa
      */
@@ -288,5 +366,31 @@ class Etapas extends ModelBase
 
         $interval = $fecha_inicio->diff($fecha_fin);
         return $interval->days;
+    }
+
+    private function decodeDocumentList(string $raw): array
+    {
+        $raw = trim($raw);
+        if ($raw === '') {
+            return [];
+        }
+
+        $decoded = json_decode($raw, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            return array_values(array_filter($decoded, static fn($item) => is_array($item)));
+        }
+
+        $legacyItems = array_filter(array_map('trim', explode(',', $raw)));
+        $result = [];
+        foreach ($legacyItems as $legacy) {
+            $result[] = [
+                'nombre_original' => $legacy,
+                'ruta' => null,
+                'fecha' => null,
+                'tamano' => null,
+                'mime' => null
+            ];
+        }
+        return $result;
     }
 }
