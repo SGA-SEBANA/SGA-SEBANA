@@ -21,13 +21,19 @@ ob_start();
                 <?php
                     if($_GET['error'] === 'campos_requeridos') echo "Los campos obligatorios no pueden estar vacíos.";
                     elseif($_GET['error'] === 'nombre_duplicado') echo "Ya existe una etapa con ese nombre.";
+                    elseif($_GET['error'] === 'orden_duplicado') echo "No se puede repetir el orden de etapa en el expediente.";
+                    elseif($_GET['error'] === 'orden_saltado') echo "No puede avanzar/finalizar esta etapa hasta completar las anteriores.";
+                    elseif($_GET['error'] === 'fecha_real_requerida') echo "Debe registrar la fecha real para finalizar una etapa.";
                     elseif($_GET['error'] === 'db_error') echo "Error al actualizar en la base de datos.";
+                    elseif($_GET['error'] === 'token_invalido') echo "Token de seguridad inválido. Recarga el formulario e intenta de nuevo.";
+                    else echo htmlspecialchars((string) $_GET['error']);
                 ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
 
         <form action="/SGA-SEBANA/public/casos-rrll/etapas/<?= $etapa['id'] ?>/update" method="POST" class="form-horizontal">
+            <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white py-3">
                     <strong><i class="zmdi zmdi-layers"></i> Información de la Etapa</strong>
@@ -181,6 +187,19 @@ ob_start();
         </div>
     </div>
 </div>
+
+<script>
+const estadoSelectEtapaEdit = document.getElementById('estado');
+const fechaFinInputEdit = document.getElementById('fecha_fin');
+if (estadoSelectEtapaEdit && fechaFinInputEdit) {
+    const syncFechaFinRequired = () => {
+        const required = estadoSelectEtapaEdit.value === 'finalizado';
+        fechaFinInputEdit.required = required;
+    };
+    estadoSelectEtapaEdit.addEventListener('change', syncFechaFinRequired);
+    syncFechaFinRequired();
+}
+</script>
 
 <?php
 $content = ob_get_clean();

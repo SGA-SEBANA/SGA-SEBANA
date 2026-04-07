@@ -17,6 +17,16 @@ class OfficeController
         $this->notiModel = new Notification();
     }
 
+    private function validateCsrfOrRedirect(string $redirect): void
+    {
+        if (SecurityHelper::validateCsrfToken($_POST['_csrf_token'] ?? '')) {
+            return;
+        }
+
+        header('Location: ' . $redirect . (strpos($redirect, '?') === false ? '?error=csrf' : '&error=csrf'));
+        exit;
+    }
+
     public function index()
     {
         SecurityHelper::requireAuth();
@@ -34,6 +44,7 @@ class OfficeController
         $office = [];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->validateCsrfOrRedirect('/SGA-SEBANA/public/oficinas/create');
             $old = $this->collectPayload($_POST);
             $errors = $this->validate($old);
 
@@ -77,6 +88,7 @@ class OfficeController
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->validateCsrfOrRedirect('/SGA-SEBANA/public/oficinas/edit/' . (int) $id);
             $data = $this->collectPayload($_POST);
             $this->officeModel->updateOffice($id, $data);
 
@@ -101,6 +113,14 @@ class OfficeController
     public function toggleStatus($id)
     {
         SecurityHelper::requireAuth();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /SGA-SEBANA/public/oficinas');
+            exit;
+        }
+
+        $this->validateCsrfOrRedirect('/SGA-SEBANA/public/oficinas');
+
         $this->officeModel->toggleStatus($id);
 
         $office = $this->officeModel->find($id);

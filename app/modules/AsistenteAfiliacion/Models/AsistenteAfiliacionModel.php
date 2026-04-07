@@ -31,7 +31,7 @@ class AsistenteAfiliacionModel extends ModelBase
     {
         foreach ([$this->storageBase, $this->requestsDir, $this->pdfDir, $this->signedDir] as $dir) {
             if (!is_dir($dir)) {
-                mkdir($dir, 0777, true);
+                mkdir($dir, 0755, true);
             }
         }
     }
@@ -418,6 +418,24 @@ class AsistenteAfiliacionModel extends ModelBase
     public function saveSignedPdf($id, $tmpPath, $originalName)
     {
         $this->ensureStorageDirs();
+
+        if (!is_string($tmpPath) || $tmpPath === '' || !is_uploaded_file($tmpPath)) {
+            $this->lastError = 'Archivo temporal invalido.';
+            return false;
+        }
+
+        $extension = strtolower(pathinfo((string) $originalName, PATHINFO_EXTENSION));
+        if ($extension !== 'pdf') {
+            $this->lastError = 'Solo se permite adjuntar archivos PDF firmados.';
+            return false;
+        }
+
+        $mime = function_exists('mime_content_type') ? (string) mime_content_type($tmpPath) : '';
+        if ($mime !== '' && !in_array($mime, ['application/pdf', 'application/x-pdf'], true)) {
+            $this->lastError = 'El archivo adjunto no es un PDF valido.';
+            return false;
+        }
+
         $safeName = preg_replace('/[^A-Za-z0-9_.-]/', '_', (string) $originalName) ?: 'documento_firmado.pdf';
         $name = 'firmado_' . $id . '_' . time() . '_' . $safeName;
         $fullPath = $this->signedDir . '/' . $name;

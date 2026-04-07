@@ -6,21 +6,8 @@
 // Define base 
 define('BASE_PATH', dirname(__DIR__));
 
-
-
-
-// DEBUGGING: Enable error reporting
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 // Set default timezone to America/Costa_Rica
 date_default_timezone_set('America/Costa_Rica');
-
-// Start session (required for authentication)
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 
 // Load .env file
 $envFile = BASE_PATH . '/.env';
@@ -38,6 +25,38 @@ if (file_exists($envFile)) {
             putenv("$key=$value");
         }
     }
+}
+
+// Load Configuration (used to set runtime security/debug behavior)
+if (file_exists(BASE_PATH . '/app/config/config.php')) {
+    $config = require BASE_PATH . '/app/config/config.php';
+} else {
+    die("CRITICAL: Config file not found at " . BASE_PATH . '/app/config/config.php');
+}
+
+// Runtime error visibility must follow config, never be forced to ON.
+$debug = (bool) ($config['debug'] ?? false);
+if ($debug) {
+    ini_set('display_errors', '1');
+    ini_set('display_startup_errors', '1');
+    error_reporting(E_ALL);
+} else {
+    ini_set('display_errors', '0');
+    ini_set('display_startup_errors', '0');
+    error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
+}
+
+// Start session (required for authentication) with safe cookie defaults.
+if (session_status() === PHP_SESSION_NONE) {
+    $isHttps = (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off');
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'secure' => $isHttps,
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+    session_start();
 }
 
 // Autoloading
@@ -58,13 +77,6 @@ if (file_exists(BASE_PATH . '/vendor/autoload.php')) {
             require $file;
         }
     });
-}
-
-// Load Configuration
-if (file_exists(BASE_PATH . '/app/config/config.php')) {
-    $config = require BASE_PATH . '/app/config/config.php';
-} else {
-    die("CRITICAL: Config file not found at " . BASE_PATH . '/app/config/config.php');
 }
 
 // Initialize Router
@@ -109,6 +121,11 @@ if ($url === '') {
 try {
     $router->dispatch($url);
 } catch (\Throwable $e) {
-    echo "CRITICAL: Dispatch error: " . $e->getMessage() . "<br>";
-    echo "<pre>" . $e->getTraceAsString() . "</pre>";
+    if ($debug) {
+        echo "CRITICAL: Dispatch error: " . $e->getMessage() . "<br>";
+        echo "<pre>" . $e->getTraceAsString() . "</pre>";
+    } else {
+        http_response_code(500);
+        echo "Error interno del servidor.";
+    }
 }

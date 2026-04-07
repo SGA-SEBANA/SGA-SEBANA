@@ -119,6 +119,7 @@ $estado = $solicitud['estado'] ?? 'Pendiente';
                         <div class="card-body py-4 text-center">
                             <p class="mb-3 text-muted small">Revise las fechas antes de responder.</p>
                             <form action="/SGA-SEBANA/public/vacaciones/status/<?= $solicitud['id'] ?>" method="POST" class="d-inline">
+                                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                                 <button type="submit" name="nuevo_estado" value="Aceptada" class="btn btn-success px-4 mx-1 shadow-sm">
                                     <i class="zmdi zmdi-check mr-1"></i> Aceptar
                                 </button>
@@ -138,6 +139,7 @@ $estado = $solicitud['estado'] ?? 'Pendiente';
                         </div>
                         <div class="card-body py-3">
                             <form action="/SGA-SEBANA/public/vacaciones/reschedule/<?= $solicitud['id'] ?>" method="POST">
+                                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                                 <div class="form-group mb-2">
                                     <label class="small text-muted">Nueva Fecha de Inicio</label>
                                     <input type="date" id="nueva_fecha_inicio" name="nueva_fecha_inicio" class="form-control form-control-sm" required>
@@ -161,6 +163,7 @@ $estado = $solicitud['estado'] ?? 'Pendiente';
                         <div class="card-body text-center py-4">
                             <h6 class="text-danger mb-3 font-weight-bold">Ya no tomara estas vacaciones?</h6>
                             <form action="/SGA-SEBANA/public/vacaciones/cancel/<?= $solicitud['id'] ?>" method="POST" onsubmit="return confirm('Esta seguro de que desea cancelar esta solicitud? Esta accion no se puede deshacer.');">
+                                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                                 <button type="submit" class="btn btn-outline-danger btn-sm px-4 shadow-sm">
                                     <i class="zmdi zmdi-block mr-1"></i> Cancelar Solicitud
                                 </button>

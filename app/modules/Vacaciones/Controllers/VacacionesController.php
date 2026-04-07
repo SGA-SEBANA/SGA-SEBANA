@@ -7,6 +7,7 @@ use App\Modules\Vacaciones\Models\VacacionesModel;
 use App\Modules\Visitas\Models\Notification;
 use App\Modules\Usuarios\Models\User;
 use App\Modules\Usuarios\Helpers\AccessControl;
+use App\Modules\Usuarios\Helpers\SecurityHelper;
 use App\Modules\Usuarios\Models\Bitacora;
 use App\Helpers\Paginator;
 
@@ -155,6 +156,16 @@ class VacacionesController extends ControllerBase
         );
     }
 
+    private function validateCsrfOrRedirect(string $redirect): void
+    {
+        if (SecurityHelper::validateCsrfToken($_POST['_csrf_token'] ?? '')) {
+            return;
+        }
+
+        $this->redirect($redirect . (strpos($redirect, '?') === false ? '?error=csrf' : '&error=csrf'));
+        exit;
+    }
+
 public function index()
 {
     $usuarioId = $this->getCurrentUserId();
@@ -203,6 +214,8 @@ public function index()
             $this->redirect('/SGA-SEBANA/public/vacaciones');
             return;
         }
+
+        $this->validateCsrfOrRedirect('/SGA-SEBANA/public/vacaciones/create');
 
         $usuarioId = $this->getCurrentUserId();
         $esJefatura = $this->isManager();
@@ -293,6 +306,8 @@ public function index()
             return;
         }
 
+        $this->validateCsrfOrRedirect('/SGA-SEBANA/public/vacaciones/show/' . (int) $id);
+
         if (!$this->isManager()) {
             $this->redirect('/SGA-SEBANA/public/vacaciones?error=no_autorizado');
             return;
@@ -342,6 +357,8 @@ public function index()
             $this->redirect('/SGA-SEBANA/public/vacaciones');
             return;
         }
+
+        $this->validateCsrfOrRedirect('/SGA-SEBANA/public/vacaciones/show/' . (int) $id);
 
         $usuarioId = $this->getCurrentUserId();
         $solicitud = $this->model->obtenerDetallePorId($id);
@@ -393,6 +410,8 @@ public function index()
             $this->redirect('/SGA-SEBANA/public/vacaciones');
             return;
         }
+
+        $this->validateCsrfOrRedirect('/SGA-SEBANA/public/vacaciones/show/' . (int) $id);
 
         $usuarioId = $this->getCurrentUserId();
         $solicitud = $this->model->obtenerDetallePorId($id);

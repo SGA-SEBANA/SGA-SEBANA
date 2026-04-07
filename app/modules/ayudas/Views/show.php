@@ -87,6 +87,7 @@ $esPropietario = $es_propietario ?? false;
                             <div class="mt-4 p-4 border rounded bg-light border-danger shadow-sm">
                                 <h6 class="text-danger font-weight-bold mb-3">Solicitar Cancelacion de Ayuda</h6>
                                 <form action="/SGA-SEBANA/public/ayudas/cancel/<?= $ayuda['id'] ?>" method="POST">
+                                    <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                                     <div class="form-group mb-3">
                                         <textarea name="motivo_cancelacion" class="form-control" rows="3" placeholder="Indique el motivo de la cancelacion..." required></textarea>
                                     </div>
@@ -108,6 +109,7 @@ $esPropietario = $es_propietario ?? false;
                         </div>
                         <div class="card-body py-4 text-center">
                             <form action="/SGA-SEBANA/public/ayudas/status/<?= $ayuda['id'] ?>" method="POST" class="d-inline">
+                                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                                 <?php if ($ayuda['estado'] === 'Pendiente' || $ayuda['estado'] === 'Cancelacion Solicitada' || $ayuda['estado'] === 'Cancelación Solicitada'): ?>
                                     <button type="submit" name="nuevo_estado" value="Aprobada" class="btn btn-success px-4 mx-2 shadow-sm">
                                         <i class="zmdi zmdi-check mr-1"></i> Aprobar
@@ -183,6 +185,7 @@ $esPropietario = $es_propietario ?? false;
                             <div class="p-4 bg-light border rounded shadow-sm" style="overflow: hidden;">
                                 <h6 class="mb-3 font-weight-bold"><i class="zmdi zmdi-plus-circle-o mr-2"></i>Anadir Nueva Evidencia</h6>
                                 <form action="/SGA-SEBANA/public/ayudas/evidence/<?= $ayuda['id'] ?>" method="POST" enctype="multipart/form-data">
+                                    <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                                     <div class="form-group mb-3" style="max-width: 100%; overflow: hidden;">
                                         <input type="file" name="nueva_evidencia" class="form-control-file text-truncate shadow-none" style="max-width: 100%; font-size: 0.85rem;" required>
                                     </div>

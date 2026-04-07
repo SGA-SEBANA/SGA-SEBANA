@@ -157,23 +157,30 @@ ob_start();
 
                                     <?php if ($s['estado'] == 'pendiente'): ?>
 
-                                        <a href="/SGA-SEBANA/public/admin/visit-requests/accept/<?= $s['id'] ?>"
-                                           class="item"
-                                           title="Aceptar solicitud">
+                                        <form action="/SGA-SEBANA/public/admin/visit-requests/accept/<?= (int) ($s['id'] ?? 0) ?>"
+                                              method="post"
+                                              style="display:inline;">
+                                            <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
+                                            <button type="submit"
+                                                    class="item"
+                                                    title="Aceptar solicitud"
+                                                    style="border:none;background:none;padding:0;">
+                                                <i class="fa-regular fa-circle-check"></i>
+                                            </button>
+                                        </form>
 
-                                            <i class="fa-regular fa-circle-check"></i>
-
-                                        </a>
-
-
-                                        <a href="/SGA-SEBANA/public/admin/visit-requests/reject/<?= $s['id'] ?>"
-                                           class="item"
-                                           title="Rechazar solicitud"
-                                           onclick="return confirm('¿Desea rechazar esta solicitud?')">
-
-                                            <i class="zmdi zmdi-close"></i>
-
-                                        </a>
+                                        <form action="/SGA-SEBANA/public/admin/visit-requests/reject/<?= (int) ($s['id'] ?? 0) ?>"
+                                              method="post"
+                                              style="display:inline;">
+                                            <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
+                                            <button type="submit"
+                                                    class="item"
+                                                    title="Rechazar solicitud"
+                                                    onclick="return confirm('Desea rechazar esta solicitud?')"
+                                                    style="border:none;background:none;padding:0;">
+                                                <i class="zmdi zmdi-close"></i>
+                                            </button>
+                                        </form>
 
                                     <?php endif; ?>
 

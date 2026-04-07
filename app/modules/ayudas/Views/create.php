@@ -38,6 +38,7 @@ ob_start();
             </div>
             <div class="card-body card-block px-4 py-4">
                 <form action="/SGA-SEBANA/public/ayudas/store" method="post" enctype="multipart/form-data" class="form-horizontal">
+                    <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
 
                     <?php if (!empty($es_jefatura)): ?>
                         <div class="row form-group mb-4">

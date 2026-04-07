@@ -7,6 +7,7 @@ use App\Modules\Usuarios\Models\Bitacora;
 use App\Modules\Usuarios\Models\User;
 use App\Modules\Viaticos\Models\ViaticoModel;
 use App\Modules\Usuarios\Helpers\AccessControl;
+use App\Modules\Usuarios\Helpers\SecurityHelper;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use App\Modules\Visitas\Models\Notification; 
@@ -119,6 +120,16 @@ class ViaticoController extends ControllerBase {
         );
     }
 
+    private function validateCsrfOrRedirect(string $redirect): void
+    {
+        if (SecurityHelper::validateCsrfToken($_POST['_csrf_token'] ?? '')) {
+            return;
+        }
+
+        $this->redirect($redirect . (strpos($redirect, '?') === false ? '?error=csrf' : '&error=csrf'));
+        exit;
+    }
+
     public function index() {
         $usuarioId = $this->getCurrentUserId();
         if (!$usuarioId) {
@@ -223,6 +234,8 @@ class ViaticoController extends ControllerBase {
             return;
         }
 
+        $this->validateCsrfOrRedirect('/SGA-SEBANA/public/viaticos/create');
+
         if (!isset($_SESSION['user_id'])) {
             $this->redirect('/SGA-SEBANA/public/login?error=sesion_expirada');
             return;
@@ -247,15 +260,27 @@ class ViaticoController extends ControllerBase {
             $fileNameCmps = explode('.', $fileName);
             $fileExtension = strtolower(end($fileNameCmps));
 
-            $extensionesPermitidas = ['jpg', 'jpeg', 'png', 'pdf'];
+            $allowedMimes = [
+                'jpg' => ['image/jpeg'],
+                'jpeg' => ['image/jpeg'],
+                'png' => ['image/png'],
+                'pdf' => ['application/pdf', 'application/x-pdf'],
+            ];
             $maxSize = 5 * 1024 * 1024;
+            $mime = function_exists('mime_content_type') ? (string) mime_content_type($fileTmpPath) : '';
+            $isMimeValid = ($mime === '') || (isset($allowedMimes[$fileExtension]) && in_array($mime, $allowedMimes[$fileExtension], true));
 
-            if (in_array($fileExtension, $extensionesPermitidas, true) && $fileSize <= $maxSize) {
+            if (
+                is_uploaded_file($fileTmpPath)
+                && isset($allowedMimes[$fileExtension])
+                && $fileSize <= $maxSize
+                && $isMimeValid
+            ) {
                 $nuevoNombreArchivo = md5(time() . $fileName) . '.' . $fileExtension;
                 $directorioDestino = BASE_PATH . '/storage/viaticos/';
 
                 if (!is_dir($directorioDestino)) {
-                    mkdir($directorioDestino, 0777, true);
+                    mkdir($directorioDestino, 0755, true);
                 }
 
                 $rutaDestinoFisica = $directorioDestino . $nuevoNombreArchivo;
@@ -391,6 +416,8 @@ class ViaticoController extends ControllerBase {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             return;
         }
+
+        $this->validateCsrfOrRedirect('/SGA-SEBANA/public/viaticos');
 
         if (!$this->isManager()) {
             $this->redirect('/SGA-SEBANA/public/viaticos?error=no_autorizado');

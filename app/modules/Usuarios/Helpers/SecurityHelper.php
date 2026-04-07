@@ -54,7 +54,7 @@ class SecurityHelper
      */
     public static function csrfField(): string
     {
-        $token = self::generateCsrfToken();
+        $token = self::getCsrfToken();
         return '<input type="hidden" name="_csrf_token" value="' . self::sanitize($token) . '">';
     }
 

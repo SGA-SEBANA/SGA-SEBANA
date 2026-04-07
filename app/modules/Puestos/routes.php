@@ -18,7 +18,7 @@ $router->get('/puestos/edit/{id}', [PuestosController::class, 'edit']);
 $router->post('/puestos/edit/{id}', [PuestosController::class, 'edit']);
 
 // Eliminar
-$router->get('/puestos/delete/{id}', [PuestosController::class, 'delete']);
+$router->post('/puestos/delete/{id}', [PuestosController::class, 'delete']);
 
 // Toggle estado
 $router->post('/puestos/toggle/{id}', [PuestosController::class, 'toggle']);

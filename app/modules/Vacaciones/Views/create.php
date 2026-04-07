@@ -39,6 +39,7 @@ ob_start();
             </div>
             <div class="card-body card-block px-5 py-4">
                 <form action="/SGA-SEBANA/public/vacaciones/store" method="post" class="form-horizontal">
+                    <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                     <?php if (!empty($es_jefatura)): ?>
                         <div class="row form-group mb-4">
                             <div class="col col-md-3">

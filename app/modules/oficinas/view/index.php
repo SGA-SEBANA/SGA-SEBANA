@@ -51,10 +51,12 @@ ob_start();
             <a href="/SGA-SEBANA/public/oficinas/edit/<?= $office['id'] ?>" 
             class="btn btn-sm btn-warning w-50">Editar</a>
 
-            <a href="/SGA-SEBANA/public/oficinas/toggle/<?= $office['id'] ?>"
-            class="btn btn-sm <?= ($office['activo'] ?? 0) == 1 ? 'btn-danger' : 'btn-success' ?> w-50">
-            <?= ($office['activo'] ?? 0) == 1 ? 'Desactivar' : 'Activar' ?>
-            </a>
+            <form action="/SGA-SEBANA/public/oficinas/toggle/<?= (int) ($office['id'] ?? 0) ?>" method="post" class="w-50">
+                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
+                <button type="submit" class="btn btn-sm <?= ($office['activo'] ?? 0) == 1 ? 'btn-danger' : 'btn-success' ?> w-100">
+                    <?= ($office['activo'] ?? 0) == 1 ? 'Desactivar' : 'Activar' ?>
+                </button>
+            </form>
 </div>
 
         </div>

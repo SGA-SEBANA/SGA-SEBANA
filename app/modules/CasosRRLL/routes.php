@@ -34,6 +34,9 @@ $router->post('/casos-rrll/archivar/{id}', [CasosRRLLController::class, 'archiva
 // Eliminar Caso
 $router->post('/casos-rrll/delete/{id}', [CasosRRLLController::class, 'delete']);
 
+// Adjuntar documento al expediente o etapa
+$router->post('/casos-rrll/{casoId}/documentos/upload', [CasosRRLLController::class, 'adjuntarDocumento']);
+
 // =============== RUTAS PARA ETAPAS ===============
 
 // Listado de Etapas de un Caso

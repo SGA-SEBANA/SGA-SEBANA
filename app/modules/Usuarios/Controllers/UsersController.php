@@ -362,6 +362,12 @@ class UsersController extends ControllerBase
     {
         SecurityHelper::requireAuth();
 
+        if (!SecurityHelper::validateCsrfToken($_POST['_csrf_token'] ?? '')) {
+            $_SESSION['error_message'] = 'Token de seguridad invalido.';
+            $this->redirect('/SGA-SEBANA/public/users');
+            return;
+        }
+
         $userId = (int) $id;
         $user = $this->userModel->find($userId);
 

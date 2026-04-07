@@ -3,10 +3,32 @@
 namespace App\Modules\Visitas\Controllers;
 
 use App\Modules\Usuarios\Helpers\AccessControl;
+use App\Modules\Usuarios\Helpers\SecurityHelper;
 use App\Modules\Visitas\Models\Notification;
 
 class NotificationController
 {
+    private function ensureSession(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+    }
+
+    private function requirePostWithCsrf(string $fallback): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . $fallback);
+            exit;
+        }
+
+        if (!SecurityHelper::validateCsrfToken($_POST['_csrf_token'] ?? '')) {
+            $_SESSION['error'] = 'Token CSRF invalido o expirado. Recargue la pagina e intente nuevamente.';
+            header('Location: ' . $fallback);
+            exit;
+        }
+    }
+
     private function resolvePanelUrl(): string
     {
         return AccessControl::defaultPanelPath();
@@ -14,9 +36,8 @@ class NotificationController
 
     public function read($id)
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        $this->ensureSession();
+        $this->requirePostWithCsrf($this->resolvePanelUrl());
 
         $userId = $_SESSION['user_id'] ?? null;
         if (!$userId) {
@@ -44,9 +65,8 @@ class NotificationController
 
     public function archive($id)
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        $this->ensureSession();
+        $this->requirePostWithCsrf($this->resolvePanelUrl());
 
         $userId = $_SESSION['user_id'] ?? null;
         if (!$userId) {
@@ -63,9 +83,8 @@ class NotificationController
 
     public function markAllAsRead()
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        $this->ensureSession();
+        $this->requirePostWithCsrf($this->resolvePanelUrl());
 
         $userId = $_SESSION['user_id'] ?? null;
 

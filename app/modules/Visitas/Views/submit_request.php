@@ -25,6 +25,7 @@ ob_start();
 
             <div class="card-body">
                 <form method="POST" action="/SGA-SEBANA/public/visit-requests/create">
+                    <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                     <div class="row">
                         <?php if (!empty($es_jefatura)): ?>
                             <div class="col-md-7 mb-3">

@@ -34,7 +34,7 @@ ob_start();
         <?php if (!empty($error_msg)): ?>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="zmdi zmdi-alert-triangle"></i>
-                <strong>¡Error!</strong> <?= htmlspecialchars($error_msg); ?>
+                <strong>Error:</strong> <?= htmlspecialchars($error_msg); ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
@@ -91,7 +91,7 @@ ob_start();
         <!-- Botón crear etapa -->
         <div class="table-data__tool mb-3">
             <div class="table-data__tool-left">
-                <span class="badge bg-info"><?= count($etapas) ?> etapo(s)</span>
+                <span class="badge bg-info"><?= count($etapas) ?> etapa(s)</span>
             </div>
             <div class="table-data__tool-right">
                 <a href="/SGA-SEBANA/public/casos-rrll/<?= $caso['id'] ?>/etapas/create" 
@@ -160,7 +160,7 @@ ob_start();
                                                     <div class="account-dropdown__item">
                                                         <a href="#" data-bs-toggle="modal" 
                                                            data-bs-target="#deleteEtapaModal" data-etapa-id="<?= $etapa['id'] ?>">
-                                                            <i class="zmdi zmdi-delete"></i> Eliminar
+                                                            <i class="zmdi zmdi-block"></i> Anular
                                                         </a>
                                                     </div>
                                                 </div>
@@ -196,6 +196,7 @@ $content = ob_get_clean();
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" id="formCambiarEstado">
+                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="nuevo_estado_etapa">Nuevo Estado:</label>
@@ -207,6 +208,11 @@ $content = ob_get_clean();
                             <option value="bloqueado">Bloqueado</option>
                             <option value="cancelado">Cancelado</option>
                         </select>
+                    </div>
+                    <div class="form-group mt-3" id="fechaRealWrap" style="display:none;">
+                        <label for="fecha_real">Fecha real de finalizacion <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="fecha_real" name="fecha_real">
+                        <small class="text-muted">Requerida cuando la etapa pasa a finalizada.</small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -227,12 +233,14 @@ $content = ob_get_clean();
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" id="formDeleteEtapa">
+                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                 <div class="modal-body">
-                    <p class="text-danger">Se eliminará esta etapa de forma permanente.</p>
+                    <p>La etapa no se eliminara fisicamente.</p>
+                    <p class="text-muted mb-0">Se marcara como <strong>cancelada</strong> para mantener trazabilidad.</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                    <button type="submit" class="btn btn-danger">Anular Etapa</button>
                 </div>
             </form>
         </div>
@@ -249,6 +257,22 @@ if (cambiarEstadoModal) {
         const form = document.getElementById('formCambiarEstado');
         form.setAttribute('action', `/SGA-SEBANA/public/casos-rrll/etapas/${etapaId}/cambiar-estado`);
     });
+}
+
+const estadoEtapaSelect = document.getElementById('nuevo_estado_etapa');
+const fechaRealWrap = document.getElementById('fechaRealWrap');
+const fechaRealInput = document.getElementById('fecha_real');
+if (estadoEtapaSelect && fechaRealWrap && fechaRealInput) {
+    const toggleFechaReal = () => {
+        const necesitaFecha = estadoEtapaSelect.value === 'finalizado';
+        fechaRealWrap.style.display = necesitaFecha ? 'block' : 'none';
+        fechaRealInput.required = necesitaFecha;
+        if (!necesitaFecha) {
+            fechaRealInput.value = '';
+        }
+    };
+    estadoEtapaSelect.addEventListener('change', toggleFechaReal);
+    toggleFechaReal();
 }
 
 // Modal Eliminar Etapa

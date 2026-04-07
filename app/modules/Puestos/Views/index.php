@@ -163,6 +163,7 @@ ob_start();
 
                                         <form action="/SGA-SEBANA/public/puestos/toggle/<?= $puesto['id'] ?>" method="post"
                                             style="display:inline;">
+                                            <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                                             <button type="submit" class="item" data-toggle="tooltip" data-placement="top"
                                                 title="<?= $puesto['estado'] === 'activo' ? 'Finalizar' : 'Activar' ?>"
                                                 onclick="return confirm('¿Está seguro de cambiar el estado de este puesto?')">
@@ -176,11 +177,15 @@ ob_start();
                                             </button>
                                         </form>
 
-                                        <a href="/SGA-SEBANA/public/puestos/delete/<?= $puesto['id'] ?>" class="item"
-                                            data-toggle="tooltip" data-placement="top" title="Eliminar"
-                                            onclick="return confirm('¿Está seguro de eliminar este puesto?')">
-                                            <i class="zmdi zmdi-delete"></i>
-                                        </a>
+                                        <form action="/SGA-SEBANA/public/puestos/delete/<?= $puesto['id'] ?>" method="post"
+                                            style="display:inline;">
+                                            <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
+                                            <button type="submit" class="item" data-toggle="tooltip" data-placement="top" title="Eliminar"
+                                                onclick="return confirm('Esta seguro de eliminar este puesto?')"
+                                                style="border:none;background:none;padding:0;">
+                                                <i class="zmdi zmdi-delete"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>

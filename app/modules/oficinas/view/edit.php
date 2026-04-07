@@ -12,6 +12,7 @@ ob_start();
         </div>
 
        <form method="post" action="/SGA-SEBANA/public/oficinas/edit/<?= $office['id'] ?>">
+            <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
 
   
             <div class="card">

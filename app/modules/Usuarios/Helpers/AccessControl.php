@@ -178,7 +178,7 @@ class AccessControl
             ['pattern' => '~^/logout$~i', 'methods' => ['GET']],
             ['pattern' => '~^/bitacora(?:/.*)?$~i', 'methods' => ['GET']],
             ['pattern' => '~^/ReporteDeExclusionDeAfiliado(?:/.*)?$~i', 'methods' => ['GET']],
-            ['pattern' => '~^/notificaciones/(read|archive|read-all)(?:/[^/]+)?$~i', 'methods' => ['GET']]
+            ['pattern' => '~^/notificaciones/(read|archive|read-all)(?:/[^/]+)?$~i', 'methods' => ['POST']]
         ];
     }
 
@@ -188,7 +188,7 @@ class AccessControl
             ['pattern' => '~^/$~i', 'methods' => ['GET'], 'min' => 'alto', 'roles' => ['admin_general', 'admin_rrll', 'admin_solicitudes']],
             ['pattern' => '~^/home$~i', 'methods' => ['GET'], 'min' => 'alto', 'roles' => ['admin_general', 'admin_rrll', 'admin_solicitudes']],
             ['pattern' => '~^/logout$~i', 'methods' => ['GET'], 'min' => 'basico'],
-            ['pattern' => '~^/notificaciones/(read|archive|read-all)(?:/[^/]+)?$~i', 'methods' => ['GET'], 'min' => 'basico'],
+            ['pattern' => '~^/notificaciones/(read|archive|read-all)(?:/[^/]+)?$~i', 'methods' => ['POST'], 'min' => 'basico'],
 
             ['pattern' => '~^/users$~i', 'methods' => ['GET'], 'min' => 'total'],
             ['pattern' => '~^/users/create$~i', 'methods' => ['GET'], 'min' => 'total'],

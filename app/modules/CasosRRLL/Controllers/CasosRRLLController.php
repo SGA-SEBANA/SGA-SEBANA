@@ -5,24 +5,54 @@ namespace App\Modules\CasosRRLL\Controllers;
 use App\Core\ControllerBase;
 use App\Modules\CasosRRLL\Models\CasosRRLL;
 use App\Modules\CasosRRLL\Models\Etapas;
+use App\Modules\CasosRRLL\Services\CasosRRLLService;
+use App\Modules\Usuarios\Helpers\SecurityHelper;
 use App\Modules\Usuarios\Models\Bitacora;
 use Dompdf\Dompdf;
 use Dompdf\Options;
-use App\Modules\Visitas\Models\Notification; 
 
 class CasosRRLLController extends ControllerBase
 {
     private $modelo_casos;
     private $modelo_etapas;
     private $bitacora;
-    private $notiModel;
+    private $service;
 
     public function __construct()
     {
         $this->modelo_casos = new CasosRRLL();
         $this->modelo_etapas = new Etapas();
         $this->bitacora = new Bitacora();
-        $this->notiModel = new Notification(); 
+        $this->service = new CasosRRLLService();
+    }
+
+    private function getAuthUserId(): ?int
+    {
+        $userId = SecurityHelper::getAuthUserId();
+        if ($userId) {
+            return (int) $userId;
+        }
+
+        if (isset($_SESSION['usuario_id'])) {
+            return (int) $_SESSION['usuario_id'];
+        }
+
+        return null;
+    }
+
+    private function validateCsrfOrRedirect(string $redirectOnError): bool
+    {
+        if (SecurityHelper::validateCsrfToken($_POST['_csrf_token'] ?? '')) {
+            return true;
+        }
+
+        if (stripos($redirectOnError, 'error=') === false) {
+            $separator = (strpos($redirectOnError, '?') === false) ? '?' : '&';
+            $redirectOnError .= $separator . 'error=token_invalido';
+        }
+
+        $this->redirect($redirectOnError);
+        return false;
     }
 
     // ========================================
@@ -41,7 +71,10 @@ class CasosRRLLController extends ControllerBase
             'prioridad' => $_GET['prioridad'] ?? '',
             'afiliado_id' => $_GET['afiliado_id'] ?? '',
             'etapa_nombre' => trim($_GET['etapa_nombre'] ?? ''),
-            'etapa_estado' => $_GET['etapa_estado'] ?? ''
+            'etapa_estado' => $_GET['etapa_estado'] ?? '',
+            'responsable_id' => $_GET['responsable_id'] ?? '',
+            'con_documentos' => $_GET['con_documentos'] ?? '',
+            'atraso' => $_GET['atraso'] ?? ''
         ];
 
         if (($filtros['etapa_nombre'] ?? '') === '' && (($_GET['solo_investigacion'] ?? '') === '1')) {
@@ -51,20 +84,41 @@ class CasosRRLLController extends ControllerBase
         $casos = $this->modelo_casos->getAll($filtros);
         $categorias = $this->modelo_casos->getCategorias();
         $afiliados = $this->modelo_casos->getAfiliados();
+        $usuarios = $this->modelo_casos->getUsuarios();
 
-        // Agregar progreso a cada caso
+        // Agregar métricas derivadas para DataGrid
         foreach ($casos as &$caso) {
-            $total_etapas = $this->modelo_casos->contarTotalEtapas($caso['id']);
-            $etapas_finalizadas = $this->modelo_casos->contarEtapasFinalizadas($caso['id']);
+            $total_etapas = (int) ($caso['total_etapas'] ?? 0);
+            $etapas_finalizadas = (int) ($caso['etapas_finalizadas'] ?? 0);
             $caso['progreso'] = $total_etapas > 0 ? round(($etapas_finalizadas / $total_etapas) * 100) : 0;
             $caso['total_etapas'] = $total_etapas;
+
+            $fechaEstimada = $caso['etapa_actual_fecha_estimada'] ?? null;
+            $etapaEstado = $caso['etapa_actual_estado'] ?? null;
+            $caso['semaforo_atraso'] = 'sin_fecha';
+
+            if (!empty($fechaEstimada) && in_array($etapaEstado, ['pendiente', 'en_progreso', 'bloqueado'], true)) {
+                $hoy = new \DateTimeImmutable('today');
+                $fEst = \DateTimeImmutable::createFromFormat('Y-m-d', (string) $fechaEstimada) ?: new \DateTimeImmutable((string) $fechaEstimada);
+                $diff = (int) $fEst->diff($hoy)->format('%r%a');
+
+                if ($diff > 5) {
+                    $caso['semaforo_atraso'] = 'rojo';
+                } elseif ($diff > 0) {
+                    $caso['semaforo_atraso'] = 'amarillo';
+                } else {
+                    $caso['semaforo_atraso'] = 'verde';
+                }
+            }
         }
+        unset($caso);
 
         $data = [
             'titulo' => 'Gestión de Casos - Relaciones Laborales',
             'casos' => $casos,
             'categorias' => $categorias,
             'afiliados' => $afiliados,
+            'usuarios' => $usuarios,
             'filtros' => $filtros,
             'success' => $_GET['success'] ?? null,
             'error_msg' => $_GET['error'] ?? null
@@ -97,6 +151,15 @@ class CasosRRLLController extends ControllerBase
      */
     public function store()
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/SGA-SEBANA/public/casos-rrll/create');
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect('/SGA-SEBANA/public/casos-rrll/create')) {
+            return;
+        }
+
         $datos = $this->limpiarDatos($_POST);
 
         // Validaciones
@@ -110,30 +173,8 @@ class CasosRRLLController extends ControllerBase
             return;
         }
 
-        $id = $this->modelo_casos->create($datos);
-
-        if ($id !== false) {
-            $this->bitacora->log([
-                'accion' => 'CREATE',
-                'modulo' => 'casos_rrll',
-                'entidad' => 'caso',
-                'descripcion' => "Creación de caso: {$datos['numero_expediente']}"
-            ]);
-
-
-            // Notificación
-            $this->notiModel->createNotification(
-                1,
-                'sistema',
-                'casos',
-                'Nuevo Caso RRLL',
-                "Se creó el caso con expediente {$datos['numero_expediente']}",
-                'caso_rrll',
-                $id,
-                "/SGA-SEBANA/public/casos-rrll/show/{$id}"
-            );
-
-
+        $result = $this->service->crearCaso($datos);
+        if (($result['ok'] ?? false) === true) {
             $this->redirect('/SGA-SEBANA/public/casos-rrll?success=creado');
             return;
         }
@@ -156,13 +197,31 @@ class CasosRRLLController extends ControllerBase
         // Obtener etapas y progreso
         $etapas = $this->modelo_etapas->getEtapasCaso($id);
         $progreso = $this->modelo_etapas->getProgresoCaso($id);
+        $historial = $this->modelo_casos->obtenerHistorialCaso($id, 200);
+        $documentosCaso = $this->modelo_casos->obtenerDocumentosCaso($id);
+
+        $documentosEtapas = [];
+        foreach ($etapas as $etapaItem) {
+            $docs = $this->modelo_etapas->obtenerDocumentosEtapa((int) $etapaItem['id']);
+            foreach ($docs as $doc) {
+                $doc['etapa_id'] = $etapaItem['id'];
+                $doc['etapa_nombre'] = $etapaItem['nombre'] ?? ('Etapa #' . $etapaItem['id']);
+                $documentosEtapas[] = $doc;
+            }
+        }
+
+        $etapaActual = $this->modelo_casos->obtenerEtapaActual($id);
 
         $data = [
             'titulo' => 'Detalles del Caso: ' . $caso['numero_expediente'],
             'caso' => $caso,
             'etapas' => $etapas,
             'progreso' => $progreso,
-            'usuarios' => $this->modelo_casos->getUsuarios()
+            'usuarios' => $this->modelo_casos->getUsuarios(),
+            'historial' => $historial,
+            'documentosCaso' => $documentosCaso,
+            'documentosEtapas' => $documentosEtapas,
+            'etapaActual' => $etapaActual
         ];
 
         $this->view('show', $data);
@@ -185,7 +244,8 @@ class CasosRRLLController extends ControllerBase
             'caso' => $caso,
             'categorias' => $this->modelo_casos->getCategorias(),
             'afiliados' => $this->modelo_casos->getAfiliados(),
-            'usuarios' => $this->modelo_casos->getUsuarios()
+            'usuarios' => $this->modelo_casos->getUsuarios(),
+            'error_msg' => $_GET['error'] ?? null
         ];
 
         $this->view('edit', $data);
@@ -196,6 +256,15 @@ class CasosRRLLController extends ControllerBase
      */
     public function update($id)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/edit/{$id}");
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect("/SGA-SEBANA/public/casos-rrll/edit/{$id}")) {
+            return;
+        }
+
         $caso = $this->modelo_casos->getById($id);
 
         if (!$caso) {
@@ -217,29 +286,8 @@ class CasosRRLLController extends ControllerBase
             return;
         }
 
-        if ($this->modelo_casos->update($id, $datos)) {
-            $this->bitacora->log([
-                'accion' => 'UPDATE',
-                'modulo' => 'casos_rrll',
-                'entidad' => 'caso',
-                'entidad_id' => $id,
-                'descripcion' => "Actualización de caso: {$datos['numero_expediente']}"
-            ]);
-
-
-            // Notificación
-            $this->notiModel->createNotification(
-                1,
-                'sistema',
-                'casos',
-                'Caso RRLL Actualizado',
-                "Se actualizó el caso ID {$id}, expediente {$datos['numero_expediente']}",
-                'caso_rrll',
-                $id,
-                "/SGA-SEBANA/public/casos-rrll/show/{$id}"
-            );
-
-
+        $result = $this->service->actualizarCasoFijo((int) $id, $datos);
+        if (($result['ok'] ?? false) === true) {
             $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$id}?success=actualizado");
             return;
         }
@@ -252,6 +300,15 @@ class CasosRRLLController extends ControllerBase
      */
     public function cambiarEstado($id)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$id}");
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect("/SGA-SEBANA/public/casos-rrll/show/{$id}")) {
+            return;
+        }
+
         $caso = $this->modelo_casos->getById($id);
 
         if (!$caso || !isset($_POST['nuevo_estado'])) {
@@ -260,34 +317,23 @@ class CasosRRLLController extends ControllerBase
         }
 
         $nuevo_estado = $_POST['nuevo_estado'];
+        $resultadoFinal = isset($_POST['resultado_final']) ? trim((string) $_POST['resultado_final']) : null;
+        $result = $this->service->cambiarEstadoCaso((int) $id, (string) $nuevo_estado, $resultadoFinal);
 
-        if ($this->modelo_casos->cambiarEstado($id, $nuevo_estado)) {
-            $this->bitacora->log([
-                'accion' => 'UPDATE',
-                'modulo' => 'casos_rrll',
-                'entidad' => 'caso',
-                'entidad_id' => $id,
-                'descripcion' => "Cambio de estado del caso a: {$nuevo_estado}"
-            ]);
-
-            // Notificación
-            $this->notiModel->createNotification(
-                1,
-                'sistema',
-                'casos',
-                'Estado de Caso Cambiado',
-                "El caso ID {$id} ahora está en estado: {$nuevo_estado}",
-                'caso_rrll',
-                $id,
-                "/SGA-SEBANA/public/casos-rrll/show/{$id}"
-            );
-
-
+        if (($result['ok'] ?? false) === true) {
             $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$id}?success=estado_actualizado");
             return;
         }
 
-        $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$id}?error=estado_invalido");
+        $error = $result['error'] ?? 'estado_invalido';
+        $map = [
+            'transicion_invalida' => 'Transicion de estado invalida para este expediente.',
+            'etapas_activas' => 'No puede cerrar el expediente mientras existan etapas activas.',
+            'resultado_requerido' => 'Debe registrar el resultado final para cerrar el expediente.',
+            'db_error' => 'Hubo un error al actualizar el estado del expediente.'
+        ];
+        $msg = $map[$error] ?? 'No se pudo actualizar el estado del expediente.';
+        $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$id}?error=" . urlencode($msg));
     }
 
     /**
@@ -300,6 +346,10 @@ class CasosRRLLController extends ControllerBase
             return;
         }
 
+        if (!$this->validateCsrfOrRedirect("/SGA-SEBANA/public/casos-rrll/show/{$id}")) {
+            return;
+        }
+
         $caso = $this->modelo_casos->getById($id);
 
         if (!$caso) {
@@ -308,30 +358,8 @@ class CasosRRLLController extends ControllerBase
         }
 
         $responsable_actual = $_POST['responsable_actual'] ?? null;
-
-        if ($this->modelo_casos->cambiarResponsable($id, $responsable_actual)) {
-            $this->bitacora->log([
-                'accion' => 'UPDATE',
-                'modulo' => 'casos_rrll',
-                'entidad' => 'caso',
-                'entidad_id' => $id,
-                'descripcion' => "Cambio de responsable del caso"
-            ]);
-
-
-            // Notificación
-            $this->notiModel->createNotification(
-                1,
-                'sistema',
-                'casos',
-                'Responsable de Caso Actualizado',
-                "Se cambió el responsable del caso ID {$id}",
-                'caso_rrll',
-                $id,
-                "/SGA-SEBANA/public/casos-rrll/show/{$id}"
-            );
-
-
+        $result = $this->service->cambiarResponsable((int) $id, $responsable_actual);
+        if (($result['ok'] ?? false) === true) {
             $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$id}?success=responsable_actualizado");
             return;
         }
@@ -344,6 +372,15 @@ class CasosRRLLController extends ControllerBase
      */
     public function archivar($id)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$id}");
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect("/SGA-SEBANA/public/casos-rrll/show/{$id}")) {
+            return;
+        }
+
         $caso = $this->modelo_casos->getById($id);
 
         if (!$caso) {
@@ -352,30 +389,8 @@ class CasosRRLLController extends ControllerBase
         }
 
         $resultado = $_POST['resultado_final'] ?? null;
-
-        if ($this->modelo_casos->archivar($id, $resultado)) {
-            $this->bitacora->log([
-                'accion' => 'UPDATE',
-                'modulo' => 'casos_rrll',
-                'entidad' => 'caso',
-                'entidad_id' => $id,
-                'descripcion' => "Archivación de caso: {$caso['numero_expediente']}"
-            ]);
-
-
-            // Notificación
-            $this->notiModel->createNotification(
-                1,
-                'sistema',
-                'casos',
-                'Caso Archivado',
-                "Se archivó el caso ID {$id}, expediente {$caso['numero_expediente']}",
-                'caso_rrll',
-                $id,
-                "/SGA-SEBANA/public/casos-rrll/show/{$id}"
-            );
-
-
+        $result = $this->service->archivarCaso((int) $id, $resultado);
+        if (($result['ok'] ?? false) === true) {
             $this->redirect('/SGA-SEBANA/public/casos-rrll?success=archivado');
             return;
         }
@@ -388,6 +403,15 @@ class CasosRRLLController extends ControllerBase
      */
     public function delete($id)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/SGA-SEBANA/public/casos-rrll');
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect('/SGA-SEBANA/public/casos-rrll')) {
+            return;
+        }
+
         $caso = $this->modelo_casos->getById($id);
 
         if (!$caso) {
@@ -395,30 +419,9 @@ class CasosRRLLController extends ControllerBase
             return;
         }
 
-        if ($this->modelo_casos->delete($id)) {
-            $this->bitacora->log([
-                'accion' => 'DELETE',
-                'modulo' => 'casos_rrll',
-                'entidad' => 'caso',
-                'entidad_id' => $id,
-                'descripcion' => "Eliminación de caso: {$caso['numero_expediente']}"
-            ]);
-
-
-            // Notificación
-            $this->notiModel->createNotification(
-                1,
-                'sistema',
-                'casos',
-                'Caso Eliminado',
-                "Se eliminó el caso ID {$id}, expediente {$caso['numero_expediente']}",
-                'caso_rrll',
-                $id,
-                null
-            );
-
-
-            $this->redirect('/SGA-SEBANA/public/casos-rrll?success=eliminado');
+        $result = $this->service->eliminarCasoLogico((int) $id);
+        if (($result['ok'] ?? false) === true) {
+            $this->redirect('/SGA-SEBANA/public/casos-rrll?success=archivado');
             return;
         }
 
@@ -482,6 +485,15 @@ class CasosRRLLController extends ControllerBase
      */
     public function guardarEtapa($casoId)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/{$casoId}/etapas/create");
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect("/SGA-SEBANA/public/casos-rrll/{$casoId}/etapas/create")) {
+            return;
+        }
+
         $caso = $this->modelo_casos->getById($casoId);
 
         if (!$caso) {
@@ -490,9 +502,6 @@ class CasosRRLLController extends ControllerBase
         }
 
         $datos = $this->limpiarDatos($_POST);
-        $datos['caso_id'] = $casoId;
-
-        // Validaciones
         if (empty($datos['nombre'])) {
             $this->redirect("/SGA-SEBANA/public/casos-rrll/{$casoId}/etapas/create?error=campos_requeridos");
             return;
@@ -503,29 +512,14 @@ class CasosRRLLController extends ControllerBase
             return;
         }
 
-        $etapaId = $this->modelo_etapas->create($datos);
-
-        if ($etapaId !== false) {
-            $this->bitacora->log([
-                'accion' => 'CREATE',
-                'modulo' => 'casos_rrll',
-                'entidad' => 'etapa',
-                'descripcion' => "Creación de etapa: {$datos['nombre']} para caso {$casoId}"
-            ]);
-
-            $this->notiModel->createNotification(
-            1,
-            'sistema',
-            'casos',
-            'Nueva Etapa en Caso RRLL',
-            "Se creó la etapa '{$datos['nombre']}' en el caso ID {$casoId}",
-            'etapa_rrll',
-            $etapaId,
-            "/SGA-SEBANA/public/casos-rrll/{$casoId}/etapas"
-        );
-
-
+        $result = $this->service->crearEtapa((int) $casoId, $datos);
+        if (($result['ok'] ?? false) === true) {
             $this->redirect("/SGA-SEBANA/public/casos-rrll/{$casoId}/etapas?success=etapa_creada");
+            return;
+        }
+
+        if (($result['error'] ?? '') === 'orden_duplicado') {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/{$casoId}/etapas/create?error=orden_duplicado");
             return;
         }
 
@@ -558,6 +552,15 @@ class CasosRRLLController extends ControllerBase
      */
     public function actualizarEtapa($etapaId)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/etapas/{$etapaId}/edit");
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect("/SGA-SEBANA/public/casos-rrll/etapas/{$etapaId}/edit")) {
+            return;
+        }
+
         $etapa = $this->modelo_etapas->getById($etapaId);
 
         if (!$etapa) {
@@ -579,29 +582,22 @@ class CasosRRLLController extends ControllerBase
             return;
         }
 
-        if ($this->modelo_etapas->update($etapaId, $datos)) {
-            $this->bitacora->log([
-                'accion' => 'UPDATE',
-                'modulo' => 'casos_rrll',
-                'entidad' => 'etapa',
-                'entidad_id' => $etapaId,
-                'descripcion' => "Actualización de etapa: {$datos['nombre']}"
-            ]);
-
-             $this->notiModel->createNotification(
-            1,
-            'sistema',
-            'casos',
-            'Etapa Actualizada',
-            "Se actualizó la etapa '{$datos['nombre']}' del caso ID {$etapa['caso_id']}",
-            'etapa_rrll',
-            $etapaId,
-            "/SGA-SEBANA/public/casos-rrll/{$etapa['caso_id']}/etapas"
-        );
-
-
-
+        $result = $this->service->actualizarEtapa((int) $etapaId, $datos);
+        if (($result['ok'] ?? false) === true) {
             $this->redirect("/SGA-SEBANA/public/casos-rrll/{$etapa['caso_id']}/etapas?success=etapa_actualizada");
+            return;
+        }
+
+        if (($result['error'] ?? '') === 'orden_duplicado') {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/etapas/{$etapaId}/edit?error=orden_duplicado");
+            return;
+        }
+        if (($result['error'] ?? '') === 'orden_saltado') {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/etapas/{$etapaId}/edit?error=orden_saltado");
+            return;
+        }
+        if (($result['error'] ?? '') === 'fecha_real_requerida') {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/etapas/{$etapaId}/edit?error=fecha_real_requerida");
             return;
         }
 
@@ -613,29 +609,43 @@ class CasosRRLLController extends ControllerBase
      */
     public function cambiarEstadoEtapa($etapaId)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/SGA-SEBANA/public/casos-rrll');
+            return;
+        }
+
         $etapa = $this->modelo_etapas->getById($etapaId);
 
-        if (!$etapa || !isset($_POST['nuevo_estado'])) {
+        if (!$etapa) {
+            $this->redirect('/SGA-SEBANA/public/casos-rrll?error=no_encontrado');
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect("/SGA-SEBANA/public/casos-rrll/{$etapa['caso_id']}/etapas")) {
+            return;
+        }
+
+        if (!isset($_POST['nuevo_estado'])) {
             $this->redirect('/SGA-SEBANA/public/casos-rrll?error=solicitud_invalida');
             return;
         }
 
         $nuevo_estado = $_POST['nuevo_estado'];
-
-        if ($this->modelo_etapas->cambiarEstado($etapaId, $nuevo_estado)) {
-            $this->bitacora->log([
-                'accion' => 'UPDATE',
-                'modulo' => 'casos_rrll',
-                'entidad' => 'etapa',
-                'entidad_id' => $etapaId,
-                'descripcion' => "Cambio de estado de etapa a: {$nuevo_estado}"
-            ]);
-
+        $fechaReal = $_POST['fecha_real'] ?? null;
+        $result = $this->service->cambiarEstadoEtapa((int) $etapaId, (string) $nuevo_estado, $fechaReal);
+        if (($result['ok'] ?? false) === true) {
             $this->redirect("/SGA-SEBANA/public/casos-rrll/{$etapa['caso_id']}/etapas?success=etapa_actualizada");
             return;
         }
 
-        $this->redirect("/SGA-SEBANA/public/casos-rrll/{$etapa['caso_id']}/etapas?error=estado_invalido");
+        $error = $result['error'] ?? 'estado_invalido';
+        $map = [
+            'orden_saltado' => 'No puede avanzar/finalizar esta etapa hasta completar las anteriores.',
+            'fecha_real_requerida' => 'Debe indicar la fecha real de finalizacion.',
+            'db_error' => 'No fue posible actualizar la etapa.'
+        ];
+        $msg = $map[$error] ?? 'No fue posible actualizar la etapa.';
+        $this->redirect("/SGA-SEBANA/public/casos-rrll/{$etapa['caso_id']}/etapas?error=" . urlencode($msg));
     }
 
     /**
@@ -666,6 +676,11 @@ class CasosRRLLController extends ControllerBase
      */
     public function eliminarEtapa($etapaId)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/SGA-SEBANA/public/casos-rrll');
+            return;
+        }
+
         $etapa = $this->modelo_etapas->getById($etapaId);
 
         if (!$etapa) {
@@ -673,34 +688,138 @@ class CasosRRLLController extends ControllerBase
             return;
         }
 
+        if (!$this->validateCsrfOrRedirect("/SGA-SEBANA/public/casos-rrll/{$etapa['caso_id']}/etapas")) {
+            return;
+        }
+
         $casoId = $etapa['caso_id'];
 
-        if ($this->modelo_etapas->delete($etapaId)) {
-            $this->bitacora->log([
-                'accion' => 'DELETE',
-                'modulo' => 'casos_rrll',
-                'entidad' => 'etapa',
-                'entidad_id' => $etapaId,
-                'descripcion' => "Eliminación de etapa: {$etapa['nombre']}"
-            ]);
-
-            $this->notiModel->createNotification(
-            1,
-            'sistema',
-            'casos',
-            'Etapa Eliminada',
-            "Se eliminó la etapa '{$etapa['nombre']}' del caso ID {$casoId}",
-            'etapa_rrll',
-            $etapaId,
-            "/SGA-SEBANA/public/casos-rrll/{$casoId}/etapas"
-        );
-
-
+        $result = $this->service->eliminarEtapaLogico((int) $etapaId);
+        if (($result['ok'] ?? false) === true) {
             $this->redirect("/SGA-SEBANA/public/casos-rrll/{$casoId}/etapas?success=etapa_eliminada");
             return;
         }
 
         $this->redirect("/SGA-SEBANA/public/casos-rrll/{$casoId}/etapas?error=db_error");
+    }
+
+    /**
+     * Adjuntar documento al caso o a una etapa del caso
+     */
+    public function adjuntarDocumento($casoId)
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$casoId}");
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect("/SGA-SEBANA/public/casos-rrll/show/{$casoId}")) {
+            return;
+        }
+
+        $caso = $this->modelo_casos->getById($casoId);
+        if (!$caso) {
+            $this->redirect('/SGA-SEBANA/public/casos-rrll?error=no_encontrado');
+            return;
+        }
+
+        if (!isset($_FILES['documento']) || !is_array($_FILES['documento'])) {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$casoId}?error=" . urlencode('Debe adjuntar un archivo valido.'));
+            return;
+        }
+
+        $upload = $_FILES['documento'];
+        if (($upload['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$casoId}?error=" . urlencode('No fue posible subir el archivo.'));
+            return;
+        }
+
+        $allowedExt = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'];
+        $allowedMimeByExt = [
+            'pdf' => ['application/pdf'],
+            'jpg' => ['image/jpeg'],
+            'jpeg' => ['image/jpeg'],
+            'png' => ['image/png'],
+            'doc' => ['application/msword', 'application/octet-stream'],
+            'docx' => [
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/zip',
+                'application/octet-stream'
+            ]
+        ];
+        $originalName = (string) ($upload['name'] ?? '');
+        $tmp = (string) ($upload['tmp_name'] ?? '');
+        $size = (int) ($upload['size'] ?? 0);
+        $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+        if (!in_array($ext, $allowedExt, true)) {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$casoId}?error=" . urlencode('Tipo de archivo no permitido.'));
+            return;
+        }
+        if ($size <= 0 || $size > (10 * 1024 * 1024)) {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$casoId}?error=" . urlencode('El archivo supera el tamano permitido (10MB).'));
+            return;
+        }
+        if (!is_uploaded_file($tmp)) {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$casoId}?error=" . urlencode('Archivo de subida invalido.'));
+            return;
+        }
+
+        $detectedMime = null;
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            if ($finfo !== false) {
+                $detectedMime = finfo_file($finfo, $tmp) ?: null;
+                finfo_close($finfo);
+            }
+        } elseif (function_exists('mime_content_type')) {
+            $detectedMime = mime_content_type($tmp) ?: null;
+        }
+
+        $allowedMimes = $allowedMimeByExt[$ext] ?? [];
+        if ($detectedMime !== null && !in_array($detectedMime, $allowedMimes, true)) {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$casoId}?error=" . urlencode('El contenido del archivo no coincide con el tipo permitido.'));
+            return;
+        }
+
+        $storageDir = BASE_PATH . '/storage/casos_rrll/documentos';
+        if (!is_dir($storageDir) && !mkdir($storageDir, 0775, true) && !is_dir($storageDir)) {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$casoId}?error=" . urlencode('No se pudo preparar el almacenamiento local.'));
+            return;
+        }
+
+        try {
+            $randomPart = bin2hex(random_bytes(4));
+        } catch (\Throwable $e) {
+            $randomPart = substr(md5((string) microtime(true)), 0, 8);
+        }
+        $safeName = 'rrll_' . (int) $casoId . '_' . time() . '_' . $randomPart . '.' . $ext;
+        $target = $storageDir . '/' . $safeName;
+        if (!move_uploaded_file($tmp, $target)) {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$casoId}?error=" . urlencode('No se pudo guardar el archivo en storage.'));
+            return;
+        }
+
+        $etapaId = isset($_POST['etapa_id']) && (int) $_POST['etapa_id'] > 0 ? (int) $_POST['etapa_id'] : null;
+        $documento = [
+            'nombre_original' => $originalName,
+            'ruta' => 'storage/casos_rrll/documentos/' . $safeName,
+            'tamano' => $size,
+            'mime' => $detectedMime ?: (mime_content_type($target) ?: null),
+            'fecha' => date('Y-m-d H:i:s'),
+            'subido_por' => $this->getAuthUserId()
+        ];
+
+        $result = $this->service->adjuntarDocumento((int) $casoId, $etapaId, $documento);
+        if (($result['ok'] ?? false) !== true) {
+            if (file_exists($target)) {
+                @unlink($target);
+            }
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$casoId}?error=" . urlencode('No se pudo registrar el adjunto en el expediente.'));
+            return;
+        }
+
+        $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$casoId}?success=documento_subido");
     }
 
     // ========================================
@@ -794,7 +913,8 @@ class CasosRRLLController extends ControllerBase
         // Campos para etapas
         $camposEtapas = [
             'nombre', 'descripcion', 'estado', 'fecha_inicio', 'fecha_estimada_fin',
-            'responsable_id', 'observaciones', 'orden'
+            'fecha_fin', 'responsable_id', 'resultado', 'documentos_generados',
+            'observaciones', 'orden'
         ];
 
         // Procesar campos de casos
@@ -823,8 +943,9 @@ class CasosRRLLController extends ControllerBase
         }
 
         // Agregar creado_por desde sesión si no está presente
-        if (!isset($datos['creado_por']) && isset($_SESSION['usuario_id'])) {
-            $datos['creado_por'] = $_SESSION['usuario_id'];
+        $authUserId = $this->getAuthUserId();
+        if (!isset($datos['creado_por']) && $authUserId !== null) {
+            $datos['creado_por'] = $authUserId;
         }
 
         return $datos;

@@ -22,12 +22,15 @@ ob_start();
                     if($error_msg === 'campos_requeridos') echo "Los campos marcados con (*) son obligatorios.";
                     elseif($error_msg === 'expediente_duplicado') echo "El número de expediente ya existe.";
                     elseif($error_msg === 'db_error') echo "Error al actualizar en la base de datos.";
+                    elseif($error_msg === 'token_invalido') echo "Token de seguridad inválido. Recarga el formulario e intenta de nuevo.";
+                    else echo htmlspecialchars((string) $error_msg);
                 ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
 
         <form action="/SGA-SEBANA/public/casos-rrll/update/<?= $caso['id'] ?>" method="POST" class="form-horizontal">
+            <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white py-3">
                     <strong><i class="zmdi zmdi-case"></i> Información del Caso</strong>
@@ -76,15 +79,9 @@ ob_start();
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="estado" class="form-control-label font-weight-bold">Estado</label>
-                                <select id="estado" name="estado" class="form-control">
-                                    <option value="activo" <?= $caso['estado'] === 'activo' ? 'selected' : '' ?>>Activo</option>
-                                    <option value="en_progreso" <?= $caso['estado'] === 'en_progreso' ? 'selected' : '' ?>>En Progreso</option>
-                                    <option value="cerrado" <?= $caso['estado'] === 'cerrado' ? 'selected' : '' ?>>Cerrado</option>
-                                    <option value="suspendido" <?= $caso['estado'] === 'suspendido' ? 'selected' : '' ?>>Suspendido</option>
-                                </select>
-                            </div>
+                            <label class="form-control-label font-weight-bold">Estado actual</label>
+                            <div class="form-control bg-light"><?= htmlspecialchars((string) ($caso['estado'] ?? 'activo')) ?></div>
+                            <small class="form-text text-muted">Cambios de estado solo desde el dashboard del expediente.</small>
                         </div>
                     </div>
 
@@ -161,10 +158,11 @@ ob_start();
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="resultado_final" class="form-control-label font-weight-bold">Resultado Final</label>
-                                <textarea id="resultado_final" name="resultado_final" rows="2" class="form-control"><?= htmlspecialchars($caso['resultado_final'] ?? '') ?></textarea>
+                            <label class="form-control-label font-weight-bold">Resultado final</label>
+                            <div class="form-control bg-light">
+                                <?= htmlspecialchars((string) ($caso['resultado_final'] ?? 'Se define unicamente en el proceso de cierre.')) ?>
                             </div>
+                            <small class="form-text text-muted">No editable en este formulario.</small>
                         </div>
                     </div>
 

@@ -24,6 +24,7 @@ $errors = $errors ?? [];
         <?php endif; ?>
 
         <form method="post" action="/SGA-SEBANA/public/oficinas/create" class="form-horizontal">
+            <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
             <div class="card">
                 <div class="card-header">
                     <strong><i class="zmdi zmdi-city"></i> Datos de la oficina</strong>

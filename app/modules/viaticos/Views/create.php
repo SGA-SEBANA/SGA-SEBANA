@@ -34,6 +34,7 @@ ob_start();
         <?php endif; ?>
 
         <form action="/SGA-SEBANA/public/viaticos/store" method="POST" id="formViaticos" enctype="multipart/form-data">
+            <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
 
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white">

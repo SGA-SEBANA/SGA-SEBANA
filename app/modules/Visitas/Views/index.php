@@ -92,12 +92,18 @@ ob_start();
                                                class="item" title="Reprogramar">
                                                 <i class="fa-regular fa-calendar-xmark"></i>
                                             </a>
-                                            <a href="/SGA-SEBANA/public/visit-requests/<?= (int) ($item['id'] ?? 0) ?>/cancel"
-                                               class="item"
-                                               onclick="return confirm('¿Cancelar esta solicitud?')"
-                                               title="Cancelar">
-                                                <i class="fa-solid fa-ban"></i>
-                                            </a>
+                                            <form action="/SGA-SEBANA/public/visit-requests/<?= (int) ($item['id'] ?? 0) ?>/cancel"
+                                                  method="post"
+                                                  style="display:inline;">
+                                                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
+                                                <button type="submit"
+                                                        class="item"
+                                                        onclick="return confirm('Cancelar esta solicitud?')"
+                                                        title="Cancelar"
+                                                        style="border:none;background:none;padding:0;">
+                                                    <i class="fa-solid fa-ban"></i>
+                                                </button>
+                                            </form>
                                         <?php else: ?>
                                             <span class="text-muted small">Sin acciones</span>
                                         <?php endif; ?>

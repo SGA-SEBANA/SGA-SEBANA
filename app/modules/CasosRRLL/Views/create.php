@@ -22,12 +22,15 @@ ob_start();
                     if($error_msg === 'campos_requeridos') echo "Los campos marcados con (*) son obligatorios.";
                     elseif($error_msg === 'expediente_duplicado') echo "El número de expediente ya existe en el sistema.";
                     elseif($error_msg === 'db_error') echo "Error al guardar en la base de datos.";
+                    elseif($error_msg === 'token_invalido') echo "Token de seguridad inválido. Recarga el formulario e intenta de nuevo.";
+                    else echo htmlspecialchars((string) $error_msg);
                 ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
 
         <form action="/SGA-SEBANA/public/casos-rrll/store" method="POST" class="form-horizontal">
+            <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white py-3">
                     <strong><i class="zmdi zmdi-case"></i> Información del Caso</strong>
@@ -79,14 +82,9 @@ ob_start();
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="estado" class="form-control-label font-weight-bold">Estado Inicial</label>
-                                <select id="estado" name="estado" class="form-control">
-                                    <option value="activo" selected>Activo</option>
-                                    <option value="en_progreso">En Progreso</option>
-                                    <option value="suspendido">Suspendido</option>
-                                </select>
-                            </div>
+                            <label class="form-control-label font-weight-bold">Estado inicial</label>
+                            <div class="form-control bg-light">Abierto (asignado automáticamente)</div>
+                            <small class="form-text text-muted">El estado y el cierre se administran por flujo de control.</small>
                         </div>
                     </div>
 
