@@ -11,7 +11,7 @@ ob_start();
 
         <?php if (!empty($success)): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="zmdi zmdi-check-circle"></i> <?= $success ?>
+                <i class="zmdi zmdi-check-circle"></i> <?= htmlspecialchars((string) $success) ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>

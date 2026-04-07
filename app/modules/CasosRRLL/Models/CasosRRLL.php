@@ -71,6 +71,17 @@ class CasosRRLL extends ModelBase
                            LIMIT 1
                        ) AS etapa_actual_fecha_estimada,
                        (
+                           SELECT COUNT(*)
+                           FROM etapas_casos e_total
+                           WHERE e_total.caso_id = c.id
+                       ) AS total_etapas,
+                       (
+                           SELECT COUNT(*)
+                           FROM etapas_casos e_fin
+                           WHERE e_fin.caso_id = c.id
+                             AND e_fin.estado = 'finalizado'
+                       ) AS etapas_finalizadas,
+                       (
                            CASE
                                WHEN c.documentos_adjuntos IS NULL OR TRIM(c.documentos_adjuntos) = '' THEN 0
                                WHEN JSON_VALID(c.documentos_adjuntos) THEN JSON_LENGTH(c.documentos_adjuntos)
@@ -274,7 +285,8 @@ class CasosRRLL extends ModelBase
             'prioridad' => $datos['prioridad'] ?? 'media',
             'fecha_incidente' => $datos['fecha_incidente'] ?? null,
             'fecha_apertura' => $datos['fecha_apertura'] ?? date('Y-m-d'),
-            'creado_por' => $datos['creado_por'] ?? ($_SESSION['usuario_id'] ?? 1),
+            'creado_por' => $datos['creado_por']
+                ?? ($_SESSION['user_id'] ?? ($_SESSION['usuario_id'] ?? 1)),
             'responsable_actual' => $datos['responsable_actual'] ?? null,
             'observaciones' => $datos['observaciones'] ?? null
         ];

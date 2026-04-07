@@ -25,12 +25,15 @@ ob_start();
                     elseif($_GET['error'] === 'orden_saltado') echo "No puede avanzar/finalizar esta etapa hasta completar las anteriores.";
                     elseif($_GET['error'] === 'fecha_real_requerida') echo "Debe registrar la fecha real para finalizar una etapa.";
                     elseif($_GET['error'] === 'db_error') echo "Error al actualizar en la base de datos.";
+                    elseif($_GET['error'] === 'token_invalido') echo "Token de seguridad inválido. Recarga el formulario e intenta de nuevo.";
+                    else echo htmlspecialchars((string) $_GET['error']);
                 ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
 
         <form action="/SGA-SEBANA/public/casos-rrll/etapas/<?= $etapa['id'] ?>/update" method="POST" class="form-horizontal">
+            <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white py-3">
                     <strong><i class="zmdi zmdi-layers"></i> Información de la Etapa</strong>

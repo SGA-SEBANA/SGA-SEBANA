@@ -14,6 +14,7 @@ ob_start();
         </div>
 
         <form action="/SGA-SEBANA/public/visit-requests/<?= $solicitud['id'] ?>/reschedule" method="post">
+            <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
             <div class="form-group mb-3">
                 <label for="fecha_reprogramada">Nueva Fecha</label>
                 <input type="date" id="fecha_reprogramada" name="fecha_reprogramada"

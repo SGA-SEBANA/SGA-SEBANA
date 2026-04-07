@@ -284,6 +284,7 @@ $content = ob_get_clean();
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" id="formDeleteCaso">
+                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                 <div class="modal-body">
                     <p>Esta accion no elimina fisicamente el registro.</p>
                     <p>El expediente se movera a estado <strong>archivado</strong>.</p>

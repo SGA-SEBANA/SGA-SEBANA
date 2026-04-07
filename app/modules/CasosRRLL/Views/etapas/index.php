@@ -196,6 +196,7 @@ $content = ob_get_clean();
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" id="formCambiarEstado">
+                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="nuevo_estado_etapa">Nuevo Estado:</label>
@@ -232,6 +233,7 @@ $content = ob_get_clean();
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" id="formDeleteEtapa">
+                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                 <div class="modal-body">
                     <p>La etapa no se eliminara fisicamente.</p>
                     <p class="text-muted mb-0">Se marcara como <strong>cancelada</strong> para mantener trazabilidad.</p>

@@ -23,12 +23,15 @@ ob_start();
                     elseif($_GET['error'] === 'nombre_duplicado') echo "Ya existe una etapa con ese nombre en este caso.";
                     elseif($_GET['error'] === 'orden_duplicado') echo "El orden de etapa ya existe en este expediente.";
                     elseif($_GET['error'] === 'db_error') echo "Error al guardar en la base de datos.";
+                    elseif($_GET['error'] === 'token_invalido') echo "Token de seguridad inválido. Recarga el formulario e intenta de nuevo.";
+                    else echo htmlspecialchars((string) $_GET['error']);
                 ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
 
         <form action="/SGA-SEBANA/public/casos-rrll/<?= $caso['id'] ?>/etapas/store" method="POST" class="form-horizontal">
+            <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white py-3">
                     <strong><i class="zmdi zmdi-layers"></i> Información de la Etapa</strong>

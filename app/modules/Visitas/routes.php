@@ -23,16 +23,16 @@ $router->get('/visit-requests/{id}/reschedule',[VisitRequestController::class, '
 $router->post('/visit-requests/{id}/reschedule',[VisitRequestController::class, 'rescheduleVisit']);
 
 //cancel Request
-$router->get('/visit-requests/{id}/cancel',[VisitRequestController::class, 'cancelVisits']);
+$router->post('/visit-requests/{id}/cancel',[VisitRequestController::class, 'cancelVisits']);
 
 
 
 // Admin route
 $router->get('/admin/visit-requests', [AdminVisitRequestController::class, 'index']);
 
-$router->get('/admin/visit-requests/accept/{id}', [AdminVisitRequestController::class, 'acceptVisits']);
+$router->post('/admin/visit-requests/accept/{id}', [AdminVisitRequestController::class, 'acceptVisits']);
 
-$router->get('/admin/visit-requests/reject/{id}', [AdminVisitRequestController::class, 'rejectRequest']);
+$router->post('/admin/visit-requests/reject/{id}', [AdminVisitRequestController::class, 'rejectRequest']);
 
 //calendar
 $router->get('/admin/request-calendar',[AdminVisitRequestController::class, 'calendar']);
@@ -42,8 +42,8 @@ $router->get('/admin/visit-calendar-events', [AdminVisitRequestController::class
 
 
 //Notifications
-$router->get('/notificaciones/read/{id}', [NotificationController::class, 'read']);
+$router->post('/notificaciones/read/{id}', [NotificationController::class, 'read']);
 
-$router->get('/notificaciones/archive/{id}', [NotificationController::class, 'archive']);
+$router->post('/notificaciones/archive/{id}', [NotificationController::class, 'archive']);
 
-$router->get('/notificaciones/read-all', [NotificationController::class, 'markAllAsRead']);
+$router->post('/notificaciones/read-all', [NotificationController::class, 'markAllAsRead']);

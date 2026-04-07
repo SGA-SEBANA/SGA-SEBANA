@@ -5,6 +5,7 @@ use App\Core\ControllerBase;
 use App\Modules\Afiliados\Models\Afiliados;
 use App\Modules\Ayudas\Models\AyudaEconomicaModel;
 use App\Modules\Usuarios\Helpers\AccessControl;
+use App\Modules\Usuarios\Helpers\SecurityHelper;
 use App\Modules\Usuarios\Models\Bitacora;
 use App\Modules\Usuarios\Models\User;
 use App\Modules\Visitas\Models\Notification; 
@@ -154,6 +155,16 @@ class AyudaEconomicaController extends ControllerBase {
         );
     }
 
+    private function validateCsrfOrRedirect(string $redirect): void
+    {
+        if (SecurityHelper::validateCsrfToken($_POST['_csrf_token'] ?? '')) {
+            return;
+        }
+
+        $this->redirect($redirect . (strpos($redirect, '?') === false ? '?error=csrf' : '&error=csrf'));
+        exit;
+    }
+
     public function index() {
         $usuarioId = $this->getCurrentUserId();
         if (!$usuarioId) {
@@ -184,6 +195,8 @@ class AyudaEconomicaController extends ControllerBase {
 
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->validateCsrfOrRedirect('/SGA-SEBANA/public/ayudas/create');
+
             if (!isset($_SESSION['user_id'])) {
                 $this->redirect('/SGA-SEBANA/public/login?error=sesion_expirada');
                 return;
@@ -254,6 +267,8 @@ class AyudaEconomicaController extends ControllerBase {
 
     public function requestCancellation($id) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->validateCsrfOrRedirect('/SGA-SEBANA/public/ayudas/show/' . (int) $id);
+
             $usuarioId = $this->getCurrentUserId();
             $ayuda = $this->model->obtenerPorId($id);
 
@@ -320,6 +335,8 @@ class AyudaEconomicaController extends ControllerBase {
 
     public function updateStatus($id) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->validateCsrfOrRedirect('/SGA-SEBANA/public/ayudas/show/' . (int) $id);
+
             if (!$this->isManager()) {
                 $this->redirect('/SGA-SEBANA/public/ayudas?error=no_autorizado');
                 return;
@@ -363,6 +380,8 @@ class AyudaEconomicaController extends ControllerBase {
 
     public function addEvidence($id) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->validateCsrfOrRedirect('/SGA-SEBANA/public/ayudas/show/' . (int) $id);
+
             if (!isset($_SESSION['user_id'])) {
                 $this->redirect('/SGA-SEBANA/public/login?error=sesion_expirada');
                 return;
@@ -402,14 +421,32 @@ class AyudaEconomicaController extends ControllerBase {
     }
 
     private function validarArchivo($file) {
+        if (!is_array($file) || empty($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
+            return false;
+        }
+
         $fileSize = $file['size'];
         $fileNameCmps = explode('.', $file['name']);
         $fileExtension = strtolower(end($fileNameCmps));
 
-        $extensionesPermitidas = ['jpg', 'jpeg', 'png', 'pdf'];
+        $mime = function_exists('mime_content_type') ? (string) mime_content_type($file['tmp_name']) : '';
+        $allowedMimes = [
+            'jpg' => ['image/jpeg'],
+            'jpeg' => ['image/jpeg'],
+            'png' => ['image/png'],
+            'pdf' => ['application/pdf', 'application/x-pdf'],
+        ];
         $maxSize = 5 * 1024 * 1024;
 
-        return in_array($fileExtension, $extensionesPermitidas, true) && $fileSize <= $maxSize;
+        if (!isset($allowedMimes[$fileExtension]) || $fileSize > $maxSize) {
+            return false;
+        }
+
+        if ($mime === '') {
+            return true;
+        }
+
+        return in_array($mime, $allowedMimes[$fileExtension], true);
     }
 
     private function procesarArchivo($ayuda_id, $usuario_id, $file, $estado_actual) {
@@ -422,12 +459,12 @@ class AyudaEconomicaController extends ControllerBase {
         $directorioDestino = BASE_PATH . '/storage/ayudas/';
 
         if (!is_dir($directorioDestino)) {
-            mkdir($directorioDestino, 0777, true);
+            mkdir($directorioDestino, 0755, true);
         }
 
         $rutaDestinoFisica = $directorioDestino . $nuevoNombreArchivo;
 
-        if (move_uploaded_file($fileTmpPath, $rutaDestinoFisica)) {
+        if (is_uploaded_file($fileTmpPath) && move_uploaded_file($fileTmpPath, $rutaDestinoFisica)) {
             $rutaArchivoFinal = 'storage/ayudas/' . $nuevoNombreArchivo;
             $this->model->guardarEvidencia($ayuda_id, $usuario_id, $fileName, $rutaArchivoFinal, $estado_actual);
             return true;

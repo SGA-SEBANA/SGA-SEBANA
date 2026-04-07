@@ -153,6 +153,7 @@ $esJefatura = $es_jefatura ?? false;
                         </div>
                         <div class="card-body">
                             <form action="/SGA-SEBANA/public/viaticos/status" method="POST">
+                                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                                 <input type="hidden" name="id" value="<?= htmlspecialchars($viatico['id']) ?>">
                                 <div class="row align-items-center">
                                     <div class="col-md-6 mb-2">

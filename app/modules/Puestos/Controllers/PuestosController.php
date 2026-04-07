@@ -4,6 +4,7 @@ namespace App\Modules\Puestos\Controllers;
 
 use App\Modules\Puestos\Models\PuestosModel;
 use App\Modules\Usuarios\Models\Bitacora;
+use App\Modules\Usuarios\Helpers\SecurityHelper;
 use Dompdf\Dompdf;
 use App\Modules\Visitas\Models\Notification;
 use App\Helpers\Paginator;
@@ -14,7 +15,17 @@ class PuestosController
 
     public function __construct()
     {
-        $this->notiModel = new Notification(); // inicialización
+        $this->notiModel = new Notification(); // inicializacion
+    }
+
+    private function validateCsrfOrRedirect(string $redirect): void
+    {
+        if (SecurityHelper::validateCsrfToken($_POST['_csrf_token'] ?? '')) {
+            return;
+        }
+
+        header('Location: ' . $redirect . (strpos($redirect, '?') === false ? '?error=csrf' : '&error=csrf'));
+        exit;
     }
 
 
@@ -59,6 +70,7 @@ class PuestosController
         $model = new PuestosModel();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->validateCsrfOrRedirect('/SGA-SEBANA/public/puestos/create');
             $data = $this->limpiarDatos($_POST);
 
             // Validate required fields
@@ -114,6 +126,7 @@ class PuestosController
         $model = new PuestosModel();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->validateCsrfOrRedirect('/SGA-SEBANA/public/puestos/edit/' . (int) $id);
             $data = $this->limpiarDatos($_POST);
 
             // Get previous data for log
@@ -175,6 +188,13 @@ class PuestosController
      */
     public function delete($id)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: /SGA-SEBANA/public/puestos");
+            exit;
+        }
+
+        $this->validateCsrfOrRedirect('/SGA-SEBANA/public/puestos');
+
         $model = new PuestosModel();
 
         $puesto = $model->getById($id);
@@ -218,6 +238,13 @@ class PuestosController
      */
     public function toggle($id)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: /SGA-SEBANA/public/puestos");
+            exit;
+        }
+
+        $this->validateCsrfOrRedirect('/SGA-SEBANA/public/puestos');
+
         $model = new PuestosModel();
 
         $puesto = $model->getById($id);

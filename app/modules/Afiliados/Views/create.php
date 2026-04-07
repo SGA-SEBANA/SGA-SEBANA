@@ -16,14 +16,14 @@ ob_start();
 
         <?php if (!empty($success)): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="zmdi zmdi-check-circle"></i> <?= $success ?>
+                <i class="zmdi zmdi-check-circle"></i> <?= htmlspecialchars((string) $success) ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
 
         <?php if (!empty($error)): ?>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="zmdi zmdi-alert-triangle"></i> <?= $error ?>
+                <i class="zmdi zmdi-alert-triangle"></i> <?= htmlspecialchars((string) $error) ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
@@ -58,7 +58,7 @@ ob_start();
 
         <form action="/SGA-SEBANA/public/afiliados/store" method="post" enctype="multipart/form-data"
             class="form-horizontal">
-            <input type="hidden" name="_csrf_token" value="<?= $_SESSION['_csrf_token'] ?? '' ?>">
+            <input type="hidden" name="_csrf_token" value="<?= htmlspecialchars((string) ($_SESSION['_csrf_token'] ?? '')) ?>">
 
             <div class="card">
                 <div class="card-header">

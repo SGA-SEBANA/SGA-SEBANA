@@ -4,13 +4,32 @@ namespace App\Modules\Visitas\Controllers;
 
 use App\Modules\Visitas\Models\VisitRequest;
 use App\Modules\Visitas\Models\Notification;
+use App\Modules\Usuarios\Helpers\SecurityHelper;
 use App\Helpers\Paginator;
 
 class AdminVisitRequestController
 {
+private function ensureSession(): void
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+}
+
+private function validateCsrfOrRedirect(): void
+{
+    if (SecurityHelper::validateCsrfToken($_POST['_csrf_token'] ?? '')) {
+        return;
+    }
+
+    $_SESSION['error'] = 'Token CSRF invalido o expirado. Recargue la pagina e intente nuevamente.';
+    header("Location: /SGA-SEBANA/public/admin/visit-requests");
+    exit;
+}
 
 public function index()
 {
+    $this->ensureSession();
     $model = new VisitRequest();
 
     $filtros = [];
@@ -34,6 +53,7 @@ public function index()
 
 public function calendar()
 {
+    $this->ensureSession();
     $model = new VisitRequest();
 
     $events = $model->getCalendarEvents();
@@ -44,6 +64,15 @@ public function calendar()
 
 public function acceptVisits($id)
 {
+    $this->ensureSession();
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        header("Location: /SGA-SEBANA/public/admin/visit-requests");
+        exit;
+    }
+
+    $this->validateCsrfOrRedirect();
+
     $model = new VisitRequest();
 
     $model->acceptVisit($id);
@@ -55,6 +84,15 @@ public function acceptVisits($id)
 
 public function rejectRequest($id)
 {
+    $this->ensureSession();
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        header("Location: /SGA-SEBANA/public/admin/visit-requests");
+        exit;
+    }
+
+    $this->validateCsrfOrRedirect();
+
     $model = new VisitRequest();
 
     $model->updateEstado($id, 'rechazada');
@@ -66,6 +104,7 @@ public function rejectRequest($id)
 
 public function calendarEvents()
 {
+    $this->ensureSession();
     $model = new VisitRequest();
 
     $visitas = $model->getApprovedVisits();

@@ -23,7 +23,7 @@ class VacacionesModel extends ModelBase
     private function ensureStorageDir()
     {
         if (!is_dir($this->storageDir)) {
-            mkdir($this->storageDir, 0777, true);
+            mkdir($this->storageDir, 0755, true);
         }
     }
 

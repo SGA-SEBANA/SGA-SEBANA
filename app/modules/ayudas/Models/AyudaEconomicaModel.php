@@ -30,10 +30,10 @@ class AyudaEconomicaModel extends ModelBase {
 
     private function ensureStorageDirs() {
         if (!is_dir($this->storageDir)) {
-            mkdir($this->storageDir, 0777, true);
+            mkdir($this->storageDir, 0755, true);
         }
         if (!is_dir($this->storageFilesDir)) {
-            mkdir($this->storageFilesDir, 0777, true);
+            mkdir($this->storageFilesDir, 0755, true);
         }
     }
 

@@ -15,6 +15,7 @@ ob_start();
         </div>
 
         <form action="/SGA-SEBANA/public/puestos/edit/<?= $puesto['id'] ?>" method="post" class="form-horizontal">
+            <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
 
             <!-- Card 1: Datos principales -->
             <div class="card">

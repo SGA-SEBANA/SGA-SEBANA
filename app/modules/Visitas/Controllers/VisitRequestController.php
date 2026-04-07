@@ -3,6 +3,7 @@
 namespace App\Modules\Visitas\Controllers;
 
 use App\Modules\Usuarios\Helpers\AccessControl;
+use App\Modules\Usuarios\Helpers\SecurityHelper;
 use App\Modules\Usuarios\Models\Bitacora;
 use App\Modules\Usuarios\Models\User;
 use App\Modules\Visitas\Models\VisitRequest;
@@ -44,6 +45,17 @@ class VisitRequestController {
     private function isManager(): bool
     {
         return AccessControl::hasLevel('alto');
+    }
+
+    private function validateCsrfOrRedirect(string $redirect): bool
+    {
+        if (SecurityHelper::validateCsrfToken($_POST['_csrf_token'] ?? '')) {
+            return true;
+        }
+
+        $_SESSION['error'] = 'Token CSRF invalido o expirado. Recargue la pagina e intente nuevamente.';
+        header('Location: ' . $redirect);
+        exit;
     }
 
     private function logBitacora(array $data): void
@@ -135,6 +147,8 @@ public function index()
         }
 
         if ($_POST) {
+            $this->validateCsrfOrRedirect('/SGA-SEBANA/public/visit-requests/create');
+
             if ($esJefatura) {
                 $afiliado_id = !empty($_POST['afiliado_id']) ? (int) $_POST['afiliado_id'] : null;
                 if (empty($afiliado_id)) {
@@ -263,6 +277,8 @@ public function index()
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->validateCsrfOrRedirect('/SGA-SEBANA/public/visit-requests/' . (int) $id . '/reschedule');
+
             $fecha = $_POST['fecha_reprogramada'] ?? null;
             $hora = $_POST['hora_reprogramada'] ?? null;
             $motivo = $_POST['motivo_reprogramacion'] ?? null;
@@ -301,6 +317,14 @@ public function index()
     public function cancelVisits($id)
     {
         $this->ensureSession();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /SGA-SEBANA/public/visit-requests');
+            exit;
+        }
+
+        $this->validateCsrfOrRedirect('/SGA-SEBANA/public/visit-requests');
+
         $model = new VisitRequest();
 
         $afiliadoId = $this->getCurrentAfiliadoId($model);

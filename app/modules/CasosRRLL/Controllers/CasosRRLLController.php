@@ -6,6 +6,7 @@ use App\Core\ControllerBase;
 use App\Modules\CasosRRLL\Models\CasosRRLL;
 use App\Modules\CasosRRLL\Models\Etapas;
 use App\Modules\CasosRRLL\Services\CasosRRLLService;
+use App\Modules\Usuarios\Helpers\SecurityHelper;
 use App\Modules\Usuarios\Models\Bitacora;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -23,6 +24,35 @@ class CasosRRLLController extends ControllerBase
         $this->modelo_etapas = new Etapas();
         $this->bitacora = new Bitacora();
         $this->service = new CasosRRLLService();
+    }
+
+    private function getAuthUserId(): ?int
+    {
+        $userId = SecurityHelper::getAuthUserId();
+        if ($userId) {
+            return (int) $userId;
+        }
+
+        if (isset($_SESSION['usuario_id'])) {
+            return (int) $_SESSION['usuario_id'];
+        }
+
+        return null;
+    }
+
+    private function validateCsrfOrRedirect(string $redirectOnError): bool
+    {
+        if (SecurityHelper::validateCsrfToken($_POST['_csrf_token'] ?? '')) {
+            return true;
+        }
+
+        if (stripos($redirectOnError, 'error=') === false) {
+            $separator = (strpos($redirectOnError, '?') === false) ? '?' : '&';
+            $redirectOnError .= $separator . 'error=token_invalido';
+        }
+
+        $this->redirect($redirectOnError);
+        return false;
     }
 
     // ========================================
@@ -58,8 +88,8 @@ class CasosRRLLController extends ControllerBase
 
         // Agregar métricas derivadas para DataGrid
         foreach ($casos as &$caso) {
-            $total_etapas = $this->modelo_casos->contarTotalEtapas($caso['id']);
-            $etapas_finalizadas = $this->modelo_casos->contarEtapasFinalizadas($caso['id']);
+            $total_etapas = (int) ($caso['total_etapas'] ?? 0);
+            $etapas_finalizadas = (int) ($caso['etapas_finalizadas'] ?? 0);
             $caso['progreso'] = $total_etapas > 0 ? round(($etapas_finalizadas / $total_etapas) * 100) : 0;
             $caso['total_etapas'] = $total_etapas;
 
@@ -121,6 +151,15 @@ class CasosRRLLController extends ControllerBase
      */
     public function store()
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/SGA-SEBANA/public/casos-rrll/create');
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect('/SGA-SEBANA/public/casos-rrll/create')) {
+            return;
+        }
+
         $datos = $this->limpiarDatos($_POST);
 
         // Validaciones
@@ -217,6 +256,15 @@ class CasosRRLLController extends ControllerBase
      */
     public function update($id)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/edit/{$id}");
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect("/SGA-SEBANA/public/casos-rrll/edit/{$id}")) {
+            return;
+        }
+
         $caso = $this->modelo_casos->getById($id);
 
         if (!$caso) {
@@ -252,6 +300,15 @@ class CasosRRLLController extends ControllerBase
      */
     public function cambiarEstado($id)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$id}");
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect("/SGA-SEBANA/public/casos-rrll/show/{$id}")) {
+            return;
+        }
+
         $caso = $this->modelo_casos->getById($id);
 
         if (!$caso || !isset($_POST['nuevo_estado'])) {
@@ -289,6 +346,10 @@ class CasosRRLLController extends ControllerBase
             return;
         }
 
+        if (!$this->validateCsrfOrRedirect("/SGA-SEBANA/public/casos-rrll/show/{$id}")) {
+            return;
+        }
+
         $caso = $this->modelo_casos->getById($id);
 
         if (!$caso) {
@@ -311,6 +372,15 @@ class CasosRRLLController extends ControllerBase
      */
     public function archivar($id)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$id}");
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect("/SGA-SEBANA/public/casos-rrll/show/{$id}")) {
+            return;
+        }
+
         $caso = $this->modelo_casos->getById($id);
 
         if (!$caso) {
@@ -333,6 +403,15 @@ class CasosRRLLController extends ControllerBase
      */
     public function delete($id)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/SGA-SEBANA/public/casos-rrll');
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect('/SGA-SEBANA/public/casos-rrll')) {
+            return;
+        }
+
         $caso = $this->modelo_casos->getById($id);
 
         if (!$caso) {
@@ -406,6 +485,15 @@ class CasosRRLLController extends ControllerBase
      */
     public function guardarEtapa($casoId)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/{$casoId}/etapas/create");
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect("/SGA-SEBANA/public/casos-rrll/{$casoId}/etapas/create")) {
+            return;
+        }
+
         $caso = $this->modelo_casos->getById($casoId);
 
         if (!$caso) {
@@ -464,6 +552,15 @@ class CasosRRLLController extends ControllerBase
      */
     public function actualizarEtapa($etapaId)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/etapas/{$etapaId}/edit");
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect("/SGA-SEBANA/public/casos-rrll/etapas/{$etapaId}/edit")) {
+            return;
+        }
+
         $etapa = $this->modelo_etapas->getById($etapaId);
 
         if (!$etapa) {
@@ -512,9 +609,23 @@ class CasosRRLLController extends ControllerBase
      */
     public function cambiarEstadoEtapa($etapaId)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/SGA-SEBANA/public/casos-rrll');
+            return;
+        }
+
         $etapa = $this->modelo_etapas->getById($etapaId);
 
-        if (!$etapa || !isset($_POST['nuevo_estado'])) {
+        if (!$etapa) {
+            $this->redirect('/SGA-SEBANA/public/casos-rrll?error=no_encontrado');
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect("/SGA-SEBANA/public/casos-rrll/{$etapa['caso_id']}/etapas")) {
+            return;
+        }
+
+        if (!isset($_POST['nuevo_estado'])) {
             $this->redirect('/SGA-SEBANA/public/casos-rrll?error=solicitud_invalida');
             return;
         }
@@ -565,10 +676,19 @@ class CasosRRLLController extends ControllerBase
      */
     public function eliminarEtapa($etapaId)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/SGA-SEBANA/public/casos-rrll');
+            return;
+        }
+
         $etapa = $this->modelo_etapas->getById($etapaId);
 
         if (!$etapa) {
             $this->redirect('/SGA-SEBANA/public/casos-rrll?error=no_encontrado');
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect("/SGA-SEBANA/public/casos-rrll/{$etapa['caso_id']}/etapas")) {
             return;
         }
 
@@ -588,6 +708,15 @@ class CasosRRLLController extends ControllerBase
      */
     public function adjuntarDocumento($casoId)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$casoId}");
+            return;
+        }
+
+        if (!$this->validateCsrfOrRedirect("/SGA-SEBANA/public/casos-rrll/show/{$casoId}")) {
+            return;
+        }
+
         $caso = $this->modelo_casos->getById($casoId);
         if (!$caso) {
             $this->redirect('/SGA-SEBANA/public/casos-rrll?error=no_encontrado');
@@ -606,6 +735,18 @@ class CasosRRLLController extends ControllerBase
         }
 
         $allowedExt = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'];
+        $allowedMimeByExt = [
+            'pdf' => ['application/pdf'],
+            'jpg' => ['image/jpeg'],
+            'jpeg' => ['image/jpeg'],
+            'png' => ['image/png'],
+            'doc' => ['application/msword', 'application/octet-stream'],
+            'docx' => [
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/zip',
+                'application/octet-stream'
+            ]
+        ];
         $originalName = (string) ($upload['name'] ?? '');
         $tmp = (string) ($upload['tmp_name'] ?? '');
         $size = (int) ($upload['size'] ?? 0);
@@ -617,6 +758,27 @@ class CasosRRLLController extends ControllerBase
         }
         if ($size <= 0 || $size > (10 * 1024 * 1024)) {
             $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$casoId}?error=" . urlencode('El archivo supera el tamano permitido (10MB).'));
+            return;
+        }
+        if (!is_uploaded_file($tmp)) {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$casoId}?error=" . urlencode('Archivo de subida invalido.'));
+            return;
+        }
+
+        $detectedMime = null;
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            if ($finfo !== false) {
+                $detectedMime = finfo_file($finfo, $tmp) ?: null;
+                finfo_close($finfo);
+            }
+        } elseif (function_exists('mime_content_type')) {
+            $detectedMime = mime_content_type($tmp) ?: null;
+        }
+
+        $allowedMimes = $allowedMimeByExt[$ext] ?? [];
+        if ($detectedMime !== null && !in_array($detectedMime, $allowedMimes, true)) {
+            $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$casoId}?error=" . urlencode('El contenido del archivo no coincide con el tipo permitido.'));
             return;
         }
 
@@ -643,9 +805,9 @@ class CasosRRLLController extends ControllerBase
             'nombre_original' => $originalName,
             'ruta' => 'storage/casos_rrll/documentos/' . $safeName,
             'tamano' => $size,
-            'mime' => mime_content_type($target) ?: null,
+            'mime' => $detectedMime ?: (mime_content_type($target) ?: null),
             'fecha' => date('Y-m-d H:i:s'),
-            'subido_por' => $_SESSION['usuario_id'] ?? null
+            'subido_por' => $this->getAuthUserId()
         ];
 
         $result = $this->service->adjuntarDocumento((int) $casoId, $etapaId, $documento);
@@ -781,8 +943,9 @@ class CasosRRLLController extends ControllerBase
         }
 
         // Agregar creado_por desde sesión si no está presente
-        if (!isset($datos['creado_por']) && isset($_SESSION['usuario_id'])) {
-            $datos['creado_por'] = $_SESSION['usuario_id'];
+        $authUserId = $this->getAuthUserId();
+        if (!isset($datos['creado_por']) && $authUserId !== null) {
+            $datos['creado_por'] = $authUserId;
         }
 
         return $datos;

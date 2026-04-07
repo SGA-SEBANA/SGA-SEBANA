@@ -16,7 +16,7 @@ ob_start();
 
         <?php if(!empty($error)): ?>
             <div class="alert alert-danger" role="alert">
-                <?= $error ?>
+                <?= htmlspecialchars((string) $error) ?>
             </div>
         <?php endif; ?>
         

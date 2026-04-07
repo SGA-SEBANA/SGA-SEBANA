@@ -347,21 +347,32 @@ if ($displayName === '') {
                                     <?php else: ?>
                                     <div class="notifi__title p-3" style="display: flex; justify-content: space-between; align-items: center;">
                                         <p style="margin: 0;">Tienes <?= $totalNoLeidas ?> notificaciones</p>
-                                        <a href="/SGA-SEBANA/public/notificaciones/read-all" style="font-size: 12px; color: #007bff;">Marcar todas</a>
+                                        <form action="/SGA-SEBANA/public/notificaciones/read-all" method="post" style="margin: 0;">
+                                            <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
+                                            <button type="submit" style="font-size: 12px; color: #007bff; border:none; background:none; padding:0;">
+                                                Marcar todas
+                                            </button>
+                                        </form>
                                     </div>
 
                                     <?php foreach ($notificaciones as $n): ?>
                                     <div class="notifi__item" style="display: flex; justify-content: space-between; align-items: center;">
                                         <div class="content" style="width: 100%;">
-                                            <a href="/SGA-SEBANA/public/notificaciones/read/<?= $n['id'] ?>">
-                                                <p><strong><?= htmlspecialchars($n['titulo']) ?></strong></p>
-                                                <span><?= htmlspecialchars($n['mensaje']) ?></span>
-                                            </a>
+                                            <form action="/SGA-SEBANA/public/notificaciones/read/<?= (int) ($n['id'] ?? 0) ?>" method="post" style="margin:0;">
+                                                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
+                                                <button type="submit" style="border:none;background:none;padding:0;text-align:left;width:100%;">
+                                                    <p><strong><?= htmlspecialchars($n['titulo']) ?></strong></p>
+                                                    <span><?= htmlspecialchars($n['mensaje']) ?></span>
+                                                </button>
+                                            </form>
                                         </div>
                                         <div style="margin-left: 10px;">
-                                            <a href="/SGA-SEBANA/public/notificaciones/archive/<?= $n['id'] ?>" title="Eliminar" style="color: #dc3545; padding: 5px;">
-                                                <i class="zmdi zmdi-close"></i>
-                                            </a>
+                                            <form action="/SGA-SEBANA/public/notificaciones/archive/<?= (int) ($n['id'] ?? 0) ?>" method="post" style="margin:0;">
+                                                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
+                                                <button type="submit" title="Eliminar" style="color: #dc3545; padding: 5px; border:none; background:none;">
+                                                    <i class="zmdi zmdi-close"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </div>
                                     <?php endforeach; ?>

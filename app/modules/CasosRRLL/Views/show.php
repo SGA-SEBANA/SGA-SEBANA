@@ -274,6 +274,7 @@ $puedeGestionar = !in_array($estadoActual, ['cerrado', 'archivado'], true);
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" action="/SGA-SEBANA/public/casos-rrll/<?= (int) $caso['id'] ?>/documentos/upload" enctype="multipart/form-data">
+                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                 <div class="modal-header">
                     <h5 class="modal-title">Adjuntar Documento</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -307,6 +308,7 @@ $puedeGestionar = !in_array($estadoActual, ['cerrado', 'archivado'], true);
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" action="/SGA-SEBANA/public/casos-rrll/cambiar-estado/<?= (int) $caso['id'] ?>">
+                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                 <div class="modal-header">
                     <h5 class="modal-title">Cambiar Estado del Expediente</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -343,6 +345,7 @@ $puedeGestionar = !in_array($estadoActual, ['cerrado', 'archivado'], true);
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" action="/SGA-SEBANA/public/casos-rrll/cambiar-estado/<?= (int) $caso['id'] ?>">
+                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                 <input type="hidden" name="nuevo_estado" value="cerrado">
                 <div class="modal-header">
                     <h5 class="modal-title">Cerrar Expediente</h5>
@@ -368,6 +371,7 @@ $puedeGestionar = !in_array($estadoActual, ['cerrado', 'archivado'], true);
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" action="/SGA-SEBANA/public/casos-rrll/archivar/<?= (int) $caso['id'] ?>">
+                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                 <div class="modal-header">
                     <h5 class="modal-title">Archivar Expediente</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -392,6 +396,7 @@ $puedeGestionar = !in_array($estadoActual, ['cerrado', 'archivado'], true);
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" action="/SGA-SEBANA/public/casos-rrll/cambiar-responsable/<?= (int) $caso['id'] ?>">
+                <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                 <div class="modal-header">
                     <h5 class="modal-title">Cambiar Responsable</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
