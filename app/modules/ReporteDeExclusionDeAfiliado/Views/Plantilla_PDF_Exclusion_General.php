@@ -19,7 +19,7 @@ body { font-family: Arial, sans-serif; margin: 20px; }
     <thead>
       <tr>
         <th>Nombre</th>
-        <th>Cédula</th>
+        <th>Cedula</th>
         <th>Fecha Baja</th>
         <th>Motivo</th>
         <th>Tipo Baja</th>
@@ -27,20 +27,28 @@ body { font-family: Arial, sans-serif; margin: 20px; }
       </tr>
     </thead>
     <tbody>
-      <?php foreach ($exclusiones as $exc): ?>
+      <?php foreach (($exclusiones ?? []) as $exc): ?>
+        <?php
+          $nombre = (string) ($exc['nombre_completo'] ?? '');
+          $cedula = (string) ($exc['cedula'] ?? '');
+          $fechaBaja = (string) ($exc['fecha_baja'] ?? '---');
+          $motivoBaja = (string) ($exc['motivo_baja'] ?? '---');
+          $tipoBaja = (string) ($exc['tipo_baja'] ?? '---');
+          $estado = (string) ($exc['estado'] ?? '');
+        ?>
         <tr>
-          <td><?= htmlspecialchars($exc['nombre_completo']) ?></td>
-          <td><?= htmlspecialchars($exc['cedula']) ?></td>
-          <td><?= htmlspecialchars($exc['fecha_baja'] ?? '—') ?></td>
-          <td><?= htmlspecialchars($exc['motivo_baja'] ?? '—') ?></td>
-          <td><?= htmlspecialchars($exc['tipo_baja'] ?? '—') ?></td>
-          <td><?= htmlspecialchars($exc['estado']) ?></td>
+          <td><?= htmlspecialchars($nombre) ?></td>
+          <td><?= htmlspecialchars($cedula) ?></td>
+          <td><?= htmlspecialchars($fechaBaja) ?></td>
+          <td><?= htmlspecialchars($motivoBaja) ?></td>
+          <td><?= htmlspecialchars($tipoBaja) ?></td>
+          <td><?= htmlspecialchars($estado) ?></td>
         </tr>
       <?php endforeach; ?>
     </tbody>
   </table>
   <div class="footer">
-    Fecha de Emisión: <?= date('d/m/Y') ?> • Versión Digital
+    Fecha de Emision: <?= date('d/m/Y') ?> - Version Digital
   </div>
 </body>
 </html>

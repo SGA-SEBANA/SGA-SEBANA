@@ -261,4 +261,45 @@ class User extends ModelBase
 
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Returns affiliate status linked by username->cedula or correo.
+     * If no linked affiliate is found, returns null.
+     */
+    public function getLinkedAffiliateStatus(int $userId): ?string
+    {
+        try {
+            $stmt = $this->db->prepare(
+                "SELECT a.estado
+                 FROM usuarios u
+                 INNER JOIN afiliados a ON a.cedula = u.username
+                 WHERE u.id = :id
+                 LIMIT 1"
+            );
+            $stmt->execute(['id' => $userId]);
+            $status = $stmt->fetchColumn();
+            if ($status !== false && $status !== null) {
+                return strtolower((string) $status);
+            }
+
+            $stmt = $this->db->prepare(
+                "SELECT a.estado
+                 FROM usuarios u
+                 INNER JOIN afiliados a ON a.correo = u.correo
+                 WHERE u.id = :id
+                   AND u.correo IS NOT NULL
+                   AND TRIM(u.correo) <> ''
+                 LIMIT 2"
+            );
+            $stmt->execute(['id' => $userId]);
+            $rows = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+            if (is_array($rows) && count($rows) === 1) {
+                return strtolower((string) $rows[0]);
+            }
+        } catch (\PDOException $e) {
+            return null;
+        }
+
+        return null;
+    }
 }

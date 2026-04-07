@@ -163,7 +163,7 @@ class CarneController extends ControllerBase
     private function render($view, $data = [])
     {
         extract($data);
-        $file = __DIR__ . '/../views/' . $view . '.php';
+        $file = __DIR__ . '/../Views/' . $view . '.php';
 
         if (file_exists($file)) {
             include $file;

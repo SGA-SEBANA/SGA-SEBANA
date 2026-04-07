@@ -395,7 +395,13 @@ class CasosRRLLController extends ControllerBase
             return;
         }
 
-        $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$id}?error=db_error");
+        $error = $result['error'] ?? 'db_error';
+        $map = [
+            'transicion_invalida' => 'Transicion de estado invalida para este expediente.',
+            'db_error' => 'Hubo un error al archivar el expediente.'
+        ];
+        $msg = $map[$error] ?? 'No fue posible archivar el expediente.';
+        $this->redirect("/SGA-SEBANA/public/casos-rrll/show/{$id}?error=" . urlencode($msg));
     }
 
     /**

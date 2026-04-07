@@ -45,7 +45,12 @@ class Bitacora extends ModelBase
             'mensaje_error' => $data['mensaje_error'] ?? null,
         ];
 
-        return $this->create($record);
+        try {
+            return (int) $this->create($record);
+        } catch (\Throwable $e) {
+            error_log('Bitacora::log error: ' . $e->getMessage());
+            return 0;
+        }
     }
 
     /**
@@ -67,7 +72,12 @@ class Bitacora extends ModelBase
             'resultado' => 'exitoso',
         ];
 
-        return $this->create($record);
+        try {
+            return (int) $this->create($record);
+        } catch (\Throwable $e) {
+            error_log('Bitacora::logLogin error: ' . $e->getMessage());
+            return 0;
+        }
     }
 
     /**
@@ -90,7 +100,12 @@ class Bitacora extends ModelBase
             'mensaje_error' => $reason,
         ];
 
-        return $this->create($record);
+        try {
+            return (int) $this->create($record);
+        } catch (\Throwable $e) {
+            error_log('Bitacora::logFailedLogin error: ' . $e->getMessage());
+            return 0;
+        }
     }
 
     /**
@@ -112,7 +127,12 @@ class Bitacora extends ModelBase
             'resultado' => 'exitoso',
         ];
 
-        return $this->create($record);
+        try {
+            return (int) $this->create($record);
+        } catch (\Throwable $e) {
+            error_log('Bitacora::logLogout error: ' . $e->getMessage());
+            return 0;
+        }
     }
 
     /**

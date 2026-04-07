@@ -11,9 +11,9 @@ use App\Modules\Visitas\Models\Notification;
 class CasosRRLLService
 {
     private const TRANSICIONES_CASO = [
-        'activo' => ['en_progreso', 'suspendido', 'archivado'],
+        'activo' => ['en_progreso', 'suspendido', 'cerrado', 'archivado'],
         'en_progreso' => ['suspendido', 'cerrado', 'archivado'],
-        'suspendido' => ['en_progreso', 'archivado'],
+        'suspendido' => ['en_progreso', 'cerrado', 'archivado'],
         'cerrado' => ['archivado'],
         'archivado' => []
     ];
@@ -135,8 +135,14 @@ class CasosRRLLService
                 return ['ok' => false, 'error' => 'no_encontrado'];
             }
 
-            $estadoActual = (string) ($caso['estado'] ?? '');
-            $transicionesPermitidas = self::TRANSICIONES_CASO[$estadoActual] ?? [];
+            $estadoActual = $this->normalizeCaseState((string) ($caso['estado'] ?? ''));
+            $nuevoEstado = $this->normalizeCaseState($nuevoEstado);
+
+            if (!array_key_exists($nuevoEstado, self::TRANSICIONES_CASO) && $nuevoEstado !== 'archivado') {
+                return ['ok' => false, 'error' => 'transicion_invalida'];
+            }
+
+            $transicionesPermitidas = self::TRANSICIONES_CASO[$estadoActual] ?? self::TRANSICIONES_CASO['activo'];
             if (!in_array($nuevoEstado, $transicionesPermitidas, true)) {
                 return ['ok' => false, 'error' => 'transicion_invalida'];
             }
@@ -457,6 +463,32 @@ class CasosRRLLService
         });
     }
 
+    private function normalizeCaseState(string $state): string
+    {
+        $normalized = strtolower(trim($state));
+        $normalized = str_replace(['á', 'é', 'í', 'ó', 'ú'], ['a', 'e', 'i', 'o', 'u'], $normalized);
+        $normalized = str_replace([' ', '-'], '_', $normalized);
+        $normalized = preg_replace('/_+/', '_', $normalized) ?: '';
+
+        $map = [
+            'abierto' => 'activo',
+            'activo' => 'activo',
+            'en_progreso' => 'en_progreso',
+            'en_proceso' => 'en_progreso',
+            'en_tramite' => 'en_progreso',
+            'suspendido' => 'suspendido',
+            'suspendida' => 'suspendido',
+            'cerrado' => 'cerrado',
+            'finalizado' => 'cerrado',
+            'finalizada' => 'cerrado',
+            'archivado' => 'archivado',
+            'anulado' => 'archivado',
+            'inactivo' => 'archivado'
+        ];
+
+        return $map[$normalized] ?? $normalized;
+    }
+
     private function inTransaction(callable $callback): array
     {
         try {
@@ -515,4 +547,3 @@ class CasosRRLLService
         ];
     }
 }
-

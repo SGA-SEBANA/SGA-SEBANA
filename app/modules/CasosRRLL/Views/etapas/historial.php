@@ -94,7 +94,7 @@ ob_start();
                                     <div class="mt-3">
                                         <small class="text-muted">
                                             Registro: <?= date('d/m/Y H:i', strtotime($etapa['fecha_creacion'])) ?>
-                                            | Actualización: <?= date('d/m/Y H:i', strtotime($etapa['fecha_actualizacion'])) ?>
+                                            | Actualización: <?= htmlspecialchars((string) ($etapa['fecha_actualizacion_format'] ?? date('d/m/Y H:i', strtotime($etapa['fecha_fin'] ?? $etapa['fecha_creacion'])))) ?>
                                         </small>
                                     </div>
                                 </div>

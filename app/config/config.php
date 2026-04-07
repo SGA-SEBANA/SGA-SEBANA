@@ -6,5 +6,5 @@ return [
     'base_url' => 'http://localhost/SGA-SEBANA/public',
 
     // Database environment selector: 'local' | 'remote'
-    'db_environment' => 'local'
+    'db_environment' => 'remote'
 ];

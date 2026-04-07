@@ -93,139 +93,131 @@ class ComposerStaticInit2ebe70bb8fed96c9d6dd331047dccbfe
     );
 
     public static $prefixLengthsPsr4 = array (
-        'c' => 
+        'c' =>
         array (
             'chillerlan\\Settings\\' => 20,
             'chillerlan\\QRCode\\' => 18,
         ),
-        'Z' => 
+        'Z' =>
         array (
             'ZipStream\\' => 10,
         ),
-        'S' => 
+        'S' =>
         array (
             'Svg\\' => 4,
             'Sabberworm\\CSS\\' => 15,
         ),
-        'P' => 
+        'P' =>
         array (
             'Psr\\SimpleCache\\' => 16,
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Http\\Client\\' => 16,
             'PhpOffice\\PhpSpreadsheet\\' => 25,
         ),
-        'M' => 
+        'M' =>
         array (
             'Matrix\\' => 7,
             'Masterminds\\' => 12,
         ),
-        'F' => 
+        'F' =>
         array (
             'FontLib\\' => 8,
         ),
-        'E' => 
+        'E' =>
         array (
             'Endroid\\QrCode\\' => 15,
         ),
-        'D' => 
+        'D' =>
         array (
             'Dompdf\\' => 7,
             'DASPRiD\\Enum\\' => 13,
         ),
-        'C' => 
+        'C' =>
         array (
             'Complex\\' => 8,
         ),
-        'B' => 
+        'B' =>
         array (
             'BaconQrCode\\' => 12,
-        ),
-        'A' => 
-        array (
-            'App\\' => 4,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'chillerlan\\Settings\\' => 
+        'chillerlan\\Settings\\' =>
         array (
             0 => __DIR__ . '/..' . '/chillerlan/php-settings-container/src',
         ),
-        'chillerlan\\QRCode\\' => 
+        'chillerlan\\QRCode\\' =>
         array (
             0 => __DIR__ . '/..' . '/chillerlan/php-qrcode/src',
         ),
-        'ZipStream\\' => 
+        'ZipStream\\' =>
         array (
             0 => __DIR__ . '/..' . '/maennchen/zipstream-php/src',
         ),
-        'Svg\\' => 
+        'Svg\\' =>
         array (
             0 => __DIR__ . '/..' . '/dompdf/php-svg-lib/src/Svg',
         ),
-        'Sabberworm\\CSS\\' => 
+        'Sabberworm\\CSS\\' =>
         array (
             0 => __DIR__ . '/..' . '/sabberworm/php-css-parser/src',
         ),
-        'Psr\\SimpleCache\\' => 
+        'Psr\\SimpleCache\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/simple-cache/src',
         ),
-        'Psr\\Http\\Message\\' => 
+        'Psr\\Http\\Message\\' =>
         array (
-            0 => __DIR__ . '/..' . '/psr/http-message/src',
-            1 => __DIR__ . '/..' . '/psr/http-factory/src',
+            0 => __DIR__ . '/..' . '/psr/http-factory/src',
+            1 => __DIR__ . '/..' . '/psr/http-message/src',
         ),
-        'Psr\\Http\\Client\\' => 
+        'Psr\\Http\\Client\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/http-client/src',
         ),
-        'PhpOffice\\PhpSpreadsheet\\' => 
+        'PhpOffice\\PhpSpreadsheet\\' =>
         array (
             0 => __DIR__ . '/..' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet',
         ),
-        'Matrix\\' => 
+        'Matrix\\' =>
         array (
             0 => __DIR__ . '/..' . '/markbaker/matrix/classes/src',
         ),
-        'Masterminds\\' => 
+        'Masterminds\\' =>
         array (
             0 => __DIR__ . '/..' . '/masterminds/html5/src',
         ),
-        'FontLib\\' => 
+        'FontLib\\' =>
         array (
             0 => __DIR__ . '/..' . '/dompdf/php-font-lib/src/FontLib',
         ),
-        'Endroid\\QrCode\\' => 
+        'Endroid\\QrCode\\' =>
         array (
             0 => __DIR__ . '/..' . '/endroid/qr-code/src',
         ),
-        'Dompdf\\' => 
+        'Dompdf\\' =>
         array (
             0 => __DIR__ . '/..' . '/dompdf/dompdf/src',
         ),
-        'DASPRiD\\Enum\\' => 
+        'DASPRiD\\Enum\\' =>
         array (
             0 => __DIR__ . '/..' . '/dasprid/enum/src',
         ),
-        'Complex\\' => 
+        'Complex\\' =>
         array (
             0 => __DIR__ . '/..' . '/markbaker/complex/classes/src',
         ),
-        'BaconQrCode\\' => 
+        'BaconQrCode\\' =>
         array (
             0 => __DIR__ . '/..' . '/bacon/bacon-qr-code/src',
-        ),
-        'App\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/app',
         ),
     );
 
     public static $prefixesPsr0 = array (
-        'H' => 
+        'H' =>
         array (
-            'HTMLPurifier' => 
+            'HTMLPurifier' =>
             array (
                 0 => __DIR__ . '/..' . '/ezyang/htmlpurifier/library',
             ),
@@ -233,6 +225,55 @@ class ComposerStaticInit2ebe70bb8fed96c9d6dd331047dccbfe
     );
 
     public static $classMap = array (
+        'App\\Core\\ControllerBase' => __DIR__ . '/../..' . '/app/core/ControllerBase.php',
+        'App\\Core\\Database' => __DIR__ . '/../..' . '/app/core/Database.php',
+        'App\\Core\\ModelBase' => __DIR__ . '/../..' . '/app/core/ModelBase.php',
+        'App\\Core\\Router' => __DIR__ . '/../..' . '/app/core/Router.php',
+        'App\\Helpers\\Paginator' => __DIR__ . '/../..' . '/app/helpers/Paginator.php',
+        'App\\Modules\\Afiliados\\Controllers\\AfiliadosController' => __DIR__ . '/../..' . '/app/modules/Afiliados/Controllers/AfiliadosController.php',
+        'App\\Modules\\Afiliados\\Models\\Afiliados' => __DIR__ . '/../..' . '/app/modules/Afiliados/Models/Afiliados.php',
+        'App\\Modules\\AsistenteAfiliacion\\Controllers\\AsistenteAfiliacionController' => __DIR__ . '/../..' . '/app/modules/AsistenteAfiliacion/Controllers/AsistenteAfiliacionController.php',
+        'App\\Modules\\AsistenteAfiliacion\\Models\\AsistenteAfiliacionModel' => __DIR__ . '/../..' . '/app/modules/AsistenteAfiliacion/Models/AsistenteAfiliacionModel.php',
+        'App\\Modules\\Ayudas\\Controllers\\AyudaEconomicaController' => __DIR__ . '/../..' . '/app/modules/ayudas/Controllers/AyudaEconomicaController.php',
+        'App\\Modules\\Ayudas\\Models\\AyudaEconomicaModel' => __DIR__ . '/../..' . '/app/modules/ayudas/Models/AyudaEconomicaModel.php',
+        'App\\Modules\\Bitacora\\Controllers\\BitacoraController' => __DIR__ . '/../..' . '/app/modules/Bitacora/Controllers/BitacoraController.php',
+        'App\\Modules\\Bitacora\\Models\\BitacoraModel' => __DIR__ . '/../..' . '/app/modules/Bitacora/Models/BitacoraModel.php',
+        'App\\Modules\\Carne\\Controllers\\CarneController' => __DIR__ . '/../..' . '/app/modules/Carne/Controllers/CarneController.php',
+        'App\\Modules\\Carne\\Models\\Carne' => __DIR__ . '/../..' . '/app/modules/Carne/Models/Carne.php',
+        'App\\Modules\\CasosRRLL\\Controllers\\CasosRRLLController' => __DIR__ . '/../..' . '/app/modules/CasosRRLL/Controllers/CasosRRLLController.php',
+        'App\\Modules\\CasosRRLL\\Models\\CasosRRLL' => __DIR__ . '/../..' . '/app/modules/CasosRRLL/Models/CasosRRLL.php',
+        'App\\Modules\\CasosRRLL\\Models\\Etapas' => __DIR__ . '/../..' . '/app/modules/CasosRRLL/Models/Etapas.php',
+        'App\\Modules\\CasosRRLL\\Services\\CasosRRLLService' => __DIR__ . '/../..' . '/app/modules/CasosRRLL/Services/CasosRRLLService.php',
+        'App\\Modules\\Categorias\\Controllers\\CategoriaController' => __DIR__ . '/../..' . '/app/modules/categorias/Controllers/CategoriaController.php',
+        'App\\Modules\\Categorias\\Models\\CategoriaModel' => __DIR__ . '/../..' . '/app/modules/categorias/Models/CategoriaModel.php',
+        'App\\Modules\\Home\\Controllers\\HomeController' => __DIR__ . '/../..' . '/app/modules/home/Controllers/HomeController.php',
+        'App\\Modules\\Home\\Models\\HomeModel' => __DIR__ . '/../..' . '/app/modules/home/Models/HomeModel.php',
+        'App\\Modules\\JuntaDirectiva\\Controllers\\JuntaDirectivaController' => __DIR__ . '/../..' . '/app/modules/JuntaDirectiva/Controllers/JuntaDirectivaController.php',
+        'App\\Modules\\JuntaDirectiva\\Models\\JuntaDirectivaModel' => __DIR__ . '/../..' . '/app/modules/JuntaDirectiva/Models/JuntaDirectivaModel.php',
+        'App\\Modules\\Oficinas\\Controllers\\OfficeController' => __DIR__ . '/../..' . '/app/modules/oficinas/Controllers/OfficeController.php',
+        'App\\Modules\\Oficinas\\Models\\OfficeModel' => __DIR__ . '/../..' . '/app/modules/oficinas/Models/OfficeModel.php',
+        'App\\Modules\\Puestos\\Controllers\\PuestosController' => __DIR__ . '/../..' . '/app/modules/Puestos/Controllers/PuestosController.php',
+        'App\\Modules\\Puestos\\Models\\PuestosModel' => __DIR__ . '/../..' . '/app/modules/Puestos/Models/PuestosModel.php',
+        'App\\Modules\\ReporteDeExclusionDeAfiliado\\Controllers\\ReporteDeExclusionDeAfiliadoController' => __DIR__ . '/../..' . '/app/modules/ReporteDeExclusionDeAfiliado/Controllers/ReporteDeExclusionDeAfiliadoController.php',
+        'App\\Modules\\ReporteDeExclusionDeAfiliado\\Models\\ReporteDeExclusionDeAfiliado' => __DIR__ . '/../..' . '/app/modules/ReporteDeExclusionDeAfiliado/Models/ReporteDeExclusionDeAfiliado.php',
+        'App\\Modules\\Ui\\Controllers\\UiController' => __DIR__ . '/../..' . '/app/modules/ui/Controllers/UiController.php',
+        'App\\Modules\\Usuarios\\Controllers\\AuthController' => __DIR__ . '/../..' . '/app/modules/Usuarios/Controllers/AuthController.php',
+        'App\\Modules\\Usuarios\\Controllers\\UsersController' => __DIR__ . '/../..' . '/app/modules/Usuarios/Controllers/UsersController.php',
+        'App\\Modules\\Usuarios\\Helpers\\AccessControl' => __DIR__ . '/../..' . '/app/modules/Usuarios/Helpers/AccessControl.php',
+        'App\\Modules\\Usuarios\\Helpers\\AffiliateAccountProvisioner' => __DIR__ . '/../..' . '/app/modules/Usuarios/Helpers/AffiliateAccountProvisioner.php',
+        'App\\Modules\\Usuarios\\Helpers\\SecurityHelper' => __DIR__ . '/../..' . '/app/modules/Usuarios/Helpers/SecurityHelper.php',
+        'App\\Modules\\Usuarios\\Models\\Bitacora' => __DIR__ . '/../..' . '/app/modules/Usuarios/Models/Bitacora.php',
+        'App\\Modules\\Usuarios\\Models\\Role' => __DIR__ . '/../..' . '/app/modules/Usuarios/Models/Role.php',
+        'App\\Modules\\Usuarios\\Models\\User' => __DIR__ . '/../..' . '/app/modules/Usuarios/Models/User.php',
+        'App\\Modules\\Vacaciones\\Controllers\\VacacionesController' => __DIR__ . '/../..' . '/app/modules/Vacaciones/Controllers/VacacionesController.php',
+        'App\\Modules\\Vacaciones\\Models\\VacacionesModel' => __DIR__ . '/../..' . '/app/modules/Vacaciones/Models/VacacionesModel.php',
+        'App\\Modules\\Viaticos\\Controllers\\ViaticoController' => __DIR__ . '/../..' . '/app/modules/viaticos/Controllers/ViaticoController.php',
+        'App\\Modules\\Viaticos\\Models\\ViaticoModel' => __DIR__ . '/../..' . '/app/modules/viaticos/Models/ViaticoModel.php',
+        'App\\Modules\\Visitas\\Controllers\\AdminVisitRequestController' => __DIR__ . '/../..' . '/app/modules/Visitas/Controllers/AdminVisitRequestController.php',
+        'App\\Modules\\Visitas\\Controllers\\NotificationController' => __DIR__ . '/../..' . '/app/modules/Visitas/Controllers/NotificationController.php',
+        'App\\Modules\\Visitas\\Controllers\\VisitRequestController' => __DIR__ . '/../..' . '/app/modules/Visitas/Controllers/VisitRequestController.php',
+        'App\\Modules\\Visitas\\Models\\Notification' => __DIR__ . '/../..' . '/app/modules/Visitas/Models/Notification.php',
+        'App\\Modules\\Visitas\\Models\\VisitRequest' => __DIR__ . '/../..' . '/app/modules/Visitas/Models/VisitRequest.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'Dompdf\\Cpdf' => __DIR__ . '/..' . '/dompdf/dompdf/lib/Cpdf.php',
         'Safe\\DateTime' => __DIR__ . '/..' . '/thecodingmachine/safe/lib/DateTime.php',

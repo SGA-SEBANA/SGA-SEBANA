@@ -72,7 +72,7 @@ class ReporteDeExclusionDeAfiliadoController extends ControllerBase
 
     $dompdf = new Dompdf();
     ob_start();
-    include __DIR__ . '/../views/Plantilla_PDF_Exclusion.php';
+    include __DIR__ . '/../Views/Plantilla_PDF_Exclusion.php';
     $html = ob_get_clean();
     $dompdf->loadHtml($html);
     $dompdf->render();
@@ -90,9 +90,10 @@ public function exportar($formato)
     ];
 
     if ($formato === 'pdf') {
+        $exclusiones = $model->getAll($filtros, 0, 5000);
         $dompdf = new Dompdf();
         ob_start();
-        include __DIR__ . '/../views/Plantilla_PDF_Exclusion_General.php';
+        include __DIR__ . '/../Views/Plantilla_PDF_Exclusion_General.php';
         $html = ob_get_clean();
         $dompdf->loadHtml($html);
         $dompdf->render();
@@ -111,7 +112,7 @@ public function exportar($formato)
     private function render($view, $data = [])
     {
         extract($data);
-        $file = __DIR__ . '/../views/' . $view . '.php';
+        $file = __DIR__ . '/../Views/' . $view . '.php';
 
         if (file_exists($file)) {
             include $file;

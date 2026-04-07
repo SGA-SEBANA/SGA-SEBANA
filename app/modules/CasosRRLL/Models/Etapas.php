@@ -8,6 +8,97 @@ use PDO;
 class Etapas extends ModelBase
 {
     protected $table = 'etapas_casos';
+    private array $enumCache = [];
+
+    private function getEnumValues(string $column): array
+    {
+        if (isset($this->enumCache[$column])) {
+            return $this->enumCache[$column];
+        }
+
+        try {
+            $sql = "SELECT COLUMN_TYPE
+                    FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE TABLE_SCHEMA = DATABASE()
+                      AND TABLE_NAME = :table
+                      AND COLUMN_NAME = :column
+                    LIMIT 1";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                'table' => $this->table,
+                'column' => $column
+            ]);
+            $columnType = (string) ($stmt->fetchColumn() ?: '');
+            if (preg_match("/^enum\\((.*)\\)$/i", $columnType, $matches)) {
+                $raw = $matches[1];
+                $values = str_getcsv($raw, ',', "'");
+                $values = array_values(array_filter(array_map('trim', $values), static fn($v) => $v !== ''));
+                return $this->enumCache[$column] = $values;
+            }
+        } catch (\Throwable $e) {
+            // Compatibilidad en despliegues con esquemas variantes.
+        }
+
+        return $this->enumCache[$column] = [];
+    }
+
+    private function normalizeToken(string $value): string
+    {
+        $value = strtolower(trim($value));
+        $value = str_replace(['á', 'é', 'í', 'ó', 'ú'], ['a', 'e', 'i', 'o', 'u'], $value);
+        $value = str_replace([' ', '-'], '_', $value);
+        return preg_replace('/_+/', '_', $value) ?: '';
+    }
+
+    private function pickEnumValue(array $enumValues, array $candidates): ?string
+    {
+        if (empty($enumValues)) {
+            return $candidates[0] ?? null;
+        }
+
+        $normalizedMap = [];
+        foreach ($enumValues as $value) {
+            $normalizedMap[$this->normalizeToken((string) $value)] = (string) $value;
+        }
+
+        foreach ($candidates as $candidate) {
+            $key = $this->normalizeToken((string) $candidate);
+            if (isset($normalizedMap[$key])) {
+                return $normalizedMap[$key];
+            }
+        }
+
+        return null;
+    }
+
+    private function getStageStateCandidates(string $logicalState): array
+    {
+        $state = $this->normalizeToken($logicalState);
+        $candidatesByState = [
+            'pendiente' => ['pendiente', 'por_iniciar'],
+            'en_progreso' => ['en_progreso', 'en_proceso', 'en_tramite'],
+            'finalizado' => ['finalizado', 'finalizada', 'completado', 'completada'],
+            'bloqueado' => ['bloqueado', 'bloqueada'],
+            'cancelado' => ['cancelado', 'cancelada', 'anulado']
+        ];
+
+        if (!isset($candidatesByState[$state])) {
+            return [];
+        }
+
+        return $candidatesByState[$state];
+    }
+
+    private function mapStageStateForDb(string $logicalState): ?string
+    {
+        $enumValues = $this->getEnumValues('estado');
+        $candidates = $this->getStageStateCandidates($logicalState);
+        if (empty($candidates)) {
+            return null;
+        }
+
+        return $this->pickEnumValue($enumValues, $candidates);
+    }
 
     /**
      * Obtener una etapa por ID
@@ -88,7 +179,7 @@ class Etapas extends ModelBase
             'nombre' => $datos['nombre'],
             'descripcion' => $datos['descripcion'] ?? null,
             'orden' => $nuevoOrden,
-            'estado' => $datos['estado'] ?? 'pendiente',
+            'estado' => $this->mapStageStateForDb((string) ($datos['estado'] ?? 'pendiente')) ?? 'pendiente',
             'fecha_inicio' => $datos['fecha_inicio'] ?? date('Y-m-d'),
             'fecha_estimada_fin' => $datos['fecha_estimada_fin'] ?? null,
             'responsable_id' => $datos['responsable_id'] ?? null,
@@ -125,7 +216,7 @@ class Etapas extends ModelBase
             'id' => $id,
             'nombre' => $datos['nombre'],
             'descripcion' => $datos['descripcion'] ?? null,
-            'estado' => $datos['estado'] ?? 'pendiente',
+            'estado' => $this->mapStageStateForDb((string) ($datos['estado'] ?? 'pendiente')) ?? 'pendiente',
             'fecha_inicio' => $datos['fecha_inicio'] ?? null,
             'fecha_fin' => $datos['fecha_fin'] ?? null,
             'fecha_estimada_fin' => $datos['fecha_estimada_fin'] ?? null,
@@ -149,32 +240,68 @@ class Etapas extends ModelBase
 
     public function actualizarEstadoConFecha($id, $nuevoEstado, ?string $fechaReal = null): bool
     {
+        $nuevoEstado = $this->normalizeToken((string) $nuevoEstado);
         $estados_validos = ['pendiente', 'en_progreso', 'finalizado', 'bloqueado', 'cancelado'];
         if (!in_array($nuevoEstado, $estados_validos, true)) {
+            return false;
+        }
+
+        $candidates = $this->getStageStateCandidates($nuevoEstado);
+        if (empty($candidates)) {
             return false;
         }
 
         $sql = "UPDATE {$this->table}
                 SET estado = :estado_set,
                     fecha_fin = CASE
-                        WHEN :estado_eval = 'finalizado' AND :fecha_fin_eval IS NOT NULL AND TRIM(:fecha_fin_eval) <> '' THEN :fecha_fin_set
-                        WHEN :estado_eval2 = 'finalizado' AND fecha_fin IS NULL THEN CURDATE()
-                        WHEN :estado_eval3 <> 'finalizado' THEN NULL
+                        WHEN :estado_logico = 'finalizado' AND :fecha_fin_eval IS NOT NULL AND TRIM(:fecha_fin_eval) <> '' THEN :fecha_fin_set
+                        WHEN :estado_logico2 = 'finalizado' AND fecha_fin IS NULL THEN CURDATE()
+                        WHEN :estado_logico3 <> 'finalizado' THEN NULL
                         ELSE fecha_fin
-                    END,
-                    fecha_actualizacion = NOW()
+                    END
                 WHERE id = :id";
 
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            'estado_set' => $nuevoEstado,
-            'estado_eval' => $nuevoEstado,
-            'estado_eval2' => $nuevoEstado,
-            'estado_eval3' => $nuevoEstado,
-            'fecha_fin_eval' => $fechaReal,
-            'fecha_fin_set' => $fechaReal,
-            'id' => $id
-        ]);
+        $enumValues = $this->getEnumValues('estado');
+
+        foreach ($candidates as $candidate) {
+            $estadoPersistente = $this->pickEnumValue($enumValues, [(string) $candidate]) ?? (string) $candidate;
+            try {
+                $ok = $stmt->execute([
+                    'estado_set' => $estadoPersistente,
+                    'estado_logico' => $nuevoEstado,
+                    'estado_logico2' => $nuevoEstado,
+                    'estado_logico3' => $nuevoEstado,
+                    'fecha_fin_eval' => $fechaReal,
+                    'fecha_fin_set' => $fechaReal,
+                    'id' => $id
+                ]);
+                if ($ok) {
+                    return true;
+                }
+            } catch (\Throwable $e) {
+                // Intentar siguiente variante.
+            }
+        }
+
+        $sqlSimple = "UPDATE {$this->table} SET estado = :estado_set WHERE id = :id";
+        $stmtSimple = $this->db->prepare($sqlSimple);
+        foreach ($candidates as $candidate) {
+            $estadoPersistente = $this->pickEnumValue($enumValues, [(string) $candidate]) ?? (string) $candidate;
+            try {
+                $ok = $stmtSimple->execute([
+                    'estado_set' => $estadoPersistente,
+                    'id' => $id
+                ]);
+                if ($ok) {
+                    return true;
+                }
+            } catch (\Throwable $e) {
+                // Intentar siguiente variante.
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -184,11 +311,31 @@ class Etapas extends ModelBase
     {
         // Soft delete: cancelar etapa
         $sql = "UPDATE {$this->table}
-                SET estado = 'cancelado',
-                    fecha_actualizacion = NOW()
+                SET estado = :estado_cancelado
                 WHERE id = :id";
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute(['id' => $id]);
+        $enumValues = $this->getEnumValues('estado');
+        $candidates = $this->getStageStateCandidates('cancelado');
+        if (empty($candidates)) {
+            $candidates = ['cancelado'];
+        }
+
+        foreach ($candidates as $candidate) {
+            $estadoCancelado = $this->pickEnumValue($enumValues, [(string) $candidate]) ?? (string) $candidate;
+            try {
+                $ok = $stmt->execute([
+                    'estado_cancelado' => $estadoCancelado,
+                    'id' => $id
+                ]);
+                if ($ok) {
+                    return true;
+                }
+            } catch (\Throwable $e) {
+                // Intentar siguiente variante.
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -220,10 +367,10 @@ class Etapas extends ModelBase
     {
         $sql = "SELECT *, 
                 DATE_FORMAT(fecha_creacion, '%d/%m/%Y %H:%i') as fecha_creacion_format,
-                DATE_FORMAT(fecha_actualizacion, '%d/%m/%Y %H:%i') as fecha_actualizacion_format
+                DATE_FORMAT(COALESCE(fecha_fin, fecha_creacion), '%d/%m/%Y %H:%i') as fecha_actualizacion_format
                 FROM {$this->table}
                 WHERE caso_id = :caso_id
-                ORDER BY fecha_actualizacion DESC";
+                ORDER BY COALESCE(fecha_fin, fecha_creacion) DESC, id DESC";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['caso_id' => $casoId]);
@@ -308,7 +455,7 @@ class Etapas extends ModelBase
                 FROM {$this->table}
                 WHERE caso_id = :caso_id
                   AND orden < :orden
-                  AND estado NOT IN ('finalizado', 'cancelado')";
+                  AND LOWER(TRIM(estado)) NOT IN ('finalizado', 'finalizada', 'completado', 'completada', 'cancelado', 'cancelada', 'anulado')";
         $params = [
             'caso_id' => $casoId,
             'orden' => $ordenActual
@@ -336,8 +483,7 @@ class Etapas extends ModelBase
     public function guardarDocumentosEtapa($etapaId, array $documentos): bool
     {
         $sql = "UPDATE {$this->table}
-                SET documentos_generados = :documentos,
-                    fecha_actualizacion = NOW()
+                SET documentos_generados = :documentos
                 WHERE id = :id";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
