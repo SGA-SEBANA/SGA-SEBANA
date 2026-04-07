@@ -170,6 +170,10 @@ if ($displayName === '') {
                                     <i class="fa-solid fa-receipt"></i>Viaticos</a>
                             </li>
                             <li>
+                                <a href="/SGA-SEBANA/public/vacaciones">
+                                    <i class="fa-solid fa-umbrella-beach"></i>Vacaciones</a>
+                            </li>
+                            <li>
                                 <a href="/SGA-SEBANA/public/visit-requests">
                                     <i class="fa-solid fa-building-user"></i>Visitas</a>
                             </li>
@@ -273,6 +277,7 @@ if ($displayName === '') {
                                         <li><a href="/SGA-SEBANA/public/visit-requests"><i class="fa-solid fa-building-user"></i> Solicitar Visita</a></li>
                                         <li><a href="/SGA-SEBANA/public/ayudas"><i class="fa-solid fa-hand-holding-dollar"></i> Ayudas</a></li>
                                         <li><a href="/SGA-SEBANA/public/viaticos"><i class="fa-solid fa-receipt"></i> Viaticos</a></li>
+                                        <li><a href="/SGA-SEBANA/public/vacaciones"><i class="fa-solid fa-umbrella-beach"></i> Vacaciones</a></li>
                                     <?php endif; ?>
 
                                     <?php if ($isEmployeeRole): ?>

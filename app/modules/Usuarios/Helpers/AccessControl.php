@@ -230,8 +230,8 @@ class AccessControl
             ['pattern' => '~^/ayudas/(create|store)$~i', 'methods' => ['GET', 'POST'], 'min' => 'basico', 'exclude_roles' => ['empleado_sebana']],
             ['pattern' => '~^/ayudas/(cancel|evidence)/\d+$~i', 'methods' => ['POST'], 'min' => 'basico', 'affiliate_only' => true, 'exclude_roles' => ['empleado_sebana']],
 
-            ['pattern' => '~^/vacaciones(?:$|/show/\d+$)$~i', 'methods' => ['GET'], 'min' => 'basico', 'roles' => ['admin_general', 'admin_rrll', 'admin_solicitudes', 'empleado_sebana']],
-            ['pattern' => '~^/vacaciones/(create|store)$~i', 'methods' => ['GET', 'POST'], 'min' => 'basico', 'roles' => ['admin_general', 'admin_rrll', 'admin_solicitudes', 'empleado_sebana']],
+            ['pattern' => '~^/vacaciones(?:$|/show/\d+$)$~i', 'methods' => ['GET'], 'min' => 'basico', 'roles' => ['admin_general', 'admin_rrll', 'admin_solicitudes', 'empleado_sebana', 'consulta']],
+            ['pattern' => '~^/vacaciones/(create|store)$~i', 'methods' => ['GET', 'POST'], 'min' => 'basico', 'roles' => ['admin_general', 'admin_rrll', 'admin_solicitudes', 'empleado_sebana', 'consulta']],
             ['pattern' => '~^/vacaciones/(cancel|reschedule)/\d+$~i', 'methods' => ['POST'], 'min' => 'basico'],
 
             ['pattern' => '~^/viaticos(?:$|/show$|/pdf$|/archivo$)$~i', 'methods' => ['GET'], 'min' => 'basico', 'exclude_roles' => ['empleado_sebana']],
