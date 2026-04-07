@@ -178,7 +178,8 @@ ob_start();
                                 <small><strong>Creado:</strong> <?= date('d/m/Y H:i', strtotime($etapa['fecha_creacion'])) ?></small>
                             </div>
                             <div class="col-md-6">
-                                <small><strong>Última Actualización:</strong> <?= date('d/m/Y H:i', strtotime($etapa['fecha_actualizacion'])) ?></small>
+                                <?php $fechaActualizacion = $etapa['fecha_actualizacion'] ?? $etapa['fecha_fin'] ?? $etapa['fecha_creacion'] ?? null; ?>
+                                <small><strong>Última Actualización:</strong> <?= $fechaActualizacion ? date('d/m/Y H:i', strtotime($fechaActualizacion)) : '-' ?></small>
                             </div>
                         </div>
                     </div>

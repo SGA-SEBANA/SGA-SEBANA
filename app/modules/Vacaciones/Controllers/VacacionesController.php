@@ -361,6 +361,7 @@ public function index()
         $this->validateCsrfOrRedirect('/SGA-SEBANA/public/vacaciones/show/' . (int) $id);
 
         $usuarioId = $this->getCurrentUserId();
+        $esJefatura = $this->isManager();
         $solicitud = $this->model->obtenerDetallePorId($id);
 
         if (!$solicitud) {
@@ -368,7 +369,7 @@ public function index()
             return;
         }
 
-        if (!$this->isOwner($solicitud, $usuarioId)) {
+        if (!$esJefatura && !$this->isOwner($solicitud, $usuarioId)) {
             $this->redirect('/SGA-SEBANA/public/vacaciones?error=no_autorizado');
             return;
         }
@@ -379,14 +380,22 @@ public function index()
                 'modulo' => 'vacaciones',
                 'entidad' => 'solicitud_vacaciones',
                 'entidad_id' => (int) $id,
-                'descripcion' => 'Cancelacion de solicitud de vacaciones por afiliado',
+                'descripcion' => $esJefatura
+                    ? 'Cancelacion de solicitud de vacaciones por administracion'
+                    : 'Cancelacion de solicitud de vacaciones por afiliado',
                 'resultado' => 'exitoso'
             ]);
-            $this->notifyManagers(
-                (int) $id,
-                'Solicitud de vacaciones cancelada',
-                "{$this->getCurrentUserName()} cancelo su solicitud de vacaciones."
-            );
+
+            if ($esJefatura) {
+                $this->notifyAffiliateStatus((int) $id, 'Cancelada', $solicitud);
+            } else {
+                $this->notifyManagers(
+                    (int) $id,
+                    'Solicitud de vacaciones cancelada',
+                    "{$this->getCurrentUserName()} cancelo su solicitud de vacaciones."
+                );
+            }
+
             $this->redirect('/SGA-SEBANA/public/vacaciones/show/' . $id . '?success=cancelada');
             return;
         }
@@ -414,6 +423,7 @@ public function index()
         $this->validateCsrfOrRedirect('/SGA-SEBANA/public/vacaciones/show/' . (int) $id);
 
         $usuarioId = $this->getCurrentUserId();
+        $esJefatura = $this->isManager();
         $solicitud = $this->model->obtenerDetallePorId($id);
 
         if (!$solicitud) {
@@ -421,7 +431,7 @@ public function index()
             return;
         }
 
-        if (!$this->isOwner($solicitud, $usuarioId)) {
+        if (!$esJefatura && !$this->isOwner($solicitud, $usuarioId)) {
             $this->redirect('/SGA-SEBANA/public/vacaciones?error=no_autorizado');
             return;
         }
@@ -441,18 +451,26 @@ public function index()
                 'modulo' => 'vacaciones',
                 'entidad' => 'solicitud_vacaciones',
                 'entidad_id' => (int) $id,
-                'descripcion' => 'Reprogramacion de solicitud de vacaciones',
+                'descripcion' => $esJefatura
+                    ? 'Reprogramacion de solicitud de vacaciones por administracion'
+                    : 'Reprogramacion de solicitud de vacaciones por afiliado',
                 'datos_nuevos' => [
                     'fecha_inicio' => $fechaInicio,
                     'fecha_fin' => $fechaFin
                 ],
                 'resultado' => 'exitoso'
             ]);
-            $this->notifyManagers(
-                (int) $id,
-                'Solicitud de vacaciones reprogramada',
-                "{$this->getCurrentUserName()} reprogramo su solicitud de vacaciones."
-            );
+
+            if ($esJefatura) {
+                $this->notifyAffiliateStatus((int) $id, 'Pendiente', $solicitud);
+            } else {
+                $this->notifyManagers(
+                    (int) $id,
+                    'Solicitud de vacaciones reprogramada',
+                    "{$this->getCurrentUserName()} reprogramo su solicitud de vacaciones."
+                );
+            }
+
             $this->redirect('/SGA-SEBANA/public/vacaciones/show/' . $id . '?success=reprogramada');
             return;
         }

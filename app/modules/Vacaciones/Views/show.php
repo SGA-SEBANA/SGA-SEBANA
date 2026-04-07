@@ -3,6 +3,11 @@ ob_start();
 $esJefatura = $es_jefatura ?? false;
 $esPropietario = $es_propietario ?? false;
 $estado = $solicitud['estado'] ?? 'Pendiente';
+$estadoNorm = strtolower(trim(str_replace(['_', '-'], ' ', (string) $estado)));
+$estadoNorm = preg_replace('/\s+/', ' ', $estadoNorm);
+$esEstadoGestionable = in_array($estadoNorm, ['pendiente', 'aceptada', 'aprobada', 'en revision', 'reprogramada'], true);
+$esEstadoAprobacionAdmin = in_array($estadoNorm, ['pendiente', 'en revision', 'reprogramada'], true);
+$puedeGestionarSolicitud = ($esPropietario || $esJefatura) && $esEstadoGestionable;
 ?>
 
 <div class="row mt-3">
@@ -111,7 +116,7 @@ $estado = $solicitud['estado'] ?? 'Pendiente';
 
             <div class="col-lg-5">
 
-                <?php if ($esJefatura && in_array($estado, ['Pendiente', 'En Revision', 'Reprogramada'], true)): ?>
+                <?php if ($esJefatura && $esEstadoAprobacionAdmin): ?>
                     <div class="card border-primary shadow-sm mb-4">
                         <div class="card-header bg-primary text-white py-3">
                             <i class="zmdi zmdi-settings me-2"></i>Acciones de Jefatura
@@ -131,7 +136,7 @@ $estado = $solicitud['estado'] ?? 'Pendiente';
                     </div>
                 <?php endif; ?>
 
-                <?php if ($esPropietario && in_array($estado, ['Pendiente', 'Aceptada', 'En Revision', 'Reprogramada'], true)): ?>
+                <?php if ($puedeGestionarSolicitud): ?>
 
                     <div class="card shadow-sm mb-4 border-info">
                         <div class="card-header bg-info text-white py-3">
@@ -161,7 +166,7 @@ $estado = $solicitud['estado'] ?? 'Pendiente';
 
                     <div class="card shadow-sm border-danger">
                         <div class="card-body text-center py-4">
-                            <h6 class="text-danger mb-3 font-weight-bold">Ya no tomara estas vacaciones?</h6>
+                            <h6 class="text-danger mb-3 font-weight-bold">Desea cancelar esta solicitud?</h6>
                             <form action="/SGA-SEBANA/public/vacaciones/cancel/<?= $solicitud['id'] ?>" method="POST" onsubmit="return confirm('Esta seguro de que desea cancelar esta solicitud? Esta accion no se puede deshacer.');">
                                 <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
                                 <button type="submit" class="btn btn-outline-danger btn-sm px-4 shadow-sm">
@@ -173,7 +178,7 @@ $estado = $solicitud['estado'] ?? 'Pendiente';
 
                 <?php endif; ?>
 
-                <?php if (!($esJefatura && in_array($estado, ['Pendiente', 'En Revision', 'Reprogramada'], true)) && !($esPropietario && in_array($estado, ['Pendiente', 'Aceptada', 'En Revision', 'Reprogramada'], true))): ?>
+                <?php if (!($esJefatura && $esEstadoAprobacionAdmin) && !$puedeGestionarSolicitud): ?>
                     <div class="card shadow-sm border-0 bg-light text-center py-5">
                         <i class="zmdi zmdi-lock zmdi-hc-3x text-muted mb-2"></i>
                         <p class="text-muted small">Esta solicitud ya esta finalizada o no requiere acciones adicionales.</p>

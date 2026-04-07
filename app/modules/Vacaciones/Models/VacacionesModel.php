@@ -145,14 +145,19 @@ class VacacionesModel extends ModelBase
             case 'pendiente':
                 return 'Pendiente';
             case 'aprobada':
+            case 'aceptada':
                 return 'Aceptada';
             case 'rechazada':
+            case 'rechazado':
                 return 'Rechazada';
             case 'cancelada':
+            case 'cancelado':
                 return 'Cancelada';
             case 'reprogramada':
+            case 'reprogramado':
                 return 'Reprogramada';
             case 'en_revision':
+            case 'en revision':
                 return 'En Revision';
             default:
                 return ucfirst((string) $estadoDb);
@@ -525,13 +530,55 @@ class VacacionesModel extends ModelBase
                         aprobado_por = CASE WHEN :estado_aprobado = 1 THEN :aprobado_por ELSE aprobado_por END
                     WHERE id = :id";
             $stmt = $this->db->prepare($sql);
-            return $stmt->execute([
-                ':estado' => $estadoDb,
-                ':revisado_por' => $actorUserId,
-                ':estado_aprobado' => ($estadoDb === 'aprobada') ? 1 : 0,
-                ':aprobado_por' => ($estadoDb === 'aprobada') ? $actorUserId : null,
-                ':id' => $id
-            ]);
+            $estadosIntento = [$estadoDb];
+            if ($estadoDb === 'cancelada') {
+                $estadosIntento[] = 'cancelado';
+            } elseif ($estadoDb === 'aprobada') {
+                $estadosIntento[] = 'aceptada';
+            } elseif ($estadoDb === 'rechazada') {
+                $estadosIntento[] = 'rechazado';
+            } elseif ($estadoDb === 'reprogramada') {
+                $estadosIntento[] = 'reprogramado';
+            } elseif ($estadoDb === 'en_revision') {
+                $estadosIntento[] = 'en revision';
+            }
+            $estadosIntento = array_values(array_unique($estadosIntento));
+
+            foreach ($estadosIntento as $estadoTry) {
+                try {
+                    $ok = $stmt->execute([
+                        ':estado' => $estadoTry,
+                        ':revisado_por' => $actorUserId,
+                        ':estado_aprobado' => (in_array($estadoTry, ['aprobada', 'aceptada'], true)) ? 1 : 0,
+                        ':aprobado_por' => (in_array($estadoTry, ['aprobada', 'aceptada'], true)) ? $actorUserId : null,
+                        ':id' => $id
+                    ]);
+                    if ($ok) {
+                        return true;
+                    }
+                } catch (PDOException $e) {
+                    $this->lastError = $e->getMessage();
+                }
+            }
+
+            // Fallback para esquemas antiguos sin columnas de revision/aprobacion.
+            $sqlSimple = "UPDATE {$this->table} SET estado = :estado WHERE id = :id";
+            $stmtSimple = $this->db->prepare($sqlSimple);
+            foreach ($estadosIntento as $estadoTry) {
+                try {
+                    $ok = $stmtSimple->execute([
+                        ':estado' => $estadoTry,
+                        ':id' => $id
+                    ]);
+                    if ($ok) {
+                        return true;
+                    }
+                } catch (PDOException $e) {
+                    $this->lastError = $e->getMessage();
+                }
+            }
+
+            return false;
         } catch (PDOException $e) {
             $this->lastError = $e->getMessage();
             return false;
@@ -571,7 +618,7 @@ class VacacionesModel extends ModelBase
                         motivo_reprogramacion = :motivo_reprogramacion
                     WHERE id = :id";
             $stmt = $this->db->prepare($sql);
-            return $stmt->execute([
+            $ok = $stmt->execute([
                 ':fecha_inicio' => $fechaInicio,
                 ':fecha_fin' => $fechaFin,
                 ':cantidad_dias' => $cantidadDias,
@@ -579,9 +626,48 @@ class VacacionesModel extends ModelBase
                 ':motivo_reprogramacion' => trim((string) $motivo),
                 ':id' => $id
             ]);
+            if ($ok) {
+                return true;
+            }
+
+            // Fallback para esquemas antiguos sin columnas de reprogramacion.
+            $sqlSimple = "UPDATE {$this->table}
+                          SET fecha_inicio = :fecha_inicio,
+                              fecha_fin = :fecha_fin,
+                              cantidad_dias = :cantidad_dias,
+                              motivo = :motivo,
+                              estado = 'pendiente'
+                          WHERE id = :id";
+            $stmtSimple = $this->db->prepare($sqlSimple);
+            return $stmtSimple->execute([
+                ':fecha_inicio' => $fechaInicio,
+                ':fecha_fin' => $fechaFin,
+                ':cantidad_dias' => $cantidadDias,
+                ':motivo' => trim((string) $motivo),
+                ':id' => $id
+            ]);
         } catch (PDOException $e) {
             $this->lastError = $e->getMessage();
-            return false;
+            try {
+                $sqlSimple = "UPDATE {$this->table}
+                              SET fecha_inicio = :fecha_inicio,
+                                  fecha_fin = :fecha_fin,
+                                  cantidad_dias = :cantidad_dias,
+                                  motivo = :motivo,
+                                  estado = 'pendiente'
+                              WHERE id = :id";
+                $stmtSimple = $this->db->prepare($sqlSimple);
+                return $stmtSimple->execute([
+                    ':fecha_inicio' => $fechaInicio,
+                    ':fecha_fin' => $fechaFin,
+                    ':cantidad_dias' => $cantidadDias,
+                    ':motivo' => trim((string) $motivo),
+                    ':id' => $id
+                ]);
+            } catch (PDOException $inner) {
+                $this->lastError = $inner->getMessage();
+                return false;
+            }
         }
     }
 

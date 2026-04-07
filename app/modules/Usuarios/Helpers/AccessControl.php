@@ -220,7 +220,7 @@ class AccessControl
             ['pattern' => '~^/(categorias|Categorias)(?:/.*)?$~i', 'methods' => ['GET', 'POST'], 'min' => 'medio'],
             ['pattern' => '~^/oficinas(?:/.*)?$~i', 'methods' => ['GET', 'POST'], 'min' => 'medio'],
             ['pattern' => '~^/puestos(?:/.*)?$~i', 'methods' => ['GET', 'POST'], 'min' => 'medio'],
-            ['pattern' => '~^/junta(?:$|/history$|/documento/[^/]+$|/ver-documento/[^/]+$)$~i', 'methods' => ['GET'], 'min' => 'medio'],
+            ['pattern' => '~^/junta(?:$|/history$|/documento/[^/]+$|/documentos/[^/]+$|/ver-documento/[^/]+$)$~i', 'methods' => ['GET'], 'min' => 'medio'],
 
             ['pattern' => '~^/visit-requests$~i', 'methods' => ['GET'], 'min' => 'basico', 'exclude_roles' => ['empleado_sebana']],
             ['pattern' => '~^/visit-requests/create$~i', 'methods' => ['GET', 'POST'], 'min' => 'basico', 'exclude_roles' => ['empleado_sebana']],
@@ -230,9 +230,9 @@ class AccessControl
             ['pattern' => '~^/ayudas/(create|store)$~i', 'methods' => ['GET', 'POST'], 'min' => 'basico', 'exclude_roles' => ['empleado_sebana']],
             ['pattern' => '~^/ayudas/(cancel|evidence)/\d+$~i', 'methods' => ['POST'], 'min' => 'basico', 'affiliate_only' => true, 'exclude_roles' => ['empleado_sebana']],
 
-            ['pattern' => '~^/vacaciones(?:$|/show/\d+$)$~i', 'methods' => ['GET'], 'min' => 'basico', 'roles' => ['admin_general', 'admin_solicitudes', 'empleado_sebana']],
-            ['pattern' => '~^/vacaciones/(create|store)$~i', 'methods' => ['GET', 'POST'], 'min' => 'basico', 'roles' => ['admin_general', 'admin_solicitudes', 'empleado_sebana']],
-            ['pattern' => '~^/vacaciones/(cancel|reschedule)/\d+$~i', 'methods' => ['POST'], 'min' => 'basico', 'employee_only' => true],
+            ['pattern' => '~^/vacaciones(?:$|/show/\d+$)$~i', 'methods' => ['GET'], 'min' => 'basico', 'roles' => ['admin_general', 'admin_rrll', 'admin_solicitudes', 'empleado_sebana']],
+            ['pattern' => '~^/vacaciones/(create|store)$~i', 'methods' => ['GET', 'POST'], 'min' => 'basico', 'roles' => ['admin_general', 'admin_rrll', 'admin_solicitudes', 'empleado_sebana']],
+            ['pattern' => '~^/vacaciones/(cancel|reschedule)/\d+$~i', 'methods' => ['POST'], 'min' => 'basico'],
 
             ['pattern' => '~^/viaticos(?:$|/show$|/pdf$|/archivo$)$~i', 'methods' => ['GET'], 'min' => 'basico', 'exclude_roles' => ['empleado_sebana']],
             ['pattern' => '~^/viaticos/(create|store)$~i', 'methods' => ['GET', 'POST'], 'min' => 'basico', 'exclude_roles' => ['empleado_sebana']]

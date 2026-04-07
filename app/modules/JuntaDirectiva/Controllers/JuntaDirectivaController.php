@@ -15,6 +15,16 @@ class JuntaDirectivaController
         $this->notiModel = new Notification();
     }
 
+   private function ensureJuntaStorageDir(): bool
+   {
+      $dir = BASE_PATH . '/storage/junta';
+      if (is_dir($dir)) {
+         return true;
+      }
+
+      return mkdir($dir, 0775, true) || is_dir($dir);
+   }
+
 
 
 public function index()
@@ -98,9 +108,6 @@ public function index()
 
    public function create()
    {
-      if (session_status() === PHP_SESSION_NONE) {
-         session_start();
-      }
       $model = new JuntaDirectivaModel();
       $cargosDisponibles = $this->cargosPermitidos();
 
@@ -210,6 +217,11 @@ public function index()
 
 
          if (!empty($_FILES['documentos']['name'][0])) {
+            if (!$this->ensureJuntaStorageDir()) {
+               $_SESSION['error'] = "No se pudo preparar la carpeta de documentos.";
+               header("Location: /SGA-SEBANA/public/junta/create");
+               exit;
+            }
 
             foreach ($_FILES['documentos']['name'] as $i => $nombreOriginal) {
 
@@ -234,7 +246,11 @@ public function index()
                $nombreSeguro = uniqid("doc_") . "." . $ext;
 
                $destino = BASE_PATH . "/storage/junta/" . $nombreSeguro;
-               move_uploaded_file($_FILES['documentos']['tmp_name'][$i], $destino);
+               if (!move_uploaded_file($_FILES['documentos']['tmp_name'][$i], $destino)) {
+                  $_SESSION['error'] = "No se pudo guardar el archivo adjunto en storage.";
+                  header("Location: /SGA-SEBANA/public/junta/create");
+                  exit;
+               }
 
                $model->insertDocumento(
                   $juntaId,
@@ -335,6 +351,9 @@ public function index()
 
 
          if (!empty($_FILES['documentos']['name'][0])) {
+            if (!$this->ensureJuntaStorageDir()) {
+               die("No se pudo preparar la carpeta de documentos.");
+            }
             foreach ($_FILES['documentos']['name'] as $i => $nombreOriginal) {
 
                if ($_FILES['documentos']['size'][$i] > 5 * 1024 * 1024) {
@@ -353,7 +372,9 @@ public function index()
                $nombreSeguro = uniqid("doc_") . "." . $ext;
 
                $destino = BASE_PATH . "/storage/junta/" . $nombreSeguro;
-               move_uploaded_file($_FILES['documentos']['tmp_name'][$i], $destino);
+               if (!move_uploaded_file($_FILES['documentos']['tmp_name'][$i], $destino)) {
+                  die("No se pudo guardar el archivo adjunto en storage.");
+               }
 
                $model->insertDocumento($id, $nombreSeguro, $nombreOriginal);
             }

@@ -8,6 +8,96 @@ use PDO;
 class CasosRRLL extends ModelBase
 {
     protected $table = 'casos_relaciones_laborales';
+    private array $enumCache = [];
+
+    private function getEnumValues(string $column): array
+    {
+        if (isset($this->enumCache[$column])) {
+            return $this->enumCache[$column];
+        }
+
+        try {
+            $sql = "SELECT COLUMN_TYPE
+                    FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE TABLE_SCHEMA = DATABASE()
+                      AND TABLE_NAME = :table
+                      AND COLUMN_NAME = :column
+                    LIMIT 1";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                'table' => $this->table,
+                'column' => $column
+            ]);
+            $columnType = (string) ($stmt->fetchColumn() ?: '');
+            if (preg_match("/^enum\\((.*)\\)$/i", $columnType, $matches)) {
+                $raw = $matches[1];
+                $values = str_getcsv($raw, ',', "'");
+                $values = array_values(array_filter(array_map('trim', $values), static fn($v) => $v !== ''));
+                return $this->enumCache[$column] = $values;
+            }
+        } catch (\Throwable $e) {
+            // Fallback por compatibilidad entre entornos.
+        }
+
+        return $this->enumCache[$column] = [];
+    }
+
+    private function normalizeToken(string $value): string
+    {
+        $value = strtolower(trim($value));
+        $value = str_replace(['á', 'é', 'í', 'ó', 'ú'], ['a', 'e', 'i', 'o', 'u'], $value);
+        $value = str_replace([' ', '-'], '_', $value);
+        return preg_replace('/_+/', '_', $value) ?: '';
+    }
+
+    private function pickEnumValue(array $enumValues, array $candidates): ?string
+    {
+        if (empty($enumValues)) {
+            return $candidates[0] ?? null;
+        }
+
+        $normalizedMap = [];
+        foreach ($enumValues as $value) {
+            $normalizedMap[$this->normalizeToken((string) $value)] = (string) $value;
+        }
+
+        foreach ($candidates as $candidate) {
+            $key = $this->normalizeToken((string) $candidate);
+            if (isset($normalizedMap[$key])) {
+                return $normalizedMap[$key];
+            }
+        }
+
+        return null;
+    }
+
+    private function getCaseStateCandidates(string $logicalState): array
+    {
+        $state = $this->normalizeToken($logicalState);
+        $candidatesByState = [
+            'activo' => ['activo', 'abierto'],
+            'en_progreso' => ['en_progreso', 'en_tramite', 'en_proceso'],
+            'suspendido' => ['suspendido', 'suspendida'],
+            'cerrado' => ['cerrado', 'finalizado', 'finalizada'],
+            'archivado' => ['archivado', 'anulado', 'inactivo']
+        ];
+
+        if (!isset($candidatesByState[$state])) {
+            return [];
+        }
+
+        return $candidatesByState[$state];
+    }
+
+    private function mapCaseStateForDb(string $logicalState): ?string
+    {
+        $enumValues = $this->getEnumValues('estado');
+        $candidates = $this->getCaseStateCandidates($logicalState);
+        if (empty($candidates)) {
+            return null;
+        }
+        return $this->pickEnumValue($enumValues, $candidates);
+    }
 
     /**
      * Verificar si existe un expediente
@@ -281,7 +371,7 @@ class CasosRRLL extends ModelBase
             'hechos' => $datos['hechos'] ?? null,
             'empresa_involucrada' => $datos['empresa_involucrada'] ?? 'Banco Nacional',
             'departamento_afectado' => $datos['departamento_afectado'] ?? null,
-            'estado' => $datos['estado'] ?? 'activo',
+            'estado' => $this->mapCaseStateForDb((string) ($datos['estado'] ?? 'activo')) ?? 'activo',
             'prioridad' => $datos['prioridad'] ?? 'media',
             'fecha_incidente' => $datos['fecha_incidente'] ?? null,
             'fecha_apertura' => $datos['fecha_apertura'] ?? date('Y-m-d'),
@@ -331,7 +421,7 @@ class CasosRRLL extends ModelBase
             'hechos' => $datos['hechos'] ?? null,
             'empresa_involucrada' => $datos['empresa_involucrada'] ?? 'Banco Nacional',
             'departamento_afectado' => $datos['departamento_afectado'] ?? null,
-            'estado' => $datos['estado'] ?? 'activo',
+            'estado' => $this->mapCaseStateForDb((string) ($datos['estado'] ?? 'activo')) ?? 'activo',
             'prioridad' => $datos['prioridad'] ?? 'media',
             'fecha_incidente' => $datos['fecha_incidente'] ?? null,
             'responsable_actual' => $datos['responsable_actual'] ?? null,
@@ -348,34 +438,71 @@ class CasosRRLL extends ModelBase
      */
     public function cambiarEstado($id, $nuevoEstado, ?string $resultadoFinal = null)
     {
+        $nuevoEstado = $this->normalizeToken((string) $nuevoEstado);
         $estados_validos = ['activo', 'en_progreso', 'cerrado', 'archivado', 'suspendido'];
 
-        if (!in_array($nuevoEstado, $estados_validos)) {
+        if (!in_array($nuevoEstado, $estados_validos, true)) {
+            return false;
+        }
+
+        $candidates = $this->getCaseStateCandidates($nuevoEstado);
+        if (empty($candidates)) {
             return false;
         }
 
         $sql = "UPDATE {$this->table} SET 
                     estado = :estado_set,
                     resultado_final = CASE
-                        WHEN :estado_eval = 'cerrado' AND :resultado_final_eval IS NOT NULL AND TRIM(:resultado_final_eval) <> '' 
+                        WHEN :estado_logico = 'cerrado' AND :resultado_final_eval IS NOT NULL AND TRIM(:resultado_final_eval) <> '' 
                             THEN :resultado_final_set
                         ELSE resultado_final
                     END,
                     fecha_cierre = CASE
-                        WHEN :estado_cierre IN ('cerrado', 'archivado') THEN COALESCE(fecha_cierre, CURDATE())
+                        WHEN :estado_logico_cierre IN ('cerrado', 'archivado') THEN COALESCE(fecha_cierre, CURDATE())
                         ELSE NULL
-                    END,
-                    fecha_actualizacion = NOW()
+                    END
                 WHERE id = :id";
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            'estado_set' => $nuevoEstado,
-            'estado_eval' => $nuevoEstado,
-            'estado_cierre' => $nuevoEstado,
-            'id' => $id,
-            'resultado_final_eval' => $resultadoFinal,
-            'resultado_final_set' => $resultadoFinal
-        ]);
+        $enumValues = $this->getEnumValues('estado');
+
+        foreach ($candidates as $candidate) {
+            $estadoPersistente = $this->pickEnumValue($enumValues, [(string) $candidate]) ?? (string) $candidate;
+            try {
+                $ok = $stmt->execute([
+                    'estado_set' => $estadoPersistente,
+                    'estado_logico' => $nuevoEstado,
+                    'estado_logico_cierre' => $nuevoEstado,
+                    'id' => $id,
+                    'resultado_final_eval' => $resultadoFinal,
+                    'resultado_final_set' => $resultadoFinal
+                ]);
+                if ($ok) {
+                    return true;
+                }
+            } catch (\Throwable $e) {
+                // Intentar siguiente variante de estado para compatibilidad.
+            }
+        }
+
+        // Fallback para esquemas antiguos sin columnas de cierre/resultado.
+        $sqlSimple = "UPDATE {$this->table} SET estado = :estado_set WHERE id = :id";
+        $stmtSimple = $this->db->prepare($sqlSimple);
+        foreach ($candidates as $candidate) {
+            $estadoPersistente = $this->pickEnumValue($enumValues, [(string) $candidate]) ?? (string) $candidate;
+            try {
+                $ok = $stmtSimple->execute([
+                    'estado_set' => $estadoPersistente,
+                    'id' => $id
+                ]);
+                if ($ok) {
+                    return true;
+                }
+            } catch (\Throwable $e) {
+                // Intentar siguiente variante.
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -384,8 +511,7 @@ class CasosRRLL extends ModelBase
     public function cambiarResponsable($id, $responsableId)
     {
         $sql = "UPDATE {$this->table} 
-                SET responsable_actual = :responsable_id, 
-                    fecha_actualizacion = NOW()
+                SET responsable_actual = :responsable_id
                 WHERE id = :id";
 
         $stmt = $this->db->prepare($sql);
@@ -398,14 +524,52 @@ class CasosRRLL extends ModelBase
     public function archivar($id, $resultado = null)
     {
         $sql = "UPDATE {$this->table} 
-                SET estado = 'archivado', 
+                SET estado = :estado_archivado, 
                     fecha_cierre = NOW(),
-                    resultado_final = COALESCE(:resultado, resultado_final),
-                    fecha_actualizacion = NOW()
+                    resultado_final = COALESCE(:resultado, resultado_final)
                 WHERE id = :id";
 
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute(['resultado' => $resultado, 'id' => $id]);
+        $enumValues = $this->getEnumValues('estado');
+        $candidates = $this->getCaseStateCandidates('archivado');
+        if (empty($candidates)) {
+            $candidates = ['archivado'];
+        }
+
+        foreach ($candidates as $candidate) {
+            $estadoArchivado = $this->pickEnumValue($enumValues, [(string) $candidate]) ?? (string) $candidate;
+            try {
+                $ok = $stmt->execute([
+                    'estado_archivado' => $estadoArchivado,
+                    'resultado' => $resultado,
+                    'id' => $id
+                ]);
+                if ($ok) {
+                    return true;
+                }
+            } catch (\Throwable $e) {
+                // Intentar siguiente variante.
+            }
+        }
+
+        $sqlSimple = "UPDATE {$this->table} SET estado = :estado_archivado WHERE id = :id";
+        $stmtSimple = $this->db->prepare($sqlSimple);
+        foreach ($candidates as $candidate) {
+            $estadoArchivado = $this->pickEnumValue($enumValues, [(string) $candidate]) ?? (string) $candidate;
+            try {
+                $ok = $stmtSimple->execute([
+                    'estado_archivado' => $estadoArchivado,
+                    'id' => $id
+                ]);
+                if ($ok) {
+                    return true;
+                }
+            } catch (\Throwable $e) {
+                // Intentar siguiente variante.
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -415,12 +579,49 @@ class CasosRRLL extends ModelBase
     {
         // Soft delete: archivar en lugar de eliminar físicamente
         $sql = "UPDATE {$this->table}
-                SET estado = 'archivado',
-                    fecha_cierre = COALESCE(fecha_cierre, CURDATE()),
-                    fecha_actualizacion = NOW()
+                SET estado = :estado_archivado,
+                    fecha_cierre = COALESCE(fecha_cierre, CURDATE())
                 WHERE id = :id";
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute(['id' => $id]);
+        $enumValues = $this->getEnumValues('estado');
+        $candidates = $this->getCaseStateCandidates('archivado');
+        if (empty($candidates)) {
+            $candidates = ['archivado'];
+        }
+
+        foreach ($candidates as $candidate) {
+            $estadoArchivado = $this->pickEnumValue($enumValues, [(string) $candidate]) ?? (string) $candidate;
+            try {
+                $ok = $stmt->execute([
+                    'estado_archivado' => $estadoArchivado,
+                    'id' => $id
+                ]);
+                if ($ok) {
+                    return true;
+                }
+            } catch (\Throwable $e) {
+                // Intentar siguiente variante.
+            }
+        }
+
+        $sqlSimple = "UPDATE {$this->table} SET estado = :estado_archivado WHERE id = :id";
+        $stmtSimple = $this->db->prepare($sqlSimple);
+        foreach ($candidates as $candidate) {
+            $estadoArchivado = $this->pickEnumValue($enumValues, [(string) $candidate]) ?? (string) $candidate;
+            try {
+                $ok = $stmtSimple->execute([
+                    'estado_archivado' => $estadoArchivado,
+                    'id' => $id
+                ]);
+                if ($ok) {
+                    return true;
+                }
+            } catch (\Throwable $e) {
+                // Intentar siguiente variante.
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -573,8 +774,7 @@ class CasosRRLL extends ModelBase
     public function guardarDocumentosCaso($casoId, array $documentos): bool
     {
         $sql = "UPDATE {$this->table}
-                SET documentos_adjuntos = :documentos,
-                    fecha_actualizacion = NOW()
+                SET documentos_adjuntos = :documentos
                 WHERE id = :id";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([

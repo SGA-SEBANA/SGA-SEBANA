@@ -70,7 +70,7 @@ ob_start();
 
                             <td>
                                 <?php if ($miembro['total_documentos'] > 0): ?>
-                                    <a href="/SGA-SEBANA/public/junta/documentos/<?= $miembro['id'] ?>">
+                                    <a href="/SGA-SEBANA/public/junta/documento/<?= $miembro['id'] ?>">
                                         <i class="zmdi zmdi-file-text"></i>
                                         Ver (<?= $miembro['total_documentos'] ?>)
                                     </a>

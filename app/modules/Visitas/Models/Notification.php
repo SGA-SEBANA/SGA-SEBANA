@@ -66,18 +66,23 @@ class Notification extends ModelBase {
             0, 0, :prioridad, 1, 0, NOW()
         )";
 
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            ':usuario_id'   => $usuario_id,
-            ':tipo'         => $tipo,
-            ':categoria'    => $categoria,
-            ':titulo'       => $titulo,
-            ':mensaje'      => $mensaje,
-            ':entidad_tipo' => $entidad_tipo,
-            ':entidad_id'   => $entidad_id,
-            ':url_accion'   => $url_accion,
-            ':prioridad'    => $prioridad
-        ]);
+        try {
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([
+                ':usuario_id'   => $usuario_id,
+                ':tipo'         => $tipo,
+                ':categoria'    => $categoria,
+                ':titulo'       => $titulo,
+                ':mensaje'      => $mensaje,
+                ':entidad_tipo' => $entidad_tipo,
+                ':entidad_id'   => $entidad_id,
+                ':url_accion'   => $url_accion,
+                ':prioridad'    => $prioridad
+            ]);
+        } catch (\Throwable $e) {
+            error_log('Notification::createNotification error: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**

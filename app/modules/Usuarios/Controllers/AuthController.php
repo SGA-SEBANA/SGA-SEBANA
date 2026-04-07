@@ -109,6 +109,18 @@ class AuthController extends ControllerBase
             return;
         }
 
+        $userWithRole = $this->userModel->findWithRole((int) $user['id']) ?: [];
+        $roleName = strtolower(trim((string) ($userWithRole['rol_nombre'] ?? '')));
+        if ($roleName === 'consulta') {
+            $affiliateStatus = $this->userModel->getLinkedAffiliateStatus((int) $user['id']);
+            if (in_array($affiliateStatus, ['inactivo', 'suspendido', 'removido'], true)) {
+                $this->bitacora->logFailedLogin($user['id'], $username, 'Afiliado inactivo o suspendido');
+                $_SESSION['login_error'] = 'Su afiliacion se encuentra inactiva o suspendida. Contacte al administrador.';
+                $this->redirect('/SGA-SEBANA/public/login');
+                return;
+            }
+        }
+
         if (!password_verify($password, $user['contrasena'])) {
             $attempts = $this->userModel->incrementFailedAttempts($user['id']);
             $this->bitacora->logFailedLogin($user['id'], $username, 'Contraseña incorrecta');
@@ -130,7 +142,6 @@ class AuthController extends ControllerBase
 
         $this->userModel->updateLastAccess($user['id']);
 
-        $userWithRole = $this->userModel->findWithRole($user['id']);
         $permisos = $userWithRole['permisos'] ?? null;
 
         if (is_string($permisos)) {

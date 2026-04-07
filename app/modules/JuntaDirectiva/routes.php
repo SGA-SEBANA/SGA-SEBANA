@@ -19,5 +19,6 @@ $router->get('/junta/activar/{id}', [JuntaDirectivaController::class, 'activar']
 
 
 $router->get('/junta/documento/{id}', [JuntaDirectivaController::class, 'documentos']);
+$router->get('/junta/documentos/{id}', [JuntaDirectivaController::class, 'documentos']);
 $router->get('/junta/ver-documento/{id}', [JuntaDirectivaController::class, 'verDocumento']);
 $router->get('/junta/eliminar-documento/{id}', [JuntaDirectivaController::class, 'eliminarDocumento']);
