@@ -58,7 +58,7 @@ ob_start();
                         <?php endif; ?>
                         <div class="col-md-12 mb-3">
                             <label>Empleado(s) que corresponden a la solicitud</label>
-                            <textarea name="empleados" class="form-control" rows="2" placeholder="Ej: Juan Pérez (123), María López (456)"></textarea>
+                            <textarea name="empleados" class="form-control" rows="2" maxlength="355" placeholder="Ej: Juan Pérez (123), María López (456)"></textarea>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label>Fecha de inicio</label>

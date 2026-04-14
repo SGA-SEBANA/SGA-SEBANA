@@ -230,7 +230,14 @@ public function index()
                 ]);
 
                 $nombre = $nombreEmpleado !== '' ? $nombreEmpleado : 'Empleado';
-                $fecha = $_POST['fecha_visita'] ?? 'fecha no especificada';
+                
+                $fecha = trim((string)($_POST['fecha_visita'] ?? ''));
+
+                if ($fecha === '') {
+                    $_SESSION['error'] = 'La fecha es obligatoria';
+                    header('Location: ...');
+                    exit;
+                }
 
                 $titulo = 'Nueva solicitud de visita';
                 $mensaje = "Solicitud de {$nombre} para el {$fecha}";

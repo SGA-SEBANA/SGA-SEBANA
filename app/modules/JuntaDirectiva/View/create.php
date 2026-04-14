@@ -77,7 +77,7 @@ ob_start();
                         <div class="col-md-12">
                             <label for="periodo" class="form-control-label">Periodo</label>
                             <input type="text" id="periodo" name="periodo" placeholder="Ej: 2026-2029"
-                                class="form-control" readonly>
+                                class="form-control" maxlength="9" readonly>
                             <small class="form-text text-muted">Se calcula automaticamente por trienios (2026-2029, 2029-2032, etc.).</small>
                         </div>
                     </div>
@@ -95,7 +95,7 @@ ob_start();
                         <div class="col-md-12">
                             <label for="responsabilidades" class="form-control-label">Responsabilidades</label>
                             <textarea name="responsabilidades" id="responsabilidades" rows="3" class="form-control"
-                                placeholder="Describa las responsabilidades..."></textarea>
+                                maxlength="500" placeholder="Describa las responsabilidades..."></textarea>
                         </div>
                     </div>
 
@@ -103,13 +103,13 @@ ob_start();
                         <div class="col-md-6">
                             <label for="documentos" class="form-control-label">Documentos (Actas, Nombramiento,
                                 etc)</label>
-                            <input type="file" name="documentos[]" multiple class="form-control">
-                            <small class="form-text text-muted">Formatos permitidos: PDF, JPG, PNG</small>
+                            <input type="file" name="documentos[]" accept=".pdf,.jpg,.jpeg,.png" multiple class="form-control">
+                            <small class="form-text text-muted" >Formatos permitidos: PDF, JPG, PNG</small>
                         </div>
                         <div class="col-md-6">
                             <label for="observaciones" class="form-control-label">Observaciones</label>
                             <input type="text" name="observaciones" id="observaciones" class="form-control"
-                                placeholder="Notas adicionales...">
+                               maxlength="200" placeholder="Notas adicionales...">
                         </div>
                     </div>
 

@@ -25,21 +25,31 @@ ob_start();
 
             <div class="card-body">
                 <form method="POST" action="/SGA-SEBANA/public/visit-requests/create">
+
+                    <!-- CSRF -->
                     <?= \App\Modules\Usuarios\Helpers\SecurityHelper::csrfField() ?>
+
                     <div class="row">
+
                         <?php if (!empty($es_jefatura)): ?>
                             <div class="col-md-7 mb-3">
-                                <label for="buscarCedula">Buscar afiliado por cedula</label>
+                                <label for="buscarCedula">Buscar afiliado por cédula</label>
                                 <input type="text" id="buscarCedula" class="form-control"
-                                       placeholder="Digite la cedula del afiliado">
-                                <small class="form-text text-muted">Formato unico: escriba solo numeros, sin guiones ni espacios.</small>
+                                       placeholder="Digite la cédula del afiliado" maxlength="9">
+                                <small class="form-text text-muted">
+                                    Solo números, sin guiones ni espacios.
+                                </small>
                             </div>
+
                             <div class="col-md-5 mb-3">
                                 <label for="afiliadoSelect">Afiliado</label>
                                 <select name="afiliado_id" id="afiliadoSelect" class="form-control" required>
                                     <option value="">-- Seleccione un afiliado --</option>
+
                                     <?php foreach (($afiliados ?? []) as $afiliado): ?>
-                                        <option value="<?= (int) ($afiliado['id'] ?? 0) ?>"
+                                        <?php if (empty($afiliado['id'])) continue; ?>
+
+                                        <option value="<?= (int) $afiliado['id'] ?>"
                                                 data-cedula="<?= htmlspecialchars((string) ($afiliado['cedula'] ?? '')) ?>"
                                                 data-nombre="<?= htmlspecialchars((string) ($afiliado['nombre_completo'] ?? '')) ?>">
                                             <?= htmlspecialchars((string) ($afiliado['nombre_completo'] ?? '')) ?>
@@ -48,10 +58,11 @@ ob_start();
                                     <?php endforeach; ?>
                                 </select>
                             </div>
+
                         <?php else: ?>
                             <div class="col-md-12 mb-3">
                                 <div class="alert alert-info mb-0">
-                                    La solicitud se registrara con el afiliado logueado:
+                                    La solicitud se registrará con el afiliado logueado:
                                     <strong><?= htmlspecialchars((string) ($afiliadoData['nombre_completo'] ?? '')) ?></strong>
                                     (<?= htmlspecialchars((string) ($afiliadoData['cedula'] ?? '')) ?>)
                                 </div>
@@ -63,7 +74,9 @@ ob_start();
                             <select name="oficina_id" id="oficina_id" class="form-control" required>
                                 <option value="">-- Seleccione una oficina --</option>
                                 <?php foreach (($oficinas ?? []) as $oficina): ?>
-                                    <option value="<?= (int) ($oficina['id'] ?? 0) ?>">
+                                    <?php if (empty($oficina['id'])) continue; ?>
+
+                                    <option value="<?= (int) $oficina['id'] ?>">
                                         <?= htmlspecialchars((string) ($oficina['nombre'] ?? '')) ?>
                                     </option>
                                 <?php endforeach; ?>
@@ -71,25 +84,28 @@ ob_start();
                         </div>
 
                         <div class="col-md-4 mb-3">
-                            <label for="numeroEmpleado">Numero de empleado / cedula</label>
+                            <label for="numeroEmpleado">Número de empleado / cédula</label>
                             <input type="text"
                                    id="numeroEmpleado"
+                                   maxlength="20"
                                    name="numero_empleado"
-                                   value="<?= !empty($es_jefatura) ? '' : htmlspecialchars((string) ($afiliadoData['cedula'] ?? '')) ?>"
+                                   value="<?= !empty($es_jefatura)
+                                        ? ''
+                                        : htmlspecialchars((string) ($afiliadoData['cedula'] ?? '')) ?>"
                                    class="form-control"
                                    <?= empty($es_jefatura) ? 'readonly' : '' ?>
                                    required>
-                            <?php if (!empty($es_jefatura)): ?>
-                                <small class="form-text text-muted">Formato unico de cedula: solo numeros.</small>
-                            <?php endif; ?>
                         </div>
 
                         <div class="col-md-4 mb-3">
                             <label for="nombreEmpleado">Nombre del empleado</label>
                             <input type="text"
                                    id="nombreEmpleado"
+                                   maxlength="50"
                                    name="nombre_empleado"
-                                   value="<?= !empty($es_jefatura) ? '' : htmlspecialchars((string) ($afiliadoData['nombre_completo'] ?? '')) ?>"
+                                   value="<?= !empty($es_jefatura)
+                                        ? ''
+                                        : htmlspecialchars((string) ($afiliadoData['nombre_completo'] ?? '')) ?>"
                                    class="form-control"
                                    <?= empty($es_jefatura) ? 'readonly' : '' ?>
                                    required>
@@ -108,23 +124,24 @@ ob_start();
                         <div class="col-md-3 mb-3">
                             <label for="tipo_visita">Tipo de visita</label>
                             <select name="tipo_visita" id="tipo_visita" class="form-control" required>
-                                <option value="gestion">Gestion</option>
-                                <option value="acompanamiento">Acompanamiento</option>
+                                <option value="gestion">Gestión</option>
+                                <option value="acompanamiento">Acompañamiento</option>
                                 <option value="entrega_documentos">Entrega de documentos</option>
-                                <option value="reunion">Reunion</option>
+                                <option value="reunion">Reunión</option>
                                 <option value="otra">Otra</option>
                             </select>
                         </div>
 
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label for="motivo">Motivo</label>
-                            <textarea name="motivo" id="motivo" class="form-control" required></textarea>
+                            <textarea name="motivo" id="motivo" maxlength="255" class="form-control" required></textarea>
                         </div>
 
                         <div class="col-md-12 mb-3">
                             <label for="observaciones">Observaciones</label>
-                            <textarea name="observaciones" id="observaciones" class="form-control"></textarea>
+                            <textarea name="observaciones" id="observaciones" maxlength="255" class="form-control"></textarea>
                         </div>
+
                     </div>
 
                     <button type="submit" class="au-btn au-btn-icon au-btn--green">

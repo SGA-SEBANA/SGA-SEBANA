@@ -25,6 +25,20 @@ class JuntaDirectivaController
       return mkdir($dir, 0775, true) || is_dir($dir);
    }
 
+   private function ensureSessionStarted(): void
+   {
+      if (session_status() !== PHP_SESSION_ACTIVE) {
+         session_start();
+      }
+   }
+
+   private function redirectWithError(string $location, string $message): void
+   {
+      $this->ensureSessionStarted();
+      $_SESSION['error'] = $message;
+      header("Location: {$location}");
+      exit;
+   }
 
 
 public function index()
@@ -112,7 +126,9 @@ public function index()
       $cargosDisponibles = $this->cargosPermitidos();
 
       if ($_POST) {
-         $afiliadoId = (int) ($_POST['afiliado_id'] ?? 0);
+   
+       
+         $afiliadoId = filter_var($_POST['afiliado_id'] ?? 0, FILTER_VALIDATE_INT);
          $cargo = trim((string) ($_POST['cargo'] ?? ''));
          $estado = strtolower(trim((string) ($_POST['estado'] ?? 'vigente')));
          $fechaInicio = trim((string) ($_POST['fecha_inicio'] ?? ''));
@@ -120,6 +136,7 @@ public function index()
          $periodo = '';
          $responsabilidades = trim((string) ($_POST['responsabilidades'] ?? ''));
          $observaciones = trim((string) ($_POST['observaciones'] ?? ''));
+
 
          if ($afiliadoId <= 0) {
             $_SESSION['error'] = "Debe seleccionar un afiliado valido.";
@@ -164,6 +181,12 @@ public function index()
          }
 
          $periodo = $this->calcularPeriodoTrienio($fechaInicio);
+
+         if ($periodo === '') {
+            $_SESSION['error'] = "No se pudo calcular el periodo.";
+            header("Location: /SGA-SEBANA/public/junta/create");
+            exit;
+         }
 
          $juntaId = $model->createMiembroJunta(
             $afiliadoId,
@@ -237,10 +260,10 @@ public function index()
                $permitidos = ['application/pdf', 'image/jpeg', 'image/png'];
 
                if (!in_array($mime, $permitidos)) {
-                  $_SESSION['error'] = "Tipo de archivo no permitido. Solo se permiten PDF, JPEG y PNG.";
-                   header("Location: /SGA-SEBANA/public/junta/create");
-                   exit;
-               }
+                  $_SESSION['error'] = "Tipo de archivo no permitido. Solo PDF, JPG o PNG.";
+                  header("Location: /SGA-SEBANA/public/junta/create");
+                  exit;
+}
 
                $ext = pathinfo($nombreOriginal, PATHINFO_EXTENSION);
                $nombreSeguro = uniqid("doc_") . "." . $ext;
@@ -266,6 +289,7 @@ public function index()
 
       $afiliados = $model->getAfiliados();
 
+      $this->ensureSessionStarted();
       $error = $_SESSION['error'] ?? null;
       unset($_SESSION['error']);
       require BASE_PATH . '/app/modules/JuntaDirectiva/View/create.php';
@@ -288,21 +312,34 @@ public function index()
          $estado = strtolower(trim((string) ($_POST['estado'] ?? 'vigente')));
          $responsabilidades = trim((string) ($_POST['responsabilidades'] ?? ''));
          $observaciones = trim((string) ($_POST['observaciones'] ?? ''));
+         $afiliadoId = filter_var($_POST['afiliado_id'] ?? 0, FILTER_VALIDATE_INT);
+
+         if (!$afiliadoId) {
+            $this->redirectWithError("/SGA-SEBANA/public/junta/edit/{$id}", "Debe seleccionar un afiliado válido.");
+         }
+
+         if ($cargo === '') {
+            $this->redirectWithError("/SGA-SEBANA/public/junta/edit/{$id}", "El campo cargo es obligatorio.");
+         }
 
          if (!$this->esCargoPermitido($cargo)) {
-            die("Error: Debe seleccionar un cargo valido de la lista.");
+            $this->redirectWithError("/SGA-SEBANA/public/junta/edit/{$id}", "Error: Debe seleccionar un cargo valido de la lista.");
          }
 
          if ($fechaInicio === '') {
-            die("Error: La fecha de inicio es obligatoria.");
+            $this->redirectWithError("/SGA-SEBANA/public/junta/edit/{$id}", "Error: La fecha de inicio es obligatoria.");
          }
 
-         if ($fechaFin !== '' && $fechaFin < $fechaInicio) {
-            die("Error: La fecha de fin no puede ser anterior a la fecha de inicio.");
+         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fechaInicio)) {
+            $this->redirectWithError("/SGA-SEBANA/public/junta/edit/{$id}", "Formato de fecha inválido.");
+         }
+
+         if ($fechaFin !== '' && strtotime($fechaFin) < strtotime($fechaInicio)) {
+            $this->redirectWithError("/SGA-SEBANA/public/junta/edit/{$id}", "Error: La fecha de fin no puede ser anterior a la fecha de inicio.");
          }
 
          if ($estado === 'finalizado' && $fechaFin === '') {
-            die("Error: Si el estado es finalizado, debe indicar fecha de fin.");
+            $this->redirectWithError("/SGA-SEBANA/public/junta/edit/{$id}", "Error: Si el estado es finalizado, debe indicar fecha de fin.");
          }
 
          $periodo = $this->calcularPeriodoTrienio($fechaInicio);
@@ -319,7 +356,7 @@ public function index()
          );
 
          if (!$updated) {
-            die("Error al actualizar el miembro de junta: " . $model->getLastError());
+            $this->redirectWithError("/SGA-SEBANA/public/junta/edit/{$id}", "Error al actualizar el miembro de junta: " . $model->getLastError());
          }
 
          // Log Bitacora
@@ -352,12 +389,12 @@ public function index()
 
          if (!empty($_FILES['documentos']['name'][0])) {
             if (!$this->ensureJuntaStorageDir()) {
-               die("No se pudo preparar la carpeta de documentos.");
+               $this->redirectWithError("/SGA-SEBANA/public/junta/edit/{$id}", "No se pudo preparar la carpeta de documentos.");
             }
             foreach ($_FILES['documentos']['name'] as $i => $nombreOriginal) {
 
                if ($_FILES['documentos']['size'][$i] > 5 * 1024 * 1024) {
-                  die("Archivo muy grande");
+                  $this->redirectWithError("/SGA-SEBANA/public/junta/edit/{$id}", "Archivo muy grande");
                }
 
                $finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -365,7 +402,7 @@ public function index()
 
                $permitidos = ['application/pdf', 'image/jpeg', 'image/png'];
                if (!in_array($mime, $permitidos)) {
-                  die("Tipo de archivo no permitido");
+                  $this->redirectWithError("/SGA-SEBANA/public/junta/edit/{$id}", "Tipo de archivo no permitido");
                }
 
                $ext = pathinfo($nombreOriginal, PATHINFO_EXTENSION);
@@ -373,7 +410,7 @@ public function index()
 
                $destino = BASE_PATH . "/storage/junta/" . $nombreSeguro;
                if (!move_uploaded_file($_FILES['documentos']['tmp_name'][$i], $destino)) {
-                  die("No se pudo guardar el archivo adjunto en storage.");
+                  $this->redirectWithError("/SGA-SEBANA/public/junta/edit/{$id}", "No se pudo guardar el archivo adjunto en storage.");
                }
 
                $model->insertDocumento($id, $nombreSeguro, $nombreOriginal);
@@ -460,7 +497,7 @@ public function index()
       $documentos = $model->getDocumentos($id);
 
       if (!$miembro) {
-         exit("Miembro no encontrado");
+         $this->redirectWithError('/SGA-SEBANA/public/junta', 'Miembro no encontrado.');
       }
 
       require BASE_PATH . '/app/modules/JuntaDirectiva/View/documentos.php';
@@ -475,13 +512,13 @@ public function index()
       $doc = $model->getDocumentoById($id);
 
       if (!$doc) {
-         exit("Documento no encontrado");
+         $this->redirectWithError('/SGA-SEBANA/public/junta', 'Documento no encontrado.');
       }
 
       $archivo = BASE_PATH . "/storage/junta/" . $doc['nombre_archivo'];
 
       if (!file_exists($archivo)) {
-         exit("Archivo físico no existe");
+         $this->redirectWithError('/SGA-SEBANA/public/junta', 'Archivo físico no existe.');
       }
 
       header("Content-Type: " . mime_content_type($archivo));
@@ -497,7 +534,8 @@ public function index()
       $doc = $model->getDocumentoById($id);
 
       if (!$doc) {
-         exit("No existe");
+         $redirect = $_SERVER['HTTP_REFERER'] ?? '/SGA-SEBANA/public/junta';
+         $this->redirectWithError($redirect, 'No existe');
       }
 
       $archivo = BASE_PATH . "/storage/junta/" . $doc['nombre_archivo'];
@@ -510,5 +548,7 @@ public function index()
       header("location: " . $_SERVER['HTTP_REFERER']);
       exit;
    }
+
+
 
 }
