@@ -40,7 +40,7 @@ ob_start();
                         <div class="col-md-6">
                             <label for="nombre" class="form-control-label">Nombre del Puesto *</label>
                             <input type="text" id="nombre" name="nombre" class="form-control"
-                                value="<?= htmlspecialchars($puesto['nombre']) ?>" required>
+                                value="<?= htmlspecialchars($puesto['nombre']) ?>" maxlength="100" required>
                         </div>
                     </div>
 
@@ -48,7 +48,7 @@ ob_start();
                         <div class="col-md-6">
                             <label for="departamento" class="form-control-label">Departamento</label>
                             <input type="text" id="departamento" name="departamento" class="form-control"
-                                value="<?= htmlspecialchars($puesto['departamento'] ?? '') ?>">
+                                value="<?= htmlspecialchars($puesto['departamento'] ?? '') ?>" maxlength="80">
                         </div>
                         <div class="col-md-6">
                             <label for="oficina_id" class="form-control-label">Oficina</label>
@@ -143,7 +143,7 @@ ob_start();
                         <div class="col-md-8">
                             <label for="motivo_remocion" class="form-control-label">Motivo de Remoción</label>
                             <textarea name="motivo_remocion" id="motivo_remocion" rows="2" class="form-control"
-                                placeholder="Explique el motivo de la remoción..."><?= htmlspecialchars($puesto['motivo_remocion'] ?? '') ?></textarea>
+                                placeholder="Explique el motivo de la remoción..." maxlength="300"><?= htmlspecialchars($puesto['motivo_remocion'] ?? '') ?></textarea>
                         </div>
                     </div>
                 </div>
@@ -160,7 +160,7 @@ ob_start();
                         <div class="col-md-12">
                             <label for="descripcion" class="form-control-label">Descripción del Puesto</label>
                             <textarea name="descripcion" id="descripcion" rows="3" class="form-control"
-                                placeholder="Describa las responsabilidades y funciones del puesto..."><?= htmlspecialchars($puesto['descripcion'] ?? '') ?></textarea>
+                                placeholder="Describa las responsabilidades y funciones del puesto..." maxlength="500"><?= htmlspecialchars($puesto['descripcion'] ?? '') ?></textarea>
                         </div>
                     </div>
 
@@ -169,7 +169,7 @@ ob_start();
                             <label for="observaciones" class="form-control-label">Observaciones</label>
                             <input type="text" name="observaciones" id="observaciones" class="form-control"
                                 value="<?= htmlspecialchars($puesto['observaciones'] ?? '') ?>"
-                                placeholder="Notas adicionales...">
+                                placeholder="Notas adicionales..." maxlength="250">
                         </div>
                     </div>
 

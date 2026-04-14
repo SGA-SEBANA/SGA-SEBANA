@@ -73,6 +73,8 @@ class PuestosController
             $this->validateCsrfOrRedirect('/SGA-SEBANA/public/puestos/create');
             $data = $this->limpiarDatos($_POST);
 
+            $this->validarPuesto($data);
+
             // Validate required fields
             if (empty($data['afiliado_id']) || empty($data['nombre']) || empty($data['fecha_asignacion'])) {
                 echo "<script>alert('Error: Afiliado, Nombre del Puesto y Fecha de Asignación son obligatorios.'); window.history.back();</script>";
@@ -128,6 +130,8 @@ class PuestosController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->validateCsrfOrRedirect('/SGA-SEBANA/public/puestos/edit/' . (int) $id);
             $data = $this->limpiarDatos($_POST);
+
+            $this->validarPuesto($data);
 
             // Get previous data for log
             $anterior = $model->getById($id);
@@ -431,4 +435,50 @@ class PuestosController
             'observaciones' => trim($post['observaciones'] ?? ''),
         ];
     }
+
+
+
+
+    private function validarPuesto($data)
+{
+    $tiposContrato = ['indefinido', 'temporal', 'proyecto'];
+    $jornadas = ['completa', 'media', 'por_horas'];
+    $estados = ['activo', 'finalizado', 'suspendido'];
+
+    if ($data['afiliado_id'] === null) {
+        throw new \Exception("Afiliado inválido");
+    }
+
+    if ($data['nombre'] === '' || strlen($data['nombre']) > 100) {
+        throw new \Exception("Nombre inválido (1-100 caracteres)");
+    }
+
+    if (strlen($data['descripcion']) > 500) {
+        throw new \Exception("Descripción muy larga");
+    }
+
+    if (strlen($data['departamento']) > 80) {
+        throw new \Exception("Departamento muy largo");
+    }
+
+    if ($data['salario_base'] !== null && $data['salario_base'] > 10000000) {
+        throw new \Exception("Salario fuera de rango");
+    }
+
+    if (!in_array($data['tipo_contrato'], $tiposContrato)) {
+        throw new \Exception("Tipo de contrato inválido");
+    }
+
+    if (!in_array($data['jornada'], $jornadas)) {
+        throw new \Exception("Jornada inválida");
+    }
+
+    if (!in_array($data['estado'], $estados)) {
+        throw new \Exception("Estado inválido");
+    }
+
+    if (strlen($data['observaciones']) > 200) {
+        throw new \Exception("Observaciones muy largas");
+    }
+}
 }

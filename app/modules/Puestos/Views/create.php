@@ -40,7 +40,7 @@ ob_start();
                         <div class="col-md-6">
                             <label for="nombre" class="form-control-label">Nombre del Puesto *</label>
                             <input type="text" id="nombre" name="nombre" class="form-control"
-                                placeholder="Ej: Analista de Crédito" required>
+                                placeholder="Ej: Analista de Crédito" maxlength="100" required>
                         </div>
                     </div>
 
@@ -48,7 +48,7 @@ ob_start();
                         <div class="col-md-6">
                             <label for="departamento" class="form-control-label">Departamento</label>
                             <input type="text" id="departamento" name="departamento" class="form-control"
-                                placeholder="Ej: Operaciones">
+                                placeholder="Ej: Operaciones" maxlength="80">
                         </div>
                         <div class="col-md-6">
                             <label for="oficina_id" class="form-control-label">Oficina</label>
@@ -130,7 +130,7 @@ ob_start();
                         <div class="col-md-12">
                             <label for="descripcion" class="form-control-label">Descripción del Puesto</label>
                             <textarea name="descripcion" id="descripcion" rows="3" class="form-control"
-                                placeholder="Describa las responsabilidades y funciones del puesto..."></textarea>
+                                placeholder="Describa las responsabilidades y funciones del puesto..." maxlength="500"></textarea>
                         </div>
                     </div>
 
@@ -138,7 +138,7 @@ ob_start();
                         <div class="col-md-12">
                             <label for="observaciones" class="form-control-label">Observaciones</label>
                             <input type="text" name="observaciones" id="observaciones" class="form-control"
-                                placeholder="Notas adicionales...">
+                                placeholder="Notas adicionales..." maxlength="250">
                         </div>
                     </div>
 

@@ -65,57 +65,64 @@ public function index()
         ]);
     }
 
-    public function store() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+ public function store() {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+        try {
+
             $nombre = trim($_POST['nombre'] ?? '');
             $descripcion = trim($_POST['descripcion'] ?? '');
             $tipo = trim($_POST['tipo'] ?? 'general');
 
-            if (empty($nombre)) {
-                $this->redirect('/SGA-SEBANA/public/Categorias/create?error=vacio');
-                return;
+
+            if ($nombre === '' || strlen($nombre) > 100) {
+                throw new \Exception("El nombre es obligatorio y debe tener máximo 100 caracteres.");
             }
 
-            if ($this->model->existeNombre($nombre)) {
-                $this->redirect('/SGA-SEBANA/public/Categorias/create?error=duplicado');
-                return;
+    
+            if (strlen($descripcion) > 500) {
+                throw new \Exception("La descripción no puede superar los 500 caracteres.");
             }
 
-            //if ($this->model->registrar($nombre, $descripcion, $tipo)) {
-                //$this->enviarNotificacionMail($nombre, 'registro');
-                $nuevoId = $this->model->registrar($nombre, $descripcion, $tipo);
+         
+            $tiposValidos = ['afiliado', 'caso_rrll', 'general'];
 
-if ($nuevoId > 0) {
-    // Notificación
-    $this->notiModel->createNotification(
-        1,
-        'sistema',
-        'categorias',
-        'Nueva Categoría',
-        "Se registró la categoría: {$nombre}",
-        'categoria',
-        $nuevoId,
-        "/SGA-SEBANA/public/Categorias/show/{$nuevoId}"
-    );
-
-
-                // BITÁCORA: creación
-                $bitacora = new Bitacora();
-                $bitacora->log([
-                    'accion' => 'CREATE',
-                    'modulo' => 'categorias',
-                    'entidad' => 'categoria',
-                    'descripcion' => "Creación de categoría: $nombre"
-                ]);
-
-                $this->redirect('/SGA-SEBANA/public/Categorias?success=creado');
-                return;
-            } else {
-                $this->redirect('/SGA-SEBANA/public/Categorias/create?error=db');
-                return;
+            if (!in_array($tipo, $tiposValidos)) {
+                throw new \Exception("Tipo de categoría inválido.");
             }
+
+            // NOTIFICACION
+            $this->notiModel->createNotification(
+                1,
+                'sistema',
+                'categorias',
+                'Nueva Categoría',
+                "Se registró la categoría: {$nombre}",
+                'categoria',
+                $nuevoId,
+                "/SGA-SEBANA/public/Categorias/show/{$nuevoId}"
+            );
+
+            // BITACORA
+            $bitacora = new Bitacora();
+            $bitacora->log([
+                'accion' => 'CREATE',
+                'modulo' => 'categorias',
+                'entidad' => 'categoria',
+                'descripcion' => "Creación de categoría: $nombre"
+            ]);
+
+            $this->redirect('/SGA-SEBANA/public/Categorias?success=creado');
+            return;
+
+        } catch (\Exception $e) {
+
+   
+            $this->redirect('/SGA-SEBANA/public/Categorias/create?error=validacion&msg=' . urlencode($e->getMessage()));
+            return;
         }
     }
+}
 
     public function edit($id) {
         $categoria = $this->model->find($id);
@@ -128,14 +135,16 @@ if ($nuevoId > 0) {
             'categoria' => $categoria
         ]);
     }
+public function update($id) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    public function update($id) {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        try {
+
             $nombre = trim($_POST['nombre'] ?? '');
             $descripcion = trim($_POST['descripcion'] ?? '');
             $tipo = trim($_POST['tipo'] ?? 'general');
 
-            if (empty($nombre)) {
+            if ($nombre === '' || strlen($nombre) > 100) {
                 $this->redirect("/SGA-SEBANA/public/Categorias/$id/edit?error=vacio");
                 return;
             }
@@ -145,23 +154,37 @@ if ($nuevoId > 0) {
                 return;
             }
 
-            //if ($this->model->actualizar($id, $nombre, $descripcion, $tipo)) {
-                //$this->enviarNotificacionMail($nombre, 'actualización');
-                if ($this->model->actualizar($id, $nombre, $descripcion, $tipo)) {
-              // Notificación real
-             $this->notiModel->createNotification(
-               1,
-               'sistema',
-                'categorias',
-               'Categoría Editada',
-              "Se actualizó la categoría: {$nombre}",
-              'categoria',
-               $id,
-               "/SGA-SEBANA/public/Categorias/show/{$id}"
+            if (strlen($descripcion) > 500) {
+                $this->redirect("/SGA-SEBANA/public/Categorias/$id/edit?error=descripcion_larga");
+                return;
+            }
+
+            $tiposValidos = ['afiliado', 'caso_rrll', 'general'];
+
+            if (!in_array($tipo, $tiposValidos)) {
+                $this->redirect("/SGA-SEBANA/public/Categorias/$id/edit?error=tipo_invalido");
+                return;
+            }
+        
+            $nombre = htmlspecialchars(strip_tags($nombre));
+            $descripcion = htmlspecialchars(strip_tags($descripcion));
+
+         
+            if ($this->model->actualizar($id, $nombre, $descripcion, $tipo)) {
+
+                // NOTIFICACION
+                $this->notiModel->createNotification(
+                    1,
+                    'sistema',
+                    'categorias',
+                    'Categoría Editada',
+                    "Se actualizó la categoría: {$nombre}",
+                    'categoria',
+                    $id,
+                    "/SGA-SEBANA/public/Categorias/show/{$id}"
                 );
 
-
-                // BITÁCORA: actualización
+                // BITACORA
                 $bitacora = new Bitacora();
                 $bitacora->log([
                     'accion' => 'UPDATE',
@@ -172,12 +195,19 @@ if ($nuevoId > 0) {
                 ]);
 
                 $this->redirect('/SGA-SEBANA/public/Categorias?success=actualizado');
+                return;
+
             } else {
                 $this->redirect("/SGA-SEBANA/public/Categorias/$id/edit?error=db");
+                return;
             }
+
+        } catch (\Exception $e) {
+            $this->redirect("/SGA-SEBANA/public/Categorias/$id/edit?error=exception&msg=" . urlencode($e->getMessage()));
+            return;
         }
     }
-
+}
     public function toggle($id) {
     $categoria = $this->model->find($id);
 
@@ -321,4 +351,6 @@ if ($nuevoId > 0) {
         $dompdf->render();
         $dompdf->stream("historial_categorias.pdf", ["Attachment" => true]);
     }
+
+   
 }

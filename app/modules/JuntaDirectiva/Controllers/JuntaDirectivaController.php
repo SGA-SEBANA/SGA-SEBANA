@@ -145,7 +145,7 @@ public function index()
             exit;
          }
 
-         if ($fechaFin !== '' && $fechaFin < $fechaInicio) {
+         if ($fechaFin !== '' && strtotime($fechaFin) < strtotime($fechaInicio)) {
             $_SESSION['error'] = "Error: La fecha de fin no puede ser anterior a la fecha de inicio.";
             header("Location: /SGA-SEBANA/public/junta/create");
             exit;

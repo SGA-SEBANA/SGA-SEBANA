@@ -53,28 +53,35 @@ class AfiliadosController extends ControllerBase
     $this->view('index', $data);
 }
 
-    public function create()
-    {
-        $modelo = new Afiliados();
-        $autoUserNotice = $_SESSION['afiliado_user_notice'] ?? null;
-        unset($_SESSION['afiliado_user_notice']);
 
-        $data = [
-            'titulo' => 'Registrar Nuevo Afiliado',
-            'categorias' => $modelo->getCategorias(),
-            'oficinas' => $modelo->getOficinas(),
-            'success' => isset($_GET['status']) && $_GET['status'] === 'success' ? 'Afiliado registrado correctamente.' : null,
-            'error' => null,
-            'auto_user_notice' => $autoUserNotice
-        ];
+public function create()
+{
+    $modelo = new Afiliados();
+    $autoUserNotice = $_SESSION['afiliado_user_notice'] ?? null;
+    unset($_SESSION['afiliado_user_notice']);
 
-        $this->view('create', $data);
-    }
+    $error = $_SESSION['error'] ?? null;
+    unset($_SESSION['error']);
+
+    $data = [
+        'titulo' => 'Registrar Nuevo Afiliado',
+        'categorias' => $modelo->getCategorias(),
+        'oficinas' => $modelo->getOficinas(),
+        'success' => isset($_GET['status']) && $_GET['status'] === 'success' 
+            ? 'Afiliado registrado correctamente.' 
+            : null,
+        'error' => $error,
+        'auto_user_notice' => $autoUserNotice
+    ];
+
+    $this->view('create', $data);
+}
 
     public function store()
     {
         try {
             $datos = $this->limpiarDatos($_POST);
+            $this->validarDatos($datos);
             $modelo = new Afiliados();
 
             if ($datos['cedula'] === '') {
@@ -145,7 +152,9 @@ class AfiliadosController extends ControllerBase
                 'alta'
             );
 
-            echo 'Error al guardar: ' . $e->getMessage();
+            $_SESSION['error'] = $e->getMessage();
+            header('Location: /SGA-SEBANA/public/afiliados/create');
+            exit;
         }
     }
 
@@ -173,6 +182,7 @@ class AfiliadosController extends ControllerBase
     {
         try {
             $datos = $this->limpiarDatos($_POST);
+            $this->validarDatos($datos);
             $modelo = new Afiliados();
             $anterior = $modelo->getById($id);
 
@@ -459,4 +469,58 @@ if (session_status() === PHP_SESSION_NONE) {
     header('Content-Type: application/json');
     echo json_encode($resultados);
 }
+
+private function validarDatos($datos)
+{
+
+    if (empty($datos['nombre']) || strlen($datos['nombre']) > 50) {
+        throw new \Exception("Nombre inválido (máx 50 caracteres).");
+    }
+
+
+    if (empty($datos['apellido1']) || strlen($datos['apellido1']) > 50) {
+        throw new \Exception("Primer apellido inválido.");
+    }
+
+    if (!empty($datos['apellido2']) && strlen($datos['apellido2']) > 50) {
+        throw new \Exception("Segundo apellido demasiado largo.");
+    }
+
+    
+    if (!preg_match('/^\d{9,12}$/', $datos['cedula'])) {
+        throw new \Exception("Cédula inválida.");
+    }
+
+
+    if (!empty($datos['correo'])) {
+        if (strlen($datos['correo']) > 100) {
+            throw new \Exception("Correo demasiado largo.");
+        }
+        if (!filter_var($datos['correo'], FILTER_VALIDATE_EMAIL)) {
+            throw new \Exception("Correo inválido.");
+        }
+    }
+
+
+    if (!empty($datos['telefono'])) {
+        if (strlen($datos['telefono']) > 15) {
+            throw new \Exception("Teléfono demasiado largo.");
+        }
+        if (!preg_match('/^[0-9\-]{8,15}$/', $datos['telefono'])) {
+            throw new \Exception("Teléfono inválido.");
+        }
+    }
+
+
+    if (!empty($datos['direccion']) && strlen($datos['direccion']) > 255) {
+        throw new \Exception("Dirección demasiado larga.");
+    }
+
+
+    if (!empty($datos['puesto_actual']) && strlen($datos['puesto_actual']) > 100) {
+        throw new \Exception("Puesto demasiado largo.");
+    }
+    
+}
+
 }

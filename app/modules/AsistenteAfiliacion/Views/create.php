@@ -64,24 +64,24 @@ $status = $status ?? null;
         <div class="row">
             <div class="col-md-6 form-group mb-3">
                 <label>Cedula *</label>
-                <input type="text" class="form-control" name="cedula" value="<?= $get('cedula') ?>" placeholder="702000717" required>
+                <input type="text" class="form-control"name="cedula" value="<?= $get('cedula') ?>" placeholder="702000717" maxlength="9" pattern="[0-9]{9}" inputmode="numeric" required>
                 <small class="text-muted">Formato unico: escriba solo numeros. Ejemplo: 702000717.</small>
             </div>
             <div class="col-md-6 form-group mb-3">
                 <label>Correo electronico *</label>
-                <input type="email" class="form-control" name="correo" value="<?= $get('correo') ?>" required>
+                <input type="email" class="form-control" name="correo" value="<?= $get('correo') ?>" maxlength="50" required>
             </div>
             <div class="col-md-4 form-group mb-3">
                 <label>Nombre *</label>
-                <input type="text" class="form-control" name="nombre" value="<?= $get('nombre') ?>" required>
+                <input type="text" class="form-control" name="nombre" value="<?= $get('nombre') ?>" maxlength="50"  required>
             </div>
             <div class="col-md-4 form-group mb-3">
                 <label>Primer apellido *</label>
-                <input type="text" class="form-control" name="apellido1" value="<?= $get('apellido1') ?>" required>
+                <input type="text" class="form-control" name="apellido1" value="<?= $get('apellido1') ?>" maxlength="50" required>
             </div>
             <div class="col-md-4 form-group mb-3">
                 <label>Segundo apellido</label>
-                <input type="text" class="form-control" name="apellido2" value="<?= $get('apellido2') ?>">
+                <input type="text" class="form-control" name="apellido2" value="<?= $get('apellido2') ?>" maxlength="50">
             </div>
             <div class="col-md-6 form-group mb-3">
                 <label>Fecha de nacimiento *</label>
@@ -89,9 +89,9 @@ $status = $status ?? null;
             </div>
             <div class="col-md-6 form-group mb-3">
                 <label>Celular *</label>
-                <input type="text" class="form-control" name="celular" value="<?= $get('celular') ?>" placeholder="Ejemplo: 88887777" required>
+                <input type="text" class="form-control" name="celular" value="<?= $get('celular') ?>" maxlength="8" pattern="[0-9]{8}" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
             </div>
-        </div>
+           </div>
 
         <h5 class="mt-4 mb-3 text-primary">3. Informacion laboral BNCR</h5>
         <div class="row">
@@ -151,7 +151,7 @@ $status = $status ?? null;
 
         <div class="form-group mb-3">
             <label>Observaciones adicionales</label>
-            <textarea class="form-control" name="observaciones" rows="3"><?= $get('observaciones') ?></textarea>
+            <textarea class="form-control" name="observaciones" maxlength="500" rows="3"><?= $get('observaciones') ?></textarea>
         </div>
 
         <h5 class="mt-4 mb-3 text-primary">4. Aceptaciones obligatorias</h5>

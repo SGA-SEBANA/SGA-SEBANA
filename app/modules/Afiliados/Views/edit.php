@@ -31,17 +31,17 @@ $generoActual = strtolower((string) ($afiliado['genero'] ?? ''));
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label for="nombre" class="form-control-label">Nombre</label>
-                            <input type="text" id="nombre" name="nombre" class="form-control"
+                            <input type="text" id="nombre" name="nombre" class="form-control" maxlength="50"
                                 value="<?= htmlspecialchars($afiliado['nombre'] ?? '') ?>" required>
                         </div>
                         <div class="col-md-4">
                             <label for="apellido1" class="form-control-label">Primer Apellido</label>
-                            <input type="text" id="apellido1" name="apellido1" class="form-control"
+                            <input type="text" id="apellido1" name="apellido1" class="form-control" maxlength="50"
                                 value="<?= htmlspecialchars($afiliado['apellido1'] ?? '') ?>" required>
                         </div>
                         <div class="col-md-4">
                             <label for="apellido2" class="form-control-label">Segundo Apellido</label>
-                            <input type="text" id="apellido2" name="apellido2" class="form-control"
+                            <input type="text" id="apellido2" name="apellido2" class="form-control" maxlength="50"
                                 value="<?= htmlspecialchars($afiliado['apellido2'] ?? '') ?>">
                         </div>
                     </div>
@@ -49,13 +49,13 @@ $generoActual = strtolower((string) ($afiliado['genero'] ?? ''));
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label for="cedula" class="form-control-label">Cédula</label>
-                            <input type="text" id="cedula" name="cedula" class="form-control" pattern="\d{9,12}"
+                            <input type="text" id="cedula" name="cedula" class="form-control"  maxlength="12" pattern="\d{9,12}"
                                 value="<?= htmlspecialchars($afiliado['cedula'] ?? '') ?>" required>
                             <small class="form-text text-muted">Formato unico: escriba solo numeros. Ejemplo: 702000717 (sin guiones ni espacios).</small>
                         </div>
                         <div class="col-md-4">
                             <label for="fecha_nac" class="form-control-label">Fecha Nacimiento</label>
-                            <input type="date" id="fecha_nac" name="fecha_nacimiento" class="form-control"
+                            <input type="date" id="fecha_nac" name="fecha_nacimiento" class="form-control "
                                 value="<?= htmlspecialchars($afiliado['fecha_nacimiento'] ?? '') ?>" required>
                         </div>
                         <div class="col-md-4">
@@ -82,25 +82,25 @@ $generoActual = strtolower((string) ($afiliado['genero'] ?? ''));
                             <label for="correo" class="form-control-label">Correo Institucional/Personal</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="zmdi zmdi-email"></i></span>
-                                <input type="email" id="correo" name="correo" class="form-control"
+                                <input type="email" id="correo" name="correo" class="form-control" maxlength="100"
                                     value="<?= htmlspecialchars($afiliado['correo'] ?? '') ?>">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <label for="telefono" class="form-control-label">Teléfono Principal</label>
-                            <input type="text" id="telefono" name="telefono" class="form-control"
+                            <input type="text" id="telefono" name="telefono" class="form-control" pattern="[0-9\-]{8,15}" maxlength="15"
                                 value="<?= htmlspecialchars($afiliado['telefono'] ?? '') ?>">
                         </div>
                         <div class="col-md-3">
                             <label for="telefono_secundario" class="form-control-label">Teléfono Secundario</label>
-                            <input type="text" id="telefono_secundario" name="telefono_secundario" class="form-control"
+                            <input type="text" id="telefono_secundario" name="telefono_secundario" class="form-control" pattern="[0-9\-]{8,15}" maxlength="15"
                                 value="<?= htmlspecialchars($afiliado['telefono_secundario'] ?? '') ?>">
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-12">
                             <label for="direccion" class="form-control-label">Dirección Domicilio</label>
-                            <textarea name="direccion" id="direccion" rows="2"
+                            <textarea name="direccion" id="direccion" rows="2" maxlength="255"
                                 class="form-control"><?= htmlspecialchars($afiliado['direccion'] ?? '') ?></textarea>
                         </div>
                     </div>
@@ -127,7 +127,7 @@ $generoActual = strtolower((string) ($afiliado['genero'] ?? ''));
                         </div>
                         <div class="col-md-6">
                             <label for="puesto_actual" class="form-control-label">Puesto Actual</label>
-                            <input type="text" name="puesto_actual" id="puesto_actual" class="form-control"
+                            <input type="text" name="puesto_actual" id="puesto_actual" class="form-control" maxlength="100"
                                 value="<?= htmlspecialchars($afiliado['puesto_actual'] ?? '') ?>">
                         </div>
                     </div>
@@ -156,17 +156,17 @@ $generoActual = strtolower((string) ($afiliado['genero'] ?? ''));
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label for="emergencia_nombre" class="form-control-label">Nombre Contacto</label>
-                            <input type="text" name="emergencia_nombre" id="emergencia_nombre" class="form-control"
+                            <input type="text" name="emergencia_nombre" id="emergencia_nombre" class="form-control" maxlength="50"
                                 value="<?= htmlspecialchars($contactoEmergencia['nombre'] ?? '') ?>">
                         </div>
                         <div class="col-md-4">
                             <label for="emergencia_telefono" class="form-control-label">Teléfono Contacto</label>
-                            <input type="text" name="emergencia_telefono" id="emergencia_telefono" class="form-control"
+                            <input type="text" name="emergencia_telefono" id="emergencia_telefono" class="form-control" pattern="[0-9\-]{8,15}" maxlength="15"
                                 value="<?= htmlspecialchars($contactoEmergencia['telefono'] ?? '') ?>">
                         </div>
                         <div class="col-md-4">
                             <label for="emergencia_relacion" class="form-control-label">Relación (Parentesco)</label>
-                            <input type="text" name="emergencia_relacion" id="emergencia_relacion" class="form-control"
+                            <input type="text" name="emergencia_relacion" id="emergencia_relacion" class="form-control" maxlength="50"
                                 value="<?= htmlspecialchars($contactoEmergencia['relacion'] ?? '') ?>">
                         </div>
                     </div>

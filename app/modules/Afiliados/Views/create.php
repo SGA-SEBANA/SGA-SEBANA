@@ -70,25 +70,25 @@ ob_start();
                         <div class="col-md-4">
                             <label for="nombre" class="form-control-label">Nombre</label>
                             <input type="text" id="nombre" name="nombre" placeholder="Nombre" class="form-control"
-                                required>
+                               required>
                         </div>
                         <div class="col-md-4">
-                            <label for="apellido1" class="form-control-label">Primer Apellido</label>
+                            <label for="apellido1" class="form-control-label" >Primer Apellido</label>
                             <input type="text" id="apellido1" name="apellido1" placeholder="Primer Apellido"
-                                class="form-control" required>
+                                class="form-control" maxlength="50" required>
                         </div>
                         <div class="col-md-4">
-                            <label for="apellido2" class="form-control-label">Segundo Apellido</label>
+                            <label for="apellido2" class="form-control-label" >Segundo Apellido</label>
                             <input type="text" id="apellido2" name="apellido2" placeholder="Segundo Apellido"
-                                class="form-control">
+                                class="form-control" maxlength="50">
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-4">
-                            <label for="cedula" class="form-control-label">Cédula</label>
+                            <label for="cedula" class="form-control-label" >Cédula</label>
                             <input type="text" id="cedula" name="cedula" placeholder="000000000" class="form-control"
-                                pattern="\d{9,12}" title="9 a 12 dígitos" required>
+                                pattern="\d{9,12}" title="9 a 12 dígitos" maxlength="12" required>
                             <small class="form-text text-muted">Formato unico: escriba solo numeros. Ejemplo: 702000717 (sin guiones ni espacios).</small>
                         </div>
                         <div class="col-md-4">
@@ -109,9 +109,9 @@ ob_start();
                         <div class="col-md-6">
                             <label for="correo" class="form-control-label">Correo</label>
                             <div class="input-group">
-                                <span class="input-group-text"><i class="zmdi zmdi-email"></i></span>
+                                <span class="input-group-text"><i class="zmdi zmdi-email "></i></span>
                                 <input type="email" id="correo" name="correo" placeholder="email@ejemplo.com"
-                                    class="form-control">
+                                    class="form-control" maxlength="100">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -119,7 +119,7 @@ ob_start();
                             <div class="input-group">
                                 <span class="input-group-text"><i class="zmdi zmdi-phone"></i></span>
                                 <input type="text" id="telefono" name="telefono" placeholder="8888-8888"
-                                    class="form-control">
+                                    class="form-control" pattern="[0-9\-]{8,15}" maxlength="15">
                             </div>
                         </div>
                     </div>
@@ -160,12 +160,12 @@ ob_start();
                         <div class="col-md-6">
                             <label for="direccion" class="form-control-label">Domicilio</label>
                             <textarea name="direccion" id="direccion" rows="2" placeholder="Dirección exacta..."
-                                class="form-control"></textarea>
+                                class="form-control" maxlength="255"></textarea>
                         </div>
                         <div class="col-md-6">
                             <label for="puesto_actual" class="form-control-label">Puesto Actual</label>
                             <input type="text" name="puesto_actual" id="puesto_actual" placeholder="Ej: Cajero"
-                                class="form-control">
+                                class="form-control" maxlength="100">
                         </div>
                     </div>
 

@@ -38,7 +38,7 @@ ob_start();
                             <div class="form-group">
                                 <label for="nombre" class="form-control-label font-weight-bold">Nombre de Categoría <span class="text-danger">*</span></label>
                                 <input type="text" id="nombre" name="nombre" placeholder="Ej: Electrónicos, Repuestos..." 
-                                       class="form-control" required autofocus>
+                                       class="form-control" maxlength="100" required autofocus>
                                 <small class="form-text text-muted">Este nombre debe ser único para evitar conflictos en el sistema.</small>
                             </div>
                         </div>
@@ -68,7 +68,7 @@ ob_start();
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label for="descripcion" class="form-control-label font-weight-bold">Descripción / Notas</label>
-                                <textarea name="descripcion" id="descripcion" rows="5" 
+                                <textarea name="descripcion" id="descripcion" rows="5" maxlength="255" 
                                           placeholder="Escribe aquí una breve descripción de lo que incluye esta categoría..." 
                                           class="form-control"></textarea>
                                 <small class="form-text text-muted">Opcional: Detalla el uso de esta categoría para otros usuarios.</small>

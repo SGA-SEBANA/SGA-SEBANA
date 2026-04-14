@@ -20,6 +20,15 @@ class ReporteDeExclusionDeAfiliadoController extends ControllerBase
         'nombre'       => $_GET['nombre'] ?? null,
     ];
 
+    if (!empty($filtros['fecha_inicio']) && !empty($filtros['fecha_fin'])) {
+        if (strtotime($filtros['fecha_fin']) < strtotime($filtros['fecha_inicio'])) {
+            $_SESSION['error'] = "La fecha fin no puede ser menor a la fecha inicio.";
+
+            $filtros['fecha_inicio'] = null;
+            $filtros['fecha_fin'] = null;
+        }
+    }
+
     $pagination = \App\Helpers\Paginator::make(
         $model,
         'getAll',
