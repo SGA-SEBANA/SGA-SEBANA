@@ -88,5 +88,6 @@ return array(
     '356736db98a6834f0a886b8d509b0ecd' => $vendorDir . '/thecodingmachine/safe/generated/zlib.php',
     '0174385c3be07e86008907d06ee66531' => $vendorDir . '/sabberworm/php-css-parser/src/Rule/Rule.php',
     '98aea6e41b9cb79b379b10f37ba1f0b7' => $vendorDir . '/sabberworm/php-css-parser/src/RuleSet/RuleContainer.php',
+    '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => $vendorDir . '/symfony/polyfill-mbstring/bootstrap.php',
     '2cffec82183ee1cea088009cef9a6fc3' => $vendorDir . '/ezyang/htmlpurifier/library/HTMLPurifier.composer.php',
 );

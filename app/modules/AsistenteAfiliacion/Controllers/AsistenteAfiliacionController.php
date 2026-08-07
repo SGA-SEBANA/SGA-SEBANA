@@ -104,75 +104,115 @@ class AsistenteAfiliacionController extends ControllerBase
         return $value;
     }
 
-    private function validateData(array $data, $requireSignedFile = false, $excludeDuplicateId = null)
-    {
-        $errors = [];
+private function validateData(array $data, $requireSignedFile = false, $excludeDuplicateId = null)
+{
+    $errors = [];
 
-        if (!$this->model->isTipoUsuarioPermitido($data['tipo_usuario'])) {
-            $errors[] = 'Solo se permite afiliacion para personal BNCR activo o jubilado.';
-        }
-
-        if ($data['cedula'] === '') {
-            $errors[] = 'La cedula es obligatoria.';
-        }
-
-        if ($data['nombre'] === '' || $data['apellido1'] === '') {
-            $errors[] = 'Nombre y primer apellido son obligatorios.';
-        }
-
-        if (!filter_var($data['correo'], FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Debe ingresar un correo valido.';
-        }
-
-        if ($data['fecha_nacimiento'] === '') {
-            $errors[] = 'La fecha de nacimiento es obligatoria.';
-        }
-
-        if ($data['numero_empleado'] === '' || $data['oficina_bncr'] === '' || $data['departamento'] === '' || $data['puesto'] === '') {
-            $errors[] = 'Debe completar la informacion laboral del BNCR.';
-        }
-
-        if (empty($data['oficina_id'])) {
-            $errors[] = 'Debe seleccionar una oficina BNCR valida.';
-        }
-
-        if ($data['fecha_ingreso_bncr'] === '') {
-            $errors[] = 'La fecha de ingreso al BNCR es obligatoria.';
-        }
-
-        if ($data['tipo_usuario'] === 'jubilado' && $data['fecha_jubilacion'] === '') {
-            $errors[] = 'Si es jubilado debe indicar fecha de jubilacion.';
-        }
-
-        if (!preg_match('/^\+?[0-9]{8,15}$/', $data['celular'])) {
-            $errors[] = 'Debe ingresar un numero de celular valido.';
-        }
-
-        if ((int) $data['acepta_deduccion'] !== 1) {
-            $errors[] = 'Debe aceptar la deduccion salarial del 1%.';
-        }
-
-        if ((int) $data['acepta_estatuto'] !== 1) {
-            $errors[] = 'Debe aceptar el estatuto para continuar.';
-        }
-
-        if ($data['cedula'] !== '' && $this->model->cedulaDuplicada($data['cedula'], $excludeDuplicateId)) {
-            $errors[] = 'Ya existe una afiliacion registrada o en tramite con esta cedula.';
-        }
-
-        if ($data['correo'] !== '' && $this->model->correoDuplicado($data['correo'], $excludeDuplicateId)) {
-            $errors[] = 'Ya existe una afiliacion registrada o en tramite con este correo.';
-        }
-
-        if ($requireSignedFile) {
-            [$okPdf, $errorPdf] = $this->validateSignedUpload($_FILES['pdf_firmado'] ?? null);
-            if (!$okPdf) {
-                $errors[] = $errorPdf;
-            }
-        }
-
-        return $errors;
+    if (!$this->model->isTipoUsuarioPermitido($data['tipo_usuario'])) {
+        $errors[] = 'Solo se permite afiliacion para personal BNCR activo o jubilado.';
     }
+
+    if (!preg_match('/^[0-9]{9}$/', $data['cedula'])) {
+        $errors[] = 'La cedula debe tener exactamente 9 digitos numericos.';
+    }
+
+    if (strlen($data['nombre']) > 50) {
+        $errors[] = 'El nombre no puede superar los 50 caracteres.';
+    }
+
+ 
+    if (strlen($data['apellido1']) > 50) {
+        $errors[] = 'El primer apellido no puede superar los 50 caracteres.';
+    }
+
+
+    if (strlen($data['apellido2']) > 50) {
+        $errors[] = 'El segundo apellido no puede superar los 50 caracteres.';
+    }
+
+    if (strlen($data['correo']) > 100) {
+        $errors[] = 'El correo no puede superar los 100 caracteres.';
+    }
+
+
+    if (!filter_var($data['correo'], FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'Debe ingresar un correo electronico valido.';
+    }
+
+    if ($data['fecha_nacimiento'] === '') {
+        $errors[] = 'La fecha de nacimiento es obligatoria.';
+    }
+
+    if ($data['numero_empleado'] === '' || $data['oficina_bncr'] === '' || $data['departamento'] === '' || $data['puesto'] === '') {
+        $errors[] = 'Debe completar la informacion laboral del BNCR.';
+    }
+
+  
+    if (strlen($data['numero_empleado']) > 20) {
+        $errors[] = 'El numero de empleado no puede superar los 20 caracteres.';
+    }
+
+
+    if (!preg_match('/^[0-9]{1,20}$/', $data['numero_empleado'])) {
+        $errors[] = 'El numero de empleado debe ser numerico.';
+    }
+
+
+    if (strlen($data['departamento']) > 100) {
+        $errors[] = 'El departamento no puede superar los 100 caracteres.';
+    }
+
+
+    if (strlen($data['puesto']) > 100) {
+        $errors[] = 'El puesto no puede superar los 100 caracteres.';
+    }
+
+ 
+    if (strlen($data['observaciones']) > 500) {
+        $errors[] = 'Las observaciones no pueden superar los 500 caracteres.';
+    }
+
+    if (empty($data['oficina_id'])) {
+        $errors[] = 'Debe seleccionar una oficina BNCR valida.';
+    }
+
+    if ($data['fecha_ingreso_bncr'] === '') {
+        $errors[] = 'La fecha de ingreso al BNCR es obligatoria.';
+    }
+
+    if ($data['tipo_usuario'] === 'jubilado' && $data['fecha_jubilacion'] === '') {
+        $errors[] = 'Si es jubilado debe indicar fecha de jubilacion.';
+    }
+
+    if (!preg_match('/^\+?[0-9]{8}$/', $data['celular'])) {
+        $errors[] = 'Debe ingresar un numero de celular valido.';
+    }
+
+    if ((int) $data['acepta_deduccion'] !== 1) {
+        $errors[] = 'Debe aceptar la deduccion salarial del 1%.';
+    }
+
+    if ((int) $data['acepta_estatuto'] !== 1) {
+        $errors[] = 'Debe aceptar el estatuto para continuar.';
+    }
+
+    if ($data['cedula'] !== '' && $this->model->cedulaDuplicada($data['cedula'], $excludeDuplicateId)) {
+        $errors[] = 'Ya existe una afiliacion registrada o en tramite con esta cedula.';
+    }
+
+    if ($data['correo'] !== '' && $this->model->correoDuplicado($data['correo'], $excludeDuplicateId)) {
+        $errors[] = 'Ya existe una afiliacion registrada o en tramite con este correo.';
+    }
+
+    if ($requireSignedFile) {
+        [$okPdf, $errorPdf] = $this->validateSignedUpload($_FILES['pdf_firmado'] ?? null);
+        if (!$okPdf) {
+            $errors[] = $errorPdf;
+        }
+    }
+
+    return $errors;
+}
 
     private function validateSignedUpload($file)
     {

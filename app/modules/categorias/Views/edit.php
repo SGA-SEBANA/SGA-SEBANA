@@ -40,9 +40,9 @@ ob_start();
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="nombre" class="form-control-label font-weight-bold">Nombre de Categoría <span class="text-danger">*</span></label>
-                                <input type="text" id="nombre" name="nombre" 
+                                <input type="text" id="nombre" name="nombre " 
                                        value="<?= htmlspecialchars($categoria['nombre']) ?>" 
-                                       class="form-control" required autofocus>
+                                       class="form-control" maxlength="100" required autofocus>
                                 <small class="form-text text-muted">Asegúrate de que el nombre siga siendo descriptivo y único.</small>
                             </div>
                         </div>
@@ -77,7 +77,7 @@ ob_start();
                             <div class="form-group">
                                 <label for="descripcion" class="form-control-label font-weight-bold">Descripción / Notas</label>
                                 <textarea name="descripcion" id="descripcion" rows="5" 
-                                          class="form-control"><?= htmlspecialchars($categoria['descripcion']) ?></textarea>
+                                          class="form-control" maxlength="255"><?= htmlspecialchars($categoria['descripcion']) ?></textarea>
                             </div>
                         </div>
                     </div>

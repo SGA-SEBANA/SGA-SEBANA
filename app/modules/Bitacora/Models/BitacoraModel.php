@@ -256,29 +256,37 @@ class BitacoraModel extends ModelBase
     {
         $busqueda = trim((string) ($filtros['busqueda'] ?? ''));
         if ($busqueda !== '') {
-            $sql .= " AND (
-                        accion LIKE :b
-                        OR modulo LIKE :b
-                        OR entidad LIKE :b
-                        OR descripcion LIKE :b
-                        OR resultado LIKE :b
-                        OR IFNULL(mensaje_error, '') LIKE :b";
-            $params['b'] = '%' . $busqueda . '%';
 
-            $needle = self::normalizeTerm($busqueda);
-            $matchedActions = $this->findLabelMatches(self::ACTION_LABELS, $needle);
-            $matchedModules = $this->findLabelMatches(self::MODULE_LABELS, $needle);
-            $matchedEntities = $this->findLabelMatches(self::ENTITY_LABELS, $needle);
-            $matchedResults = $this->findLabelMatches(self::RESULT_LABELS, $needle);
+    $sql .= " AND (
+        accion LIKE :b1
+        OR modulo LIKE :b2
+        OR entidad LIKE :b3
+        OR descripcion LIKE :b4
+        OR resultado LIKE :b5
+        OR IFNULL(mensaje_error, '') LIKE :b6";
 
-            $this->appendInClause($sql, $params, 'accion', $matchedActions, 'm_accion_');
-            $this->appendInClause($sql, $params, 'modulo', $matchedModules, 'm_modulo_');
-            $this->appendInClause($sql, $params, 'entidad', $matchedEntities, 'm_entidad_');
-            $this->appendInClause($sql, $params, 'resultado', $matchedResults, 'm_resultado_');
+    $valor = '%' . $busqueda . '%';
 
-            $sql .= ')';
-        }
+    $params['b1'] = $valor;
+    $params['b2'] = $valor;
+    $params['b3'] = $valor;
+    $params['b4'] = $valor;
+    $params['b5'] = $valor;
+    $params['b6'] = $valor;
 
+    $needle = self::normalizeTerm($busqueda);
+    $matchedActions = $this->findLabelMatches(self::ACTION_LABELS, $needle);
+    $matchedModules = $this->findLabelMatches(self::MODULE_LABELS, $needle);
+    $matchedEntities = $this->findLabelMatches(self::ENTITY_LABELS, $needle);
+    $matchedResults = $this->findLabelMatches(self::RESULT_LABELS, $needle);
+
+    $this->appendInClause($sql, $params, 'accion', $matchedActions, 'm_accion_');
+    $this->appendInClause($sql, $params, 'modulo', $matchedModules, 'm_modulo_');
+    $this->appendInClause($sql, $params, 'entidad', $matchedEntities, 'm_entidad_');
+    $this->appendInClause($sql, $params, 'resultado', $matchedResults, 'm_resultado_');
+
+    $sql .= ')';
+}
         if (!empty($filtros['modulo'])) {
             $sql .= ' AND modulo = :modulo';
             $params['modulo'] = (string) $filtros['modulo'];

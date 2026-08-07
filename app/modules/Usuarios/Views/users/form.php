@@ -67,7 +67,7 @@ ob_start();
                                     class="form-control <?= isset($errors['username']) ? 'is-invalid' : '' ?>"
                                     placeholder="Nombre de usuario"
                                     value="<?= SecurityHelper::e($old['username'] ?? $user['username'] ?? '') ?>"
-                                    required minlength="3" <?= (!$canManageUsers && $isEdit) ? 'readonly' : '' ?>>
+                                    maxlength="50" required minlength="3" <?= (!$canManageUsers && $isEdit) ? 'readonly' : '' ?>>
                             </div>
                             <small class="form-text text-muted">Mínimo 3 caracteres, sin espacios.</small>
                         </div>
@@ -79,7 +79,7 @@ ob_start();
                                 <input type="email" id="correo" name="correo"
                                     class="form-control <?= isset($errors['correo']) ? 'is-invalid' : '' ?>"
                                     placeholder="correo@ejemplo.com"
-                                    value="<?= SecurityHelper::e($old['correo'] ?? $user['correo'] ?? '') ?>" required <?= (!$canManageUsers && $isEdit) ? 'readonly' : '' ?>>
+                                    value="<?= SecurityHelper::e($old['correo'] ?? $user['correo'] ?? '') ?>" maxlength="120" required <?= (!$canManageUsers && $isEdit) ? 'readonly' : '' ?>>
                             </div>
                         </div>
                     </div>
@@ -92,7 +92,7 @@ ob_start();
                                 class="form-control <?= isset($errors['nombre_completo']) ? 'is-invalid' : '' ?>"
                                 placeholder="Nombre y apellidos"
                                 value="<?= SecurityHelper::e($old['nombre_completo'] ?? $user['nombre_completo'] ?? '') ?>"
-                                required>
+                                maxlength="120" required>
                         </div>
                         <div class="col-md-6">
                             <label for="telefono" class="form-control-label">Teléfono</label>
@@ -100,7 +100,7 @@ ob_start();
                                 <span class="input-group-text"><i class="zmdi zmdi-phone"></i></span>
                                 <input type="tel" id="telefono" name="telefono" class="form-control"
                                     placeholder="8888-8888"
-                                    value="<?= SecurityHelper::e($old['telefono'] ?? $user['telefono'] ?? '') ?>">
+                                    value="<?= SecurityHelper::e($old['telefono'] ?? $user['telefono'] ?? '') ?>" maxlength="20" pattern="[0-9\-+ ]+">
                             </div>
                         </div>
                     </div>

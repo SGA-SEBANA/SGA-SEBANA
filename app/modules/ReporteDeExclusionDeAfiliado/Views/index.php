@@ -8,6 +8,12 @@ ob_start();
 <div class="row">
   <div class="col-md-12">
     <h2 class="title-1 mb-4">Reporte de Exclusiones / Bajas</h2>
+    
+      <?php if (!empty($_SESSION['error'])): ?>
+        <div class="alert alert-danger">
+            <?= $_SESSION['error']; unset($_SESSION['error']); ?>
+        </div>
+    <?php endif; ?>
 
     <!-- FILTROS -->
     <div class="card">

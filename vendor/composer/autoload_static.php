@@ -89,6 +89,7 @@ class ComposerStaticInit2ebe70bb8fed96c9d6dd331047dccbfe
         '356736db98a6834f0a886b8d509b0ecd' => __DIR__ . '/..' . '/thecodingmachine/safe/generated/zlib.php',
         '0174385c3be07e86008907d06ee66531' => __DIR__ . '/..' . '/sabberworm/php-css-parser/src/Rule/Rule.php',
         '98aea6e41b9cb79b379b10f37ba1f0b7' => __DIR__ . '/..' . '/sabberworm/php-css-parser/src/RuleSet/RuleContainer.php',
+        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
         '2cffec82183ee1cea088009cef9a6fc3' => __DIR__ . '/..' . '/ezyang/htmlpurifier/library/HTMLPurifier.composer.php',
     );
 
@@ -104,6 +105,7 @@ class ComposerStaticInit2ebe70bb8fed96c9d6dd331047dccbfe
         ),
         'S' =>
         array (
+            'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Svg\\' => 4,
             'Sabberworm\\CSS\\' => 15,
         ),
@@ -116,6 +118,7 @@ class ComposerStaticInit2ebe70bb8fed96c9d6dd331047dccbfe
         ),
         'M' =>
         array (
+            'MyCLabs\\Enum\\' => 13,
             'Matrix\\' => 7,
             'Masterminds\\' => 12,
         ),
@@ -155,6 +158,10 @@ class ComposerStaticInit2ebe70bb8fed96c9d6dd331047dccbfe
         array (
             0 => __DIR__ . '/..' . '/maennchen/zipstream-php/src',
         ),
+        'Symfony\\Polyfill\\Mbstring\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
+        ),
         'Svg\\' =>
         array (
             0 => __DIR__ . '/..' . '/dompdf/php-svg-lib/src/Svg',
@@ -179,6 +186,10 @@ class ComposerStaticInit2ebe70bb8fed96c9d6dd331047dccbfe
         'PhpOffice\\PhpSpreadsheet\\' =>
         array (
             0 => __DIR__ . '/..' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet',
+        ),
+        'MyCLabs\\Enum\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/myclabs/php-enum/src',
         ),
         'Matrix\\' =>
         array (
